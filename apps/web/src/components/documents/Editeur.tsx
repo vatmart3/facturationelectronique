@@ -3,7 +3,9 @@
 import Link from 'next/link'
 import { formatTaux, type LigneCalculee, type Totaux as TotauxMoteur } from '@pastille/moteur'
 import { useEffect, useMemo, useState, useTransition, type ReactNode } from 'react'
-import { dupliquerDocument, enregistrerDocument, lignesDerniereFacture, supprimerBrouillon } from '@/app/actions/documents'
+import { useRouter } from 'next/navigation'
+import { dupliquerDocument, emettreDocument, enregistrerDocument, lignesDerniereFacture, supprimerBrouillon } from '@/app/actions/documents'
+import { BoutonAction } from './Actions'
 import { Bouton } from '@/components/ui/Bouton'
 import { Categorie } from '@/components/ui/Categorie'
 import { Icone } from '@/components/ui/Icone'
@@ -27,11 +29,22 @@ interface Props {
   donnees: DonneesEditeur
   /** Rôle sans droit d'écriture : tout est désactivé. */
   lecture?: boolean
-  /** Actions supplémentaires (émission, phase 5). */
-  actions?: (etat: { id: string | null; peutEmettre: boolean; enregistre: boolean; doc: DocumentEdition }) => ReactNode
+  /** Facture d'origine d'un avoir, ou devis d'origine d'une facture. */
+  origine?: { libelle: string; href: string } | null
 }
 
-export function Editeur({ slug, initial, id: idInitial, donnees, lecture = false, actions }: Props) {
+const EMISSION = {
+  facture: { bouton: 'Émettre la facture', texte: 'Un numéro définitif lui sera attribué et son contenu sera figé. Toute correction passera ensuite par un avoir.' },
+  acompte: { bouton: 'Émettre la facture d’acompte', texte: 'Un numéro définitif lui sera attribué et son contenu sera figé.' },
+  avoir: { bouton: 'Émettre l’avoir', texte: 'Un numéro d’avoir lui sera attribué et son contenu sera figé.' },
+  devis: { bouton: 'Finaliser le devis', texte: 'Un numéro de devis lui sera attribué ; le devis ne sera plus modifiable mais pourra être dupliqué.' },
+} as const
+
+export function Editeur({ slug, initial, id: idInitial, donnees, lecture = false, origine }: Props) {
+  const router = useRouter()
+  const [confirmer, setConfirmer] = useState(false)
+  const [erreurEmission, setErreurEmission] = useState<string | null>(null)
+  const [emission, demarrerEmission] = useTransition()
   const ctx = useMemo(() => contexteEditeur(donnees), [donnees])
   const [doc, setDoc] = useState(initial)
   const [id, setId] = useState(idInitial)
@@ -60,7 +73,7 @@ export function Editeur({ slug, initial, id: idInitial, donnees, lecture = false
   const changerLigne = (cle: string, f: (l: LigneEdition) => LigneEdition) =>
     modifier((d) => ({ ...d, lignes: d.lignes.map((l) => (l.cle === cle ? f(l) : l)) }))
 
-  async function sauver(etat: DocumentEdition, v: number) {
+  async function sauver(etat: DocumentEdition, v: number): Promise<string | null> {
     setEnCours(true)
     const r = await enregistrerDocument(slug, etat, id)
     setEnCours(false)
@@ -73,10 +86,27 @@ export function Editeur({ slug, initial, id: idInitial, donnees, lecture = false
       setVersionEchec(null)
       setEnregistreLe(r.le)
       setVersionSauvee((s) => Math.max(s, v))
-    } else {
-      setErreur(r.erreur)
-      setVersionEchec(v)
+      return r.id
     }
+    setErreur(r.erreur)
+    setVersionEchec(v)
+    return null
+  }
+
+  function emettre() {
+    demarrerEmission(async () => {
+      setErreurEmission(null)
+      const cible = modifie || !id ? await sauver(doc, version) : id
+      if (!cible) return
+      const r = await emettreDocument(slug, cible)
+      if (!r.ok) {
+        setErreurEmission(r.erreur)
+        return
+      }
+      setConfirmer(false)
+      router.replace(`/${slug}/${CHEMINS[doc.type]}/${cible}`)
+      router.refresh()
+    })
   }
 
   // Enregistrement automatique 800 ms après la dernière frappe, jamais deux à la fois.
@@ -93,12 +123,17 @@ export function Editeur({ slug, initial, id: idInitial, donnees, lecture = false
     return () => window.removeEventListener('beforeunload', avertir)
   }, [modifie])
 
-  // Ctrl+S enregistre tout de suite.
+  // Ctrl+S enregistre tout de suite ; Ctrl+Entrée prépare l'émission ; Échap annule.
   useEffect(() => {
     function surTouche(e: KeyboardEvent) {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 's') {
         e.preventDefault()
         if (!enCours && version > versionSauvee) void sauver(doc, version)
+      } else if ((e.ctrlKey || e.metaKey) && e.key === 'Enter' && !lecture) {
+        e.preventDefault()
+        setConfirmer(true)
+      } else if (e.key === 'Escape' && confirmer && !emission) {
+        setConfirmer(false)
       }
     }
     window.addEventListener('keydown', surTouche)
@@ -182,6 +217,39 @@ export function Editeur({ slug, initial, id: idInitial, donnees, lecture = false
             Réessayer
           </button>
         </Message>
+      )}
+      {origine && (
+        <Message ton="info">
+          {doc.type === 'avoir' ? 'Avoir se rapportant à ' : 'Établi d’après '}
+          <Link href={origine.href} className="font-semibold underline">
+            {origine.libelle}
+          </Link>
+          {doc.type === 'avoir' && ' · retirez ou ajustez les lignes pour un avoir partiel.'}
+        </Message>
+      )}
+      {confirmer && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-voile p-4">
+          <div role="dialog" aria-modal="true" aria-labelledby="titre-emission" className="flex w-full max-w-[440px] flex-col gap-4 rounded-l border border-trait bg-surface p-5 shadow-haute">
+            <h2 id="titre-emission" className="text-[17px] font-semibold">
+              {EMISSION[doc.type].bouton} ?
+            </h2>
+            <p className="text-[13.5px] text-encre-2">{EMISSION[doc.type].texte}</p>
+            {totaux && (
+              <p className="num text-[15px] font-semibold">
+                {client?.name} · {formatMontant(totaux.netAPayer, doc.currency)}
+              </p>
+            )}
+            {erreurEmission && <Message ton="erreur">{erreurEmission}</Message>}
+            <div className="flex justify-end gap-2">
+              <Bouton variante="fantome" onClick={() => setConfirmer(false)} disabled={emission}>
+                Annuler
+              </Bouton>
+              <Bouton variante="primaire" onClick={emettre} chargement={emission} disabled={!conformite.peutEmettre} autoFocus>
+                {EMISSION[doc.type].bouton}
+              </Bouton>
+            </div>
+          </div>
+        </div>
       )}
       {info && (
         <Message ton="info">
@@ -369,10 +437,17 @@ export function Editeur({ slug, initial, id: idInitial, donnees, lecture = false
               </p>
             )}
             <div className="mt-4 flex flex-col gap-2">
-              {actions?.({ id, peutEmettre: conformite.peutEmettre && !modifie && !enCours, enregistre: !modifie && !enCours && Boolean(id), doc })}
+              {!lecture && (
+                <Bouton variante="primaire" disabled={!conformite.peutEmettre} onClick={() => setConfirmer(true)}>
+                  {EMISSION[doc.type].bouton}
+                </Bouton>
+              )}
+              {!lecture && !conformite.peutEmettre && (
+                <p className="text-center text-[12px] text-attente">Complétez les points de conformité pour émettre.</p>
+              )}
               {!lecture && (
                 <Bouton
-                  variante={actions ? 'secondaire' : 'primaire'}
+                  variante="secondaire"
                   chargement={enCours}
                   disabled={!modifie}
                   onClick={() => void sauver(doc, version)}
@@ -381,7 +456,7 @@ export function Editeur({ slug, initial, id: idInitial, donnees, lecture = false
                 </Bouton>
               )}
               <p className="text-center text-[11.5px] text-encre-3">
-                <Kbd>Ctrl</Kbd> <Kbd>S</Kbd> enregistre · <Kbd>Entrée</Kbd> ajoute une ligne
+                <Kbd>Ctrl</Kbd> <Kbd>S</Kbd> enregistre · <Kbd>Ctrl</Kbd> <Kbd>Entrée</Kbd> émet
               </p>
             </div>
           </section>
@@ -444,7 +519,7 @@ export function Editeur({ slug, initial, id: idInitial, donnees, lecture = false
                   <SaisieMontant
                     aria-label="Remise globale en montant HT"
                     valeur={doc.remise.valeur}
-                    onValeur={(c) => modifier((d) => ({ ...d, remise: { type: 'montant', valeur: Math.abs(c) } }))}
+                    onValeur={(c) => modifier((d) => ({ ...d, remise: { type: 'montant', valeur: d.type === 'avoir' ? -Math.abs(c) : Math.abs(c) } }))}
                     className="border-trait-fort"
                   />
                 )}
@@ -478,18 +553,9 @@ export function Editeur({ slug, initial, id: idInitial, donnees, lecture = false
           {id && !lecture && (
             <section className="flex flex-col gap-2 rounded-l border border-trait bg-surface p-4">
               <h2 className="text-[14px] font-semibold">Autres actions</h2>
-              {doc.type === 'devis' && (
-                <form action={dupliquerDocument.bind(null, slug, id, 'facture')}>
-                  <Bouton type="submit" className="w-full" disabled={modifie}>
-                    Transformer en facture
-                  </Bouton>
-                </form>
-              )}
-              <form action={dupliquerDocument.bind(null, slug, id, undefined)}>
-                <Bouton type="submit" variante="fantome" className="w-full" disabled={modifie}>
-                  Dupliquer
-                </Bouton>
-              </form>
+              <BoutonAction action={dupliquerDocument.bind(null, slug, id)} variante="fantome" className="w-full">
+                Dupliquer
+              </BoutonAction>
               <form
                 action={supprimerBrouillon.bind(null, slug, id, doc.type)}
                 onSubmit={(e) => {

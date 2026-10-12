@@ -192,6 +192,7 @@ export type DocumentRow = {
   client_snapshot: unknown
   content_hash: string | null
   previous_hash: string | null
+  chain_position: number | null
   issued_at: string | null
   issued_by: string | null
   sent_at: string | null
@@ -315,6 +316,18 @@ export type Database = {
         Update: never
         Relationships: []
       }
+      audit_log: {
+        Row: { id: number; organization_id: string; actor_id: string | null; action: string; entity: string; entity_id: string | null; details: unknown; created_at: string }
+        Insert: never
+        Update: never
+        Relationships: []
+      }
+      document_sequences: {
+        Row: { organization_id: string; sequence_key: string; last_number: number; updated_at: string }
+        Insert: never
+        Update: never
+        Relationships: []
+      }
       vat_rates: {
         Row: { id: string; territory: string; label: string; rate: number; valid_from: string; valid_to: string | null; created_at: string }
         Insert: never
@@ -334,6 +347,12 @@ export type Database = {
       enregistrer_brouillon: {
         Args: { p_organization: string; p_id: string | null; p_document: unknown; p_lignes: unknown; p_tva: unknown }
         Returns: string
+      }
+      emettre_document: { Args: { p_id: string }; Returns: DocumentRow }
+      changer_statut: { Args: { p_id: string; p_statut: DocumentStatus }; Returns: DocumentRow }
+      verifier_chaine: {
+        Args: { p_organization: string }
+        Returns: Array<{ chain_position: number; document_id: string; number: string; empreinte_ok: boolean; lien_ok: boolean }>
       }
     }
     Enums: {

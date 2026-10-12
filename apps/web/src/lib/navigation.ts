@@ -68,7 +68,7 @@ export const NAVIGATION: GroupeNav[] = [
         chemin: 'ventes/avoirs',
         libelle: 'Avoirs',
         icone: 'avoir',
-        phase: 5,
+        phase: 4,
         description: 'Avoirs totaux ou partiels, toujours rattachés à la facture d’origine.',
       },
       {

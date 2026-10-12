@@ -11,7 +11,7 @@ import { formatMontant } from '@/lib/format'
 import { UNITES } from '@/lib/produits'
 import { SaisieMontant, SaisiePourcentage, SaisieQuantite } from './Saisies'
 
-const GRILLE = 'grid grid-cols-[minmax(220px,1fr)_76px_92px_108px_64px_100px_112px_32px] items-start gap-x-1.5'
+const GRILLE = 'grid grid-cols-[minmax(200px,1fr)_64px_80px_100px_60px_92px_104px_28px] items-start gap-x-1'
 
 interface Props {
   lignes: LigneEdition[]
@@ -36,7 +36,7 @@ export function LignesDocument({ lignes, calculees, produits, regime, devise, on
 
   return (
     <div role="region" aria-label="Lignes du document" tabIndex={-1} className="-mx-1 overflow-x-auto px-1">
-      <div className="min-w-[820px]">
+      <div className="min-w-[760px]">
         <div className={cn(GRILLE, 'border-b border-trait pb-2 text-[11px] font-semibold uppercase tracking-[0.05em] text-encre-3')} aria-hidden="true">
           <span className="pl-1.5">Désignation</span>
           <span className="pr-1.5 text-right">Qté</span>

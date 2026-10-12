@@ -482,3 +482,14 @@ $$;
 
 create trigger organizations_numero_depart before update of invoice_start_number on public.organizations
 for each row execute function private.numero_depart_fige();
+
+-- ---------------------------------------------------------------------------
+-- Avoirs : une remise en montant porte le signe du montant remisé (négatif sur un avoir).
+-- ---------------------------------------------------------------------------
+
+alter table public.documents drop constraint documents_discount_value_check;
+alter table public.documents add constraint documents_remise_pourcentage_check
+  check (discount_kind is distinct from 'pourcentage' or discount_value between 0 and 10000);
+alter table public.document_lines drop constraint document_lines_discount_value_check;
+alter table public.document_lines add constraint document_lines_remise_pourcentage_check
+  check (discount_kind is distinct from 'pourcentage' or discount_value between 0 and 10000);

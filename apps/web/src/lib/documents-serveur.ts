@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation'
 import type { DeductionAcompte } from '@pastille/moteur'
 import { ajouterJours, aujourdHui, depuisLigneDb, type DocumentEdition, type TypeDocument } from './document'
 import { appliquerClient, contexteEditeur, ligneLibre, type ClientEditeur, type DonneesEditeur } from './editeur'
+import { construireImprimable, type ClientImprime, type DocumentImprimable, type VendeurImprime } from './imprimable'
 import { chargerContexte } from './session'
 import { creerClientServeur } from './supabase/serveur'
 import type { DocumentRow } from './supabase/types'
@@ -103,4 +104,34 @@ export async function chargerDocument(slug: string, id: string, types: TypeDocum
       originDocumentId: doc.origin_document_id,
     },
   }
+}
+
+/** Document prêt à imprimer : instantanés figés s'il est émis, données courantes sinon. */
+export async function chargerImprimable(slug: string, id: string): Promise<{ charge: DocumentCharge; imprimable: DocumentImprimable } | null> {
+  const charge = await chargerDocument(slug, id, ['facture', 'acompte', 'devis', 'avoir'])
+  const { ligne: d, edition } = charge
+  const supabase = await creerClientServeur()
+  const [{ organisation }, mentions, origine, client] = await Promise.all([
+    chargerContexte(slug),
+    supabase.from('legal_mentions').select('key, text'),
+    d.origin_document_id
+      ? supabase.from('documents').select('number, issue_date').eq('id', d.origin_document_id).maybeSingle()
+      : Promise.resolve({ data: null }),
+    d.client_snapshot || !d.client_id ? Promise.resolve({ data: null }) : supabase.from('clients').select('*').eq('id', d.client_id).maybeSingle(),
+  ])
+  const vendeur = (d.seller_snapshot ?? organisation) as VendeurImprime
+  const acheteur = (d.client_snapshot ?? client.data ?? null) as ClientImprime | null
+  const imprimable = construireImprimable({
+    edition,
+    numero: d.number,
+    brouillon: d.status === 'brouillon',
+    dateEcheance: d.due_date,
+    vendeur,
+    client: acheteur,
+    textes: Object.fromEntries((mentions.data ?? []).map((m) => [m.key, m.text])),
+    origine: origine.data?.number ? { numero: origine.data.number, date: origine.data.issue_date } : null,
+    empreinte: d.content_hash,
+    paye: d.status === 'paye',
+  })
+  return imprimable ? { charge, imprimable } : null
 }
