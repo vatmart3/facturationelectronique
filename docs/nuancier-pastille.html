@@ -1,0 +1,812 @@
+<title>Nuancier Pastille</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=IBM+Plex+Mono:wght@400;500;600&family=Onest:wght@400..700&display=swap">
+<style>
+/* Mise en page : une feuille de nuancier crème, sections empilées, composants présentés en planches de deux colonnes */
+:root{
+  /* Palette (section 2 du brief) */
+  --papier:#F6F1E7; --carte:#FFFDF8; --encre:#1C1B22; --encre-douce:#5E5862;
+  --tomate:#FF5A36; --menthe:#9FE0BC; --beurre:#FFD65C; --ciel:#A9D2FF;
+  --prune:#7A4BD0; --brique:#C2410C; --trait:#E6DCCB;
+  /* Couleurs fixes, indépendantes du thème */
+  --sur-clair:#1C1B22; --sur-fonce:#FFFDF8;
+  --facture-fond:#FFFDF8; --facture-encre:#1C1B22; --facture-trait:#E6DCCB;
+  /* Remplissages de statut (pastilles) */
+  --st-brouillon:#FFD65C; --st-envoyee:#A9D2FF; --st-payee:#9FE0BC; --st-retard:#C2410C; --st-avoir:#7A4BD0;
+  /* Matière */
+  --ombre-teinte:84 52 20;
+  --ombre-1:0 1px 0 rgb(var(--ombre-teinte) / .07), 0 10px 22px -10px rgb(var(--ombre-teinte) / .28);
+  --ombre-2:0 2px 0 rgb(var(--ombre-teinte) / .06), 0 26px 48px -18px rgb(var(--ombre-teinte) / .40);
+  --voile:rgb(28 27 34 / .28);
+  --grain:.045;
+  --anneau:0 0 0 2px var(--papier), 0 0 0 4.5px var(--encre);
+  /* Formes */
+  --r-pilule:999px; --r-carte:32px; --r-carte-s:24px; --r-bulle:20px;
+  /* Typo */
+  --f-titre:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --f-texte:"Onest","Segoe UI",system-ui,sans-serif;
+  --f-chiffre:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+  /* Mouvement */
+  --d-rapide:120ms; --d-base:220ms; --d-compteur:300ms;
+  --e-ressort:cubic-bezier(.34,1.56,.64,1); --e-glisse:cubic-bezier(.22,1,.36,1);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papier:#17161C; --carte:#22212A; --encre:#F3EEE4; --encre-douce:#ABA4B0;
+    --tomate:#FF6646; --menthe:#8CCBA9; --beurre:#E9C65E; --ciel:#97BFEB;
+    --prune:#A98AE6; --brique:#F0804F; --trait:#36333F;
+    --st-brouillon:#E9C65E; --st-envoyee:#97BFEB; --st-payee:#8CCBA9; --st-retard:#B4441A; --st-avoir:#6E48B8;
+    --ombre-teinte:0 0 0; --voile:rgb(0 0 0 / .5); --grain:.06;
+    color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --papier:#17161C; --carte:#22212A; --encre:#F3EEE4; --encre-douce:#ABA4B0;
+  --tomate:#FF6646; --menthe:#8CCBA9; --beurre:#E9C65E; --ciel:#97BFEB;
+  --prune:#A98AE6; --brique:#F0804F; --trait:#36333F;
+  --st-brouillon:#E9C65E; --st-envoyee:#97BFEB; --st-payee:#8CCBA9; --st-retard:#B4441A; --st-avoir:#6E48B8;
+  --ombre-teinte:0 0 0; --voile:rgb(0 0 0 / .5); --grain:.06;
+  color-scheme:dark;
+}
+
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--papier);color:var(--encre);font-family:var(--f-texte);font-size:16px;line-height:1.55;}
+body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:200;opacity:var(--grain);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .22 0 0 0 0 .1 0 0 0 1.6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
+.feuille{max-width:1140px;margin:0 auto;padding-inline:20px;padding-block:28px 96px;display:flex;flex-direction:column;gap:72px}
+h1,h2,h3{font-family:var(--f-titre);text-wrap:balance;margin:0;letter-spacing:-.01em}
+h2{font-size:clamp(28px,4vw,40px);font-weight:800;line-height:1.05}
+h3{font-size:21px;font-weight:700}
+p{margin:0}
+.etiquette{font-size:12.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--encre-douce)}
+.chapeau{max-width:62ch;color:var(--encre-douce)}
+code,.mono{font-family:var(--f-chiffre);font-size:.88em}
+:focus-visible{outline:none;box-shadow:var(--anneau)}
+
+/* En-tête */
+.entete{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:24px}
+.marque{display:flex;align-items:center;gap:14px}
+.marque-disque{width:46px;height:46px;border-radius:50%;background:var(--tomate);box-shadow:var(--ombre-1);position:relative}
+.marque-disque::after{content:"";position:absolute;inset:12px;border-radius:50%;border:3px solid var(--sur-clair);opacity:.85}
+.marque-nom{font-family:var(--f-titre);font-weight:800;font-size:40px;letter-spacing:-.03em;line-height:1}
+.intro{display:flex;flex-direction:column;gap:18px}
+.intro h1{font-size:clamp(36px,6.4vw,72px);font-weight:800;line-height:.98;max-width:16ch}
+.bascule{display:inline-flex;padding:4px;border-radius:var(--r-pilule);background:var(--carte);border:1px solid var(--trait);box-shadow:var(--ombre-1)}
+.bascule button{font:600 14px var(--f-texte);color:var(--encre-douce);background:none;border:0;border-radius:var(--r-pilule);padding:8px 16px;cursor:pointer;transition:background var(--d-base),color var(--d-base)}
+.bascule button[aria-pressed="true"]{background:var(--encre);color:var(--papier)}
+
+.section{display:flex;flex-direction:column;gap:28px}
+.section-tete{display:flex;flex-direction:column;gap:10px}
+
+/* Couleurs */
+.nuancier{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:18px}
+.teinte{display:flex;gap:14px;align-items:flex-start;padding:16px;border-radius:var(--r-carte-s);background:var(--carte);border:1px solid var(--trait)}
+.teinte-disque{flex:none;width:58px;height:58px;border-radius:50%;box-shadow:inset 0 0 0 1px rgb(var(--ombre-teinte) / .12)}
+.teinte div{min-width:0;display:flex;flex-direction:column;gap:2px}
+.teinte strong{font-family:var(--f-chiffre);font-size:13.5px;font-weight:600}
+.teinte .hex{font-family:var(--f-chiffre);font-size:12.5px;color:var(--encre-douce)}
+.teinte .role{font-size:13.5px}
+.teinte .ratio{font-size:12px;color:var(--encre-douce);margin-top:4px}
+
+/* Typo */
+.specimen{background:var(--carte);border:1px solid var(--trait);border-radius:var(--r-carte);padding:clamp(20px,4vw,40px);display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:36px}
+.total-geant{font-family:var(--f-titre);font-weight:800;font-size:clamp(52px,9vw,96px);line-height:.95;letter-spacing:-.035em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.echelle{display:flex;flex-direction:column;gap:14px}
+.echelle-ligne{display:grid;grid-template-columns:86px minmax(0,1fr);gap:14px;align-items:baseline;border-bottom:1px solid var(--trait);padding-bottom:12px}
+.echelle-ligne:last-child{border-bottom:0}
+.echelle-ligne .mono{color:var(--encre-douce);font-size:12px}
+.tableau-wrap{overflow-x:auto;grid-column:1/-1}
+table.lignes{width:100%;border-collapse:collapse;font-size:14.5px;min-width:520px}
+table.lignes th{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--encre-douce);text-align:left;padding:0 10px 10px;border-bottom:1.5px solid var(--encre)}
+table.lignes td{padding:12px 10px;border-bottom:1px solid var(--trait)}
+table.lignes .n{text-align:right;font-family:var(--f-chiffre);font-variant-numeric:tabular-nums;white-space:nowrap}
+table.lignes th.n{font-family:var(--f-texte)}
+
+/* Forme et matière */
+.matieres{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
+.matiere{background:var(--carte);border:1px solid var(--trait);border-radius:var(--r-carte-s);padding:20px;display:flex;flex-direction:column;gap:14px}
+.formes{display:flex;gap:12px;align-items:end;flex-wrap:wrap}
+.forme{background:var(--beurre);height:46px;display:grid;place-items:center;font:500 11.5px var(--f-chiffre);color:var(--sur-clair)}
+.ombres{display:flex;gap:16px}
+.ombre{flex:1;height:84px;border-radius:22px;background:var(--carte);display:grid;place-items:center;font:500 12px var(--f-chiffre);color:var(--encre-douce)}
+.liste-tokens{display:flex;flex-direction:column;gap:6px;font-size:13.5px}
+.liste-tokens div{display:flex;justify-content:space-between;gap:12px}
+.liste-tokens span:last-child{font-family:var(--f-chiffre);color:var(--encre-douce);font-size:12.5px;text-align:right}
+
+/* Planches de composants */
+.planches{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
+.planche{background:var(--carte);border:1px solid var(--trait);border-radius:var(--r-carte);padding:24px;display:flex;flex-direction:column;gap:18px;min-width:0}
+.planche.large{grid-column:1/-1}
+.planche-tete{display:flex;flex-direction:column;gap:6px}
+.planche-tete p{color:var(--encre-douce);font-size:14.5px;max-width:60ch}
+.api{font-family:var(--f-chiffre);font-size:12.5px;background:var(--papier);border-radius:14px;padding:10px 14px;overflow-x:auto;white-space:pre;color:var(--encre)}
+.scene{background:var(--papier);border-radius:var(--r-carte-s);padding:22px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+.notes{margin:0;padding-left:18px;font-size:14px;color:var(--encre-douce);display:flex;flex-direction:column;gap:4px}
+
+/* Pilule */
+.pilule{--fond:var(--carte);--texte:var(--encre);--bord:var(--trait);
+  display:inline-flex;align-items:center;gap:10px;height:44px;padding:0 22px;border-radius:var(--r-pilule);
+  font:600 15px var(--f-texte);color:var(--texte);background:var(--fond);border:1.5px solid var(--bord);cursor:pointer;
+  box-shadow:var(--ombre-1);transition:transform var(--d-rapide) var(--e-glisse),box-shadow var(--d-base),background var(--d-base);white-space:nowrap}
+.pilule:hover{transform:translateY(-1px);box-shadow:var(--ombre-2)}
+.pilule:active{transform:translateY(1px) scale(.97);box-shadow:none}
+.pilule.tomate{--fond:var(--tomate);--texte:var(--sur-clair);--bord:transparent}
+.pilule.encre{--fond:var(--encre);--texte:var(--papier);--bord:transparent}
+.pilule.fantome{--fond:transparent;--bord:transparent;box-shadow:none}
+.pilule.fantome:hover{background:var(--trait);box-shadow:none;transform:none}
+.pilule.s{height:34px;padding:0 15px;font-size:13.5px}
+.pilule.l{height:58px;padding:0 30px;font-size:17px;font-family:var(--f-titre);font-weight:700}
+.pilule kbd{font:500 11.5px var(--f-chiffre);padding:3px 8px;border-radius:var(--r-pilule);background:rgb(28 27 34 / .12)}
+.pilule.encre kbd{background:rgb(255 253 248 / .16)}
+.pilule[aria-busy="true"]{cursor:progress}
+.point-charge{width:9px;height:9px;border-radius:50%;background:currentColor;animation:pulse 900ms var(--e-glisse) infinite}
+@keyframes pulse{0%,100%{transform:scale(.6);opacity:.5}50%{transform:scale(1);opacity:1}}
+
+/* Champ pilule */
+.champs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;width:100%}
+.champ{display:flex;flex-direction:column;gap:7px;min-width:0}
+.champ label{font-size:13.5px;font-weight:600}
+.champ-boite{display:flex;align-items:center;height:48px;border-radius:var(--r-pilule);background:var(--carte);border:1.5px solid var(--trait);padding:0 6px 0 20px;transition:border-color var(--d-base),box-shadow var(--d-base)}
+.champ-boite:focus-within{border-color:var(--encre);box-shadow:var(--anneau)}
+.champ-boite input{flex:1;min-width:0;border:0;background:none;outline:none;font:500 15.5px var(--f-texte);color:var(--encre);height:100%}
+.champ-boite input.mono{font-family:var(--f-chiffre);font-size:15px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
+.champ-boite .suffixe{font:500 12.5px var(--f-chiffre);color:var(--encre-douce);padding:6px 12px;border-radius:var(--r-pilule);background:var(--papier);white-space:nowrap}
+.champ-aide{font-size:13px;color:var(--encre-douce);display:flex;align-items:center;gap:6px}
+.champ.erreur .champ-boite{border-color:var(--brique)}
+.champ.erreur .champ-aide{color:var(--brique)}
+.champ.ok .champ-aide{color:var(--encre)}
+
+/* Pastille de statut */
+.pastille{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 13px 0 9px;border-radius:var(--r-pilule);font:600 13.5px var(--f-texte);color:var(--sur-clair);background:var(--st);white-space:nowrap}
+.pastille svg{width:14px;height:14px;flex:none}
+.pastille.grande{height:40px;font-size:15.5px;padding:0 18px 0 12px;font-family:var(--f-titre);font-weight:700}
+.pastille.grande svg{width:17px;height:17px}
+.pastille[data-st="brouillon"]{--st:var(--st-brouillon)}
+.pastille[data-st="envoyee"]{--st:var(--st-envoyee)}
+.pastille[data-st="payee"]{--st:var(--st-payee)}
+.pastille[data-st="retard"]{--st:var(--st-retard);color:var(--sur-fonce)}
+.pastille[data-st="avoir"]{--st:var(--st-avoir);color:var(--sur-fonce)}
+.scene.nb{filter:grayscale(1) contrast(1.05)}
+
+/* Avatar */
+.avatar{--taille:44px;width:var(--taille);height:var(--taille);border-radius:50%;display:inline-grid;place-items:center;flex:none;
+  font:800 calc(var(--taille) * .36) var(--f-titre);letter-spacing:-.02em;background:var(--av-fond);color:var(--av-texte);
+  box-shadow:inset 0 0 0 1.5px rgb(28 27 34 / .08)}
+.avatar.xl{--taille:96px}
+.avatar.s{--taille:30px}
+.avatars{display:flex;flex-wrap:wrap;gap:14px}
+.avatar-carte{display:flex;flex-direction:column;align-items:center;gap:6px;width:92px;text-align:center;font-size:12.5px;line-height:1.25}
+
+/* Carte + pile */
+.pile{position:relative;height:270px;width:min(100%,380px);margin:8px auto 4px;cursor:pointer}
+.facture-carte{position:absolute;inset:0 0 auto 0;height:210px;border-radius:var(--r-carte);background:var(--facture-fond);color:var(--facture-encre);
+  border:1px solid var(--facture-trait);box-shadow:var(--ombre-1);padding:20px 22px;display:flex;flex-direction:column;gap:12px;
+  transition:transform 420ms var(--e-ressort),box-shadow var(--d-base),opacity var(--d-base);transform-origin:50% 100%}
+.facture-carte[data-pos="0"]{z-index:3;transform:translate(0,0) rotate(0deg)}
+.facture-carte[data-pos="1"]{z-index:2;transform:translate(10px,22px) rotate(2.2deg)}
+.facture-carte[data-pos="2"]{z-index:1;transform:translate(-8px,42px) rotate(-2.6deg)}
+.pile:hover .facture-carte[data-pos="0"]{transform:translate(0,-8px) rotate(-.6deg);box-shadow:var(--ombre-2)}
+.pile:hover .facture-carte[data-pos="1"]{transform:translate(16px,26px) rotate(3.2deg)}
+.pile:hover .facture-carte[data-pos="2"]{transform:translate(-14px,48px) rotate(-3.6deg)}
+.fc-haut{display:flex;align-items:center;gap:12px}
+.fc-haut div{min-width:0;flex:1}
+.fc-client{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.fc-num{font:500 12.5px var(--f-chiffre);color:#6B6470}
+.fc-total{font:800 40px var(--f-titre);letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1;margin-top:auto}
+.fc-bas{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12.5px;color:#6B6470}
+.carte-variantes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;width:100%}
+.carte-demo{border-radius:var(--r-carte-s);padding:16px;min-height:92px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;font-size:13.5px}
+.carte-demo strong{font-family:var(--f-titre);font-size:16px}
+.carte-demo.surface{background:var(--carte);box-shadow:var(--ombre-1)}
+.carte-demo.facture{background:var(--facture-fond);color:var(--facture-encre);border:1px solid var(--facture-trait);box-shadow:var(--ombre-1)}
+.carte-demo.encart{background:transparent;border:1.5px dashed var(--trait)}
+
+/* Galet */
+.scene-galet{position:relative;height:300px;padding:0;overflow:hidden;align-items:stretch}
+.scene-galet .indice{position:absolute;left:22px;top:20px;right:22px;font-size:13.5px;color:var(--encre-douce);max-width:30ch}
+.galet{position:absolute;right:24px;bottom:24px;width:68px;height:68px;border-radius:50%;border:0;background:var(--tomate);color:var(--sur-clair);
+  box-shadow:var(--ombre-2);cursor:pointer;display:grid;place-items:center;z-index:3;transition:transform 320ms var(--e-ressort)}
+.galet svg{width:28px;height:28px;transition:transform 320ms var(--e-ressort)}
+.galet:hover{transform:scale(1.05)}
+.galet:active{transform:scale(.94)}
+.galet[aria-expanded="true"] svg{transform:rotate(45deg)}
+.radial{position:absolute;right:26px;bottom:26px;width:64px;height:64px;z-index:2;list-style:none;margin:0;padding:0}
+.radial li{position:absolute;inset:0}
+.radial button{width:64px;height:64px;border-radius:50%;border:0;cursor:pointer;font:700 11.5px var(--f-texte);color:var(--sur-clair);background:var(--b);box-shadow:var(--ombre-1);
+  transform:translate(0,0) scale(.3);opacity:0;pointer-events:none;
+  transition:transform 380ms var(--e-ressort),opacity 160ms;transition-delay:calc(var(--i) * 30ms)}
+.radial.ouvert button{transform:translate(var(--x),var(--y)) scale(1);opacity:1;pointer-events:auto}
+.radial button:hover{filter:brightness(1.04);box-shadow:var(--ombre-2)}
+.radial button.fonce{color:var(--sur-fonce)}
+
+/* Barre de commande */
+.voile{position:fixed;inset:0;background:var(--voile);z-index:150;display:flex;align-items:flex-start;justify-content:center;padding:12vh 16px 16px}
+.bulle-cmd{width:min(100%,580px);background:var(--carte);border-radius:30px;box-shadow:var(--ombre-2);border:1px solid var(--trait);padding:10px;display:flex;flex-direction:column;gap:6px;
+  animation:bulle 260ms var(--e-ressort)}
+@keyframes bulle{from{transform:translateY(8px) scale(.96);opacity:0}to{transform:none;opacity:1}}
+.cmd-champ{display:flex;align-items:center;gap:12px;height:56px;padding:0 18px;border-radius:var(--r-pilule);background:var(--papier)}
+.cmd-champ svg{width:20px;height:20px;flex:none;color:var(--encre-douce)}
+.cmd-champ input{flex:1;min-width:0;border:0;background:none;outline:none;font:500 17px var(--f-texte);color:var(--encre)}
+.cmd-liste{list-style:none;margin:0;padding:4px;display:flex;flex-direction:column;gap:2px;max-height:330px;overflow:auto}
+.cmd-liste li{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:var(--r-pilule);cursor:pointer;font-size:15px}
+.cmd-liste li[aria-selected="true"]{background:var(--papier)}
+.cmd-liste .glyphe{width:30px;height:30px;border-radius:50%;flex:none;display:grid;place-items:center;font:800 12px var(--f-titre);color:var(--sur-clair)}
+.cmd-liste .txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cmd-liste .type{font:500 11.5px var(--f-chiffre);color:var(--encre-douce)}
+.cmd-pied{display:flex;gap:14px;justify-content:flex-end;padding:4px 14px 6px;font-size:12px;color:var(--encre-douce)}
+.cmd-pied kbd,.kbd{font:500 11.5px var(--f-chiffre);padding:2px 7px;border-radius:8px;border:1px solid var(--trait);background:var(--papier);color:var(--encre)}
+.cmd-vide{padding:16px;color:var(--encre-douce);font-size:14px}
+
+/* Arborescence */
+.arbre{background:var(--carte);border:1px solid var(--trait);border-radius:var(--r-carte);padding:clamp(18px,3vw,30px);overflow-x:auto}
+.arbre pre{margin:0;font:400 13px/1.75 var(--f-chiffre);color:var(--encre)}
+.arbre .c{color:var(--encre-douce)}
+.arbre .p1{color:var(--brique);font-weight:600}
+.arbre-legende{display:flex;flex-wrap:wrap;gap:10px 22px;font-size:13.5px;color:var(--encre-douce)}
+.arbre-legende span{display:inline-flex;align-items:center;gap:8px}
+.puce{width:10px;height:10px;border-radius:50%;display:inline-block}
+
+/* Décisions */
+.decisions{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
+.decision{background:var(--carte);border:1px solid var(--trait);border-radius:var(--r-carte-s);padding:20px 22px;display:flex;flex-direction:column;gap:10px}
+.decision p{font-size:14.5px;color:var(--encre-douce)}
+.decision .reco{font-size:14px;color:var(--encre);display:flex;gap:8px;align-items:flex-start}
+.decision .reco b{font-weight:600}
+
+.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--encre);color:var(--papier);
+  padding:12px 20px;border-radius:var(--r-pilule);font-size:14px;font-weight:500;z-index:160;box-shadow:var(--ombre-2);max-width:calc(100% - 32px)}
+
+@media (max-width:820px){
+  .planches{grid-template-columns:minmax(0,1fr)}
+  .specimen{grid-template-columns:minmax(0,1fr)}
+}
+@media (prefers-reduced-motion: reduce){
+  *,*::before,*::after{animation-duration:1ms!important;animation-iteration-count:1!important;transition-duration:1ms!important;transition-delay:0ms!important}
+}
+</style>
+
+<main class="feuille">
+
+  <header class="intro">
+    <div class="entete">
+      <div class="marque"><span class="marque-disque" aria-hidden="true"></span><span class="marque-nom">pastille</span></div>
+      <div class="bascule" role="group" aria-label="Thème d'affichage">
+        <button type="button" id="th-sys" data-t="system" aria-pressed="true">Système</button>
+        <button type="button" id="th-clair" data-t="light" aria-pressed="false">Clair</button>
+        <button type="button" id="th-sombre" data-t="dark" aria-pressed="false">Sombre</button>
+      </div>
+    </div>
+    <span class="etiquette">Phase 1 · Fondations · proposition à valider</span>
+    <h1>Le nuancier de l'objet rond</h1>
+    <p class="chapeau">Tokens, typographie, matière et les composants de base de PASTILLE, présentés en vrai et manipulables. Rien n'est encore codé dans le dépôt&nbsp;: cette planche sert à valider la direction avant d'écrire la phase&nbsp;1. Les noms de clients et montants sont des exemples.</p>
+  </header>
+
+  <!-- COULEURS -->
+  <section class="section" aria-labelledby="t-couleurs">
+    <div class="section-tete">
+      <span class="etiquette">Tokens</span>
+      <h2 id="t-couleurs">Couleurs</h2>
+      <p class="chapeau">Dix tokens sur <code>:root</code>, redéfinis pour le mode sombre. La facture, elle, garde toujours son papier clair. Les ratios indiqués sont mesurés (WCAG 2.2).</p>
+    </div>
+    <div class="nuancier">
+      <div class="teinte"><span class="teinte-disque" style="background:var(--papier)"></span><div><strong>--papier</strong><span class="hex">#F6F1E7 · sombre #17161C</span><span class="role">Fond général</span></div></div>
+      <div class="teinte"><span class="teinte-disque" style="background:var(--carte)"></span><div><strong>--carte</strong><span class="hex">#FFFDF8 · sombre #22212A</span><span class="role">Surfaces, la facture</span></div></div>
+      <div class="teinte"><span class="teinte-disque" style="background:var(--encre)"></span><div><strong>--encre</strong><span class="hex">#1C1B22 · sombre #F3EEE4</span><span class="role">Texte, gros chiffres</span><span class="ratio">15,2:1 sur papier</span></div></div>
+      <div class="teinte"><span class="teinte-disque" style="background:var(--tomate)"></span><div><strong>--tomate</strong><span class="hex">#FF5A36</span><span class="role">Action principale, Émettre</span><span class="ratio">Texte encre 5,5:1 · texte blanc 3,1:1</span></div></div>
+      <div class="teinte"><span class="teinte-disque" style="background:var(--menthe)"></span><div><strong>--menthe</strong><span class="hex">#9FE0BC</span><span class="role">Payée, succès</span><span class="ratio">Texte encre 11,3:1</span></div></div>
+      <div class="teinte"><span class="teinte-disque" style="background:var(--beurre)"></span><div><strong>--beurre</strong><span class="hex">#FFD65C</span><span class="role">Brouillon, à envoyer</span><span class="ratio">Texte encre 12,2:1</span></div></div>
+      <div class="teinte"><span class="teinte-disque" style="background:var(--ciel)"></span><div><strong>--ciel</strong><span class="hex">#A9D2FF</span><span class="role">Envoyée, en attente</span><span class="ratio">Texte encre 10,8:1</span></div></div>
+      <div class="teinte"><span class="teinte-disque" style="background:var(--st-avoir)"></span><div><strong>--prune</strong><span class="hex">#7A4BD0</span><span class="role">Avoirs, à petite dose</span><span class="ratio">5,0:1 sur papier</span></div></div>
+      <div class="teinte"><span class="teinte-disque" style="background:var(--st-retard)"></span><div><strong>--brique</strong><span class="hex">#C2410C</span><span class="role">Retard, erreurs</span><span class="ratio">4,6:1 sur papier</span></div></div>
+      <div class="teinte"><span class="teinte-disque" style="background:var(--trait)"></span><div><strong>--trait</strong><span class="hex">#E6DCCB · sombre #36333F</span><span class="role">Bordures fines</span></div></div>
+    </div>
+  </section>
+
+  <!-- TYPO -->
+  <section class="section" aria-labelledby="t-typo">
+    <div class="section-tete">
+      <span class="etiquette">Tokens</span>
+      <h2 id="t-typo">Typographie</h2>
+      <p class="chapeau">Bricolage Grotesque pour les titres et les gros montants, Onest pour le texte, IBM Plex Mono en chiffres tabulaires pour tout ce qui s'aligne en colonne. Séparateur de milliers&nbsp;: espace fine insécable, comme <code>Intl.NumberFormat('fr-FR')</code>.</p>
+    </div>
+    <div class="specimen">
+      <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
+        <span class="etiquette">Total TTC · F-2026-0042</span>
+        <div class="total-geant" id="total-anime">4&#8239;218,00&nbsp;€</div>
+        <p style="color:var(--encre-douce);font-size:14px">96&nbsp;px · Bricolage 800 · interlettrage −3,5&nbsp;%. Le compteur s'anime en 300&nbsp;ms quand une ligne change.</p>
+        <div><button type="button" class="pilule s" id="btn-compteur">Changer une ligne</button></div>
+      </div>
+      <div class="echelle">
+        <div class="echelle-ligne"><span class="mono">titre-1 · 48</span><span style="font:800 clamp(30px,4vw,48px)/1 var(--f-titre);letter-spacing:-.02em">Nouvelle facture</span></div>
+        <div class="echelle-ligne"><span class="mono">titre-2 · 32</span><span style="font:700 clamp(24px,3vw,32px)/1.1 var(--f-titre)">Atelier Dupont</span></div>
+        <div class="echelle-ligne"><span class="mono">titre-3 · 21</span><span style="font:700 21px/1.2 var(--f-titre)">Récapitulatif de TVA</span></div>
+        <div class="echelle-ligne"><span class="mono">texte · 16</span><span>Paiement à 30 jours. Pénalités de retard&nbsp;: trois fois le taux d'intérêt légal.</span></div>
+        <div class="echelle-ligne"><span class="mono">petit · 13</span><span class="etiquette" style="color:var(--encre)">Date d'échéance</span></div>
+      </div>
+      <div class="tableau-wrap">
+        <table class="lignes">
+          <thead><tr><th>Désignation</th><th class="n">Qté</th><th class="n">PU HT</th><th class="n">TVA</th><th class="n">Total HT</th></tr></thead>
+          <tbody>
+            <tr><td>Création logo, 3 pistes</td><td class="n">3</td><td class="n">450,00</td><td class="n">20&nbsp;%</td><td class="n">1&#8239;350,00</td></tr>
+            <tr><td>Impression cartes de visite</td><td class="n">500</td><td class="n">0,42</td><td class="n">20&nbsp;%</td><td class="n">210,00</td></tr>
+            <tr><td>Livre « Typographie appliquée »</td><td class="n">2</td><td class="n">34,12</td><td class="n">5,5&nbsp;%</td><td class="n">68,24</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- MATIERE -->
+  <section class="section" aria-labelledby="t-matiere">
+    <div class="section-tete">
+      <span class="etiquette">Tokens</span>
+      <h2 id="t-matiere">Forme, matière, mouvement</h2>
+    </div>
+    <div class="matieres">
+      <div class="matiere">
+        <h3>Rayons</h3>
+        <div class="formes">
+          <span class="forme" style="width:92px;border-radius:999px">999</span>
+          <span class="forme" style="width:70px;height:70px;border-radius:32px">32</span>
+          <span class="forme" style="width:58px;height:58px;border-radius:20px">20</span>
+          <span class="forme" style="width:52px;height:52px;border-radius:50%">50&nbsp;%</span>
+        </div>
+        <div class="liste-tokens">
+          <div><span>Boutons, champs, pastilles</span><span>--r-pilule</span></div>
+          <div><span>Cartes, facture</span><span>--r-carte 32</span></div>
+          <div><span>Cartes secondaires</span><span>--r-carte-s 24</span></div>
+          <div><span>Avatars, galet</span><span>50&nbsp;%</span></div>
+        </div>
+      </div>
+      <div class="matiere">
+        <h3>Ombres chaudes</h3>
+        <div class="ombres">
+          <span class="ombre" style="box-shadow:var(--ombre-1)">--ombre-1</span>
+          <span class="ombre" style="box-shadow:var(--ombre-2)">--ombre-2</span>
+        </div>
+        <p style="font-size:14px;color:var(--encre-douce)">Deux niveaux seulement, teintés brun (84 52 20). Au repos&nbsp;: niveau 1. Soulevé, survolé, flottant&nbsp;: niveau 2. Grain papier en surimpression à 4,5&nbsp;%.</p>
+      </div>
+      <div class="matiere">
+        <h3>Mouvement</h3>
+        <div class="liste-tokens">
+          <div><span>Pression, survol</span><span>--d-rapide 120ms</span></div>
+          <div><span>Transitions d'état</span><span>--d-base 220ms</span></div>
+          <div><span>Compteur de totaux</span><span>--d-compteur 300ms</span></div>
+          <div><span>Tampon, galet, chute de ligne</span><span>--e-ressort</span></div>
+          <div><span>Glissement de feuille</span><span>--e-glisse</span></div>
+        </div>
+        <p style="font-size:14px;color:var(--encre-douce)">Tout passe à 1&nbsp;ms sous <code>prefers-reduced-motion</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMPOSANTS -->
+  <section class="section" aria-labelledby="t-composants">
+    <div class="section-tete">
+      <span class="etiquette">Composants · <code>src/components/ui</code></span>
+      <h2 id="t-composants">Les six pièces, plus la barre de commande</h2>
+      <p class="chapeau">Chaque planche est vivante&nbsp;: survolez, cliquez, tapez. La barre de commande, prévue elle aussi en phase&nbsp;1, s'ouvre avec <span class="kbd">Ctrl</span>&nbsp;<span class="kbd">K</span> ou <span class="kbd">⌘</span>&nbsp;<span class="kbd">K</span>.</p>
+    </div>
+
+    <div class="planches">
+
+      <!-- PILULE -->
+      <article class="planche">
+        <div class="planche-tete"><h3>Pilule</h3><p>Le bouton. Une seule pilule tomate par écran&nbsp;: l'action qui fait avancer la facture.</p></div>
+        <div class="scene">
+          <button type="button" class="pilule tomate l" id="btn-emettre">Émettre <kbd>Ctrl ↵</kbd></button>
+          <button type="button" class="pilule encre">Envoyer par email</button>
+          <button type="button" class="pilule">Dupliquer</button>
+          <button type="button" class="pilule fantome">Annuler</button>
+          <button type="button" class="pilule s">Petite</button>
+          <button type="button" class="pilule s" aria-busy="true"><span class="point-charge" aria-hidden="true"></span>Génération du PDF</button>
+        </div>
+        <pre class="api">&lt;Pilule variante="tomate|encre|douce|fantome" taille="s|m|l"
+        raccourci="Ctrl ↵" chargement icone /&gt;</pre>
+        <ul class="notes">
+          <li>Texte encre sur tomate (5,5:1). Le blanc ne fait que 3,1:1.</li>
+          <li>Pression&nbsp;: scale 0,97 et l'ombre s'écrase.</li>
+        </ul>
+      </article>
+
+      <!-- CHAMP -->
+      <article class="planche">
+        <div class="planche-tete"><h3>Champ pilule</h3><p>Libellé au-dessus, jamais de placeholder seul. Suffixe d'unité et validation métier intégrés.</p></div>
+        <div class="scene">
+          <div class="champs">
+            <div class="champ ok" id="champ-siren">
+              <label for="in-siren">SIREN du client</label>
+              <div class="champ-boite"><input id="in-siren" class="mono" inputmode="numeric" autocomplete="off" value="732 829 320" aria-describedby="aide-siren"></div>
+              <span class="champ-aide" id="aide-siren">Clé de contrôle valide</span>
+            </div>
+            <div class="champ">
+              <label for="in-pu">Prix unitaire</label>
+              <div class="champ-boite"><input id="in-pu" class="mono" inputmode="decimal" value="450,00"><span class="suffixe">€ HT</span></div>
+              <span class="champ-aide">Bascule HT / TTC dans le suffixe</span>
+            </div>
+            <div class="champ erreur">
+              <label for="in-iban">IBAN</label>
+              <div class="champ-boite"><input id="in-iban" class="mono" value="FR76 3000 6000 0112" aria-invalid="true" aria-describedby="aide-iban"></div>
+              <span class="champ-aide" id="aide-iban">IBAN incomplet&nbsp;: il manque 15 caractères</span>
+            </div>
+          </div>
+        </div>
+        <pre class="api">&lt;ChampPilule libelle suffixe aide erreur
+             format="siren|siret|iban|montant|tva" /&gt;</pre>
+        <ul class="notes">
+          <li>Tapez un SIREN&nbsp;: groupage 3-3-3 et contrôle de Luhn en direct.</li>
+          <li>Focus&nbsp;: anneau encre, la tomate sur papier ne fait que 2,8:1.</li>
+        </ul>
+      </article>
+
+      <!-- CARTE -->
+      <article class="planche">
+        <div class="planche-tete"><h3>Carte</h3><p>Trois matières. La carte facture garde son papier clair en mode sombre. Cliquez sur la pile pour faire passer la feuille du dessus.</p></div>
+        <div class="pile" id="pile" role="button" tabindex="0" aria-label="Pile de factures récentes, cliquer pour passer à la suivante">
+          <div class="facture-carte" data-pos="0" data-i="0">
+            <div class="fc-haut"><span class="avatar" data-nom="Atelier Dupont"></span><div><div class="fc-client">Atelier Dupont</div><div class="fc-num">F-2026-0042</div></div><span class="pastille" data-st="envoyee"></span></div>
+            <div class="fc-total">4&#8239;218,00&nbsp;€</div>
+            <div class="fc-bas"><span>Échéance 11 nov. 2026</span><span>TTC</span></div>
+          </div>
+          <div class="facture-carte" data-pos="1" data-i="1">
+            <div class="fc-haut"><span class="avatar" data-nom="Boulangerie Kerlann"></span><div><div class="fc-client">Boulangerie Kerlann</div><div class="fc-num">F-2026-0041</div></div><span class="pastille" data-st="payee"></span></div>
+            <div class="fc-total">864,00&nbsp;€</div>
+            <div class="fc-bas"><span>Payée le 8 oct. 2026</span><span>TTC</span></div>
+          </div>
+          <div class="facture-carte" data-pos="2" data-i="2">
+            <div class="fc-haut"><span class="avatar" data-nom="Mairie de Vannes"></span><div><div class="fc-client">Mairie de Vannes</div><div class="fc-num">F-2026-0039</div></div><span class="pastille" data-st="retard"></span></div>
+            <div class="fc-total">2&#8239;940,00&nbsp;€</div>
+            <div class="fc-bas"><span>Échue depuis 12 jours</span><span>TTC</span></div>
+          </div>
+        </div>
+        <div class="carte-variantes">
+          <div class="carte-demo surface"><strong>Surface</strong><span>Panneaux, listes, réglages</span></div>
+          <div class="carte-demo facture"><strong>Facture</strong><span>Toujours papier clair</span></div>
+          <div class="carte-demo encart"><strong>Encart</strong><span>Zones de dépôt, vides</span></div>
+        </div>
+        <pre class="api">&lt;Carte matiere="surface|facture|encart" soulevable /&gt;</pre>
+      </article>
+
+      <!-- PASTILLE -->
+      <article class="planche">
+        <div class="planche-tete"><h3>Pastille de statut</h3><p>Pleine, colorée, avec un glyphe de forme différente pour chaque statut&nbsp;: elle reste lisible imprimée en noir et blanc.</p></div>
+        <div class="scene" id="scene-pastilles">
+          <span class="pastille" data-st="brouillon"></span>
+          <span class="pastille" data-st="envoyee"></span>
+          <span class="pastille" data-st="retard"></span>
+          <span class="pastille" data-st="payee"></span>
+          <span class="pastille" data-st="avoir"></span>
+          <span class="pastille grande" data-st="payee"></span>
+          <span class="pastille grande" data-st="retard"></span>
+        </div>
+        <div><button type="button" class="pilule s" id="btn-nb" aria-pressed="false">Voir en noir et blanc</button></div>
+        <pre class="api">&lt;Pastille statut="brouillon|envoyee|retard|payee|avoir"
+          taille="m|l" /&gt;</pre>
+        <ul class="notes">
+          <li>Brouillon pointillé, envoyée à moitié pleine, retard en point d'exclamation, payée cochée, avoir barré.</li>
+        </ul>
+      </article>
+
+      <!-- AVATAR -->
+      <article class="planche">
+        <div class="planche-tete"><h3>Avatar client</h3><p>Initiales et couleur stables, calculées depuis le nom (hachage FNV-1a sur 8 teintes). Les formes juridiques et articles sont ignorés.</p></div>
+        <div class="scene" style="gap:18px">
+          <span class="avatar xl" id="avatar-live" data-nom="Studio Nébuleuse"></span>
+          <div class="champ" style="flex:1;min-width:180px">
+            <label for="in-nom">Nom du client</label>
+            <div class="champ-boite"><input id="in-nom" value="Studio Nébuleuse" autocomplete="off"></div>
+          </div>
+        </div>
+        <div class="avatars">
+          <div class="avatar-carte"><span class="avatar" data-nom="SARL Atelier Dupont"></span>SARL Atelier Dupont</div>
+          <div class="avatar-carte"><span class="avatar" data-nom="Boulangerie Kerlann"></span>Boulangerie Kerlann</div>
+          <div class="avatar-carte"><span class="avatar" data-nom="Mairie de Vannes"></span>Mairie de Vannes</div>
+          <div class="avatar-carte"><span class="avatar" data-nom="Jeanne Morel"></span>Jeanne Morel</div>
+          <div class="avatar-carte"><span class="avatar" data-nom="Hofmann GmbH"></span>Hofmann GmbH</div>
+        </div>
+        <pre class="api">&lt;Avatar nom="…" taille="s|m|xl" /&gt;</pre>
+      </article>
+
+      <!-- GALET -->
+      <article class="planche">
+        <div class="planche-tete"><h3>Galet</h3><p>Le bouton rond flottant, toujours en bas à droite. Il s'ouvre en éventail sur les cinq créations. <span class="kbd">Échap</span> le referme.</p></div>
+        <div class="scene scene-galet">
+          <span class="indice">Zone de démonstration&nbsp;: dans l'app, le galet est fixé au coin de l'écran.</span>
+          <ul class="radial" id="radial" aria-label="Créer">
+            <li><button type="button" data-cree="Facture" style="--b:var(--tomate)">Facture</button></li>
+            <li><button type="button" data-cree="Devis" style="--b:var(--beurre)">Devis</button></li>
+            <li><button type="button" data-cree="Avoir" class="fonce" style="--b:var(--st-avoir)">Avoir</button></li>
+            <li><button type="button" data-cree="Client" style="--b:var(--ciel)">Client</button></li>
+            <li><button type="button" data-cree="Article" style="--b:var(--menthe)">Article</button></li>
+          </ul>
+          <button type="button" class="galet" id="galet" aria-expanded="false" aria-controls="radial" aria-label="Créer">
+            <svg viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M14 5v18M5 14h18" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg>
+          </button>
+        </div>
+        <pre class="api">&lt;Galet actions={[facture, devis, avoir, client, article]} /&gt;</pre>
+      </article>
+
+      <!-- BARRE DE COMMANDE -->
+      <article class="planche large">
+        <div class="planche-tete"><h3>Barre de commande</h3><p>Une bulle unique pour chercher et agir. Elle comprend des phrases courtes&nbsp;: essayez «&nbsp;facture dupont&nbsp;», «&nbsp;relancer&nbsp;» ou «&nbsp;nouveau client 732829320&nbsp;».</p></div>
+        <div class="scene">
+          <button type="button" class="pilule encre" id="btn-cmd">Ouvrir la barre <kbd>Ctrl K</kbd></button>
+          <span style="font-size:14px;color:var(--encre-douce)">Flèches pour naviguer, Entrée pour lancer, Échap pour fermer.</span>
+        </div>
+        <pre class="api">&lt;BarreCommande sources={[documents, clients, articles, actions]}
+               analyseurs={[nouveauClientParSiren, ligneRapide]} /&gt;</pre>
+      </article>
+
+    </div>
+  </section>
+
+  <!-- ARBORESCENCE -->
+  <section class="section" aria-labelledby="t-arbre">
+    <div class="section-tete">
+      <span class="etiquette">Projet</span>
+      <h2 id="t-arbre">Arborescence</h2>
+      <p class="chapeau">Monorepo pnpm. L'app Next.js, trois paquets TypeScript purs qui portent la logique sensible (testables sans navigateur ni base), un service Python pour le PDF et Factur-X, et Supabase versionné.</p>
+    </div>
+    <div class="arbre-legende">
+      <span><i class="puce" style="background:var(--brique)"></i>Construit en phase 1</span>
+      <span><i class="puce" style="background:var(--trait)"></i>Prévu, phases suivantes</span>
+    </div>
+    <div class="arbre"><pre>pastille/
+├── <span class="p1">apps/web/</span>                          <span class="c">Next.js App Router · TypeScript strict</span>
+│   ├── src/app/
+│   │   ├── (vitrine)/                 <span class="c">landing, tarifs, réforme 2027, pages SEO, légal       · ph. 10</span>
+│   │   ├── <span class="p1">(auth)/</span>                    <span class="c">connexion, inscription, lien magique, Google, callback</span>
+│   │   ├── bienvenue/                 <span class="c">onboarding 8 étapes                                   · ph. 3</span>
+│   │   ├── <span class="p1">(app)/[org]/</span>               <span class="c">coque : sélecteur d'entreprise, galet, barre ⌘K</span>
+│   │   │   ├── <span class="p1">page.tsx</span>               <span class="c">accueil (pile + anneau en ph. 8)</span>
+│   │   │   ├── factures/ devis/ avoirs/                 <span class="c">· ph. 4–5</span>
+│   │   │   ├── clients/ catalogue/                      <span class="c">· ph. 3</span>
+│   │   │   ├── recues/ e-reporting/ reforme/            <span class="c">· ph. 9</span>
+│   │   │   ├── exports/                                 <span class="c">· ph. 8</span>
+│   │   │   └── <span class="p1">reglages/</span>              <span class="c">entreprise, membres, rôles</span>
+│   │   ├── impression/[id]/           <span class="c">rendu A4 nu : source unique de l'aperçu et du PDF     · ph. 6</span>
+│   │   ├── signer/[jeton]/            <span class="c">signature publique de devis                           · ph. 8</span>
+│   │   ├── admin/                     <span class="c">back-office                                          · ph. 10</span>
+│   │   └── api/                       <span class="c">webhooks Stripe et PA, cron relances</span>
+│   ├── src/components/
+│   │   ├── <span class="p1">ui/</span>                        <span class="c">Pilule, ChampPilule, Carte, Pastille, Avatar, Galet, BarreCommande</span>
+│   │   ├── signatures/                <span class="c">Pile, Tampon, AnneauTresorerie (R3F), PapierVivant</span>
+│   │   └── modeles/                   <span class="c">Galet, Papeterie, Classique                           · ph. 6</span>
+│   ├── src/lib/
+│   │   ├── <span class="p1">supabase/</span>                  <span class="c">clients serveur / navigateur / middleware</span>
+│   │   ├── <span class="p1">org/</span>                       <span class="c">organisation courante, rôles, garde-fous</span>
+│   │   └── <span class="p1">format/</span>                    <span class="c">montants (centimes → fr-FR), dates, SIREN, IBAN</span>
+│   ├── src/styles/
+│   │   ├── <span class="p1">tokens.css</span>                 <span class="c">:root + sombre, source unique des couleurs</span>
+│   │   ├── <span class="p1">globals.css</span>                <span class="c">Tailwind v4 @theme (palette par défaut effacée), grain</span>
+│   │   └── print.css                  <span class="c">@media print A4                                       · ph. 6</span>
+│   └── <span class="p1">e2e/</span>                           <span class="c">Playwright</span>
+├── packages/
+│   ├── moteur/                        <span class="c">calcul TVA, remises, acomptes, avoirs, arrondis       · ph. 2</span>
+│   ├── conformite/                    <span class="c">mentions obligatoires + contrôle (front et serveur)   · ph. 4</span>
+│   ├── einvoice/                      <span class="c">mapping EN 16931 → CII et UBL                         · ph. 7</span>
+│   └── pa/                            <span class="c">PlateformeAgreeeAdapter + adaptateur mock            · ph. 9</span>
+├── services/atelier/                  <span class="c">FastAPI : Playwright → PDF, factur-x → PDF/A-3, validation · ph. 6–7</span>
+├── <span class="p1">supabase/</span>
+│   ├── <span class="p1">migrations/</span>                    <span class="c">organizations, memberships, profils, RLS (le reste ensuite)</span>
+│   ├── <span class="p1">seed.sql</span>
+│   └── <span class="p1">tests/</span>                         <span class="c">pgTAP : non-fuite entre organisations</span>
+├── <span class="p1">docs/</span>                              <span class="c">décisions, mapping-en16931.md (ph. 7)</span>
+└── <span class="p1">.github/workflows/ci.yml</span>           <span class="c">lint, typecheck, Vitest, pgTAP, Playwright</span></pre></div>
+  </section>
+
+  <!-- DECISIONS -->
+  <section class="section" aria-labelledby="t-decisions">
+    <div class="section-tete">
+      <span class="etiquette">À valider</span>
+      <h2 id="t-decisions">Ce que je propose de trancher maintenant</h2>
+    </div>
+    <div class="decisions">
+      <div class="decision"><h3>Texte encre sur tomate</h3><p>Le blanc sur #FF5A36 ne fait que 3,1:1, sous le seuil AA du texte courant.</p><div class="reco"><b>Proposé&nbsp;:</b> encre partout sur tomate. La couleur exacte du brief est conservée.</div></div>
+      <div class="decision"><h3>Anneau de focus encre</h3><p>Un contour tomate sur papier fait 2,8:1, sous les 3:1 exigés pour les éléments non textuels.</p><div class="reco"><b>Proposé&nbsp;:</b> double anneau papier + encre, visible dans les deux thèmes.</div></div>
+      <div class="decision"><h3>PDF et Factur-X hors Vercel</h3><p>Chromium et la lib Python factur-x tiennent mal dans des fonctions serverless (taille, démarrage à froid, PDF/A-3).</p><div class="reco"><b>Proposé&nbsp;:</b> un conteneur «&nbsp;atelier&nbsp;» hébergé en UE (Scaleway ou Clever Cloud). Le XML reste généré en TypeScript pour garantir les mêmes totaux qu'à l'écran.</div></div>
+      <div class="decision"><h3>Nommage</h3><p>Le brief mélange noms français (routes, adaptateur PA) et anglais (tables).</p><div class="reco"><b>Proposé&nbsp;:</b> URL et vocabulaire métier en français, tables et colonnes Postgres en anglais comme en section 13.</div></div>
+      <div class="decision"><h3>Statut = couleur + forme</h3><p>Exigence d'impression en noir et blanc, et daltonisme.</p><div class="reco"><b>Proposé&nbsp;:</b> chaque pastille porte un glyphe distinct, y compris sur la facture imprimée.</div></div>
+      <div class="decision"><h3>Couleurs de statut en sombre</h3><p>Prune et brique éclaircies pour le texte en sombre, mais assombries en remplissage de pastille pour garder un texte clair à plus de 5:1.</p><div class="reco"><b>Proposé&nbsp;:</b> tokens <code>--st-*</code> séparés des tokens de texte.</div></div>
+    </div>
+  </section>
+
+</main>
+
+<div id="toast" class="toast" role="status" hidden></div>
+
+<div class="voile" id="voile" hidden>
+  <div class="bulle-cmd" role="dialog" aria-modal="true" aria-label="Barre de commande">
+    <div class="cmd-champ">
+      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="2"/><path d="M13.5 13.5 17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+      <input id="cmd-in" type="text" autocomplete="off" placeholder="Chercher ou agir…" aria-label="Chercher ou agir" role="combobox" aria-expanded="true" aria-controls="cmd-liste">
+    </div>
+    <ul class="cmd-liste" id="cmd-liste" role="listbox"></ul>
+    <div class="cmd-pied"><span><kbd>↑</kbd> <kbd>↓</kbd> naviguer</span><span><kbd>↵</kbd> lancer</span><span><kbd>Échap</kbd> fermer</span></div>
+  </div>
+</div>
+
+<script>
+(function(){
+  // ---------- Thème ----------
+  var root = document.documentElement;
+  var boutonsTheme = document.querySelectorAll('.bascule button');
+  function appliquerTheme(t){
+    if(t === 'system') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', t);
+    boutonsTheme.forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.t === t)); });
+    try{ localStorage.setItem('pastille-theme', t); }catch(e){}
+  }
+  boutonsTheme.forEach(function(b){ b.addEventListener('click', function(){ appliquerTheme(b.dataset.t); }); });
+  try{ var t0 = localStorage.getItem('pastille-theme'); if(t0) appliquerTheme(t0); }catch(e){}
+
+  // ---------- Toast ----------
+  var toast = document.getElementById('toast'), toastT;
+  function annoncer(msg){
+    toast.textContent = msg; toast.hidden = false;
+    clearTimeout(toastT); toastT = setTimeout(function(){ toast.hidden = true; }, 2200);
+  }
+
+  // ---------- Pastilles ----------
+  var STATUTS = {
+    brouillon:{l:'Brouillon', g:'<circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.8" stroke-dasharray="2.2 1.9"/>'},
+    envoyee:{l:'Envoyée', g:'<circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.8"/><path d="M7 2a5 5 0 0 1 0 10z" fill="currentColor"/>'},
+    retard:{l:'En retard', g:'<path d="M7 2.6v5.2" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="7" cy="11.2" r="1.35" fill="currentColor"/>'},
+    payee:{l:'Payée', g:'<path d="M2.8 7.4l2.8 2.8 5.6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'},
+    avoir:{l:'Avoir', g:'<circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.8"/><path d="M4.4 7h5.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'}
+  };
+  document.querySelectorAll('.pastille[data-st]').forEach(function(p){
+    var s = STATUTS[p.dataset.st];
+    p.innerHTML = '<svg viewBox="0 0 14 14" fill="none" aria-hidden="true">' + s.g + '</svg>' + s.l;
+  });
+  var btnNb = document.getElementById('btn-nb'), scenePast = document.getElementById('scene-pastilles');
+  btnNb.addEventListener('click', function(){
+    var on = scenePast.classList.toggle('nb');
+    btnNb.setAttribute('aria-pressed', String(on));
+    btnNb.textContent = on ? 'Revenir en couleur' : 'Voir en noir et blanc';
+  });
+
+  // ---------- Avatars ----------
+  var TEINTES = [
+    ['#FF5A36','#1C1B22'],['#9FE0BC','#1C1B22'],['#FFD65C','#1C1B22'],['#A9D2FF','#1C1B22'],
+    ['#7A4BD0','#FFFDF8'],['#FFB8A6','#1C1B22'],['#CFE3A1','#1C1B22'],['#F7B267','#1C1B22']
+  ];
+  var IGNORES = ['de','du','des','la','le','les','l','d','et','sarl','sas','sasu','eurl','sa','sci','ei','eirl','gmbh','ltd','scop','snc'];
+  function normaliser(s){ return (s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim(); }
+  function initiales(nom){
+    var mots = normaliser(nom).split(/[\s'’\-]+/).filter(function(m){ return m && IGNORES.indexOf(m) < 0; });
+    if(!mots.length) return '?';
+    if(mots.length === 1) return mots[0].slice(0,2).toUpperCase();
+    return (mots[0][0] + mots[1][0]).toUpperCase();
+  }
+  function fnv1a(s){ var h = 0x811c9dc5; for(var i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h; }
+  function peindreAvatar(el, nom){
+    var t = TEINTES[fnv1a(normaliser(nom)) % TEINTES.length];
+    el.style.setProperty('--av-fond', t[0]); el.style.setProperty('--av-texte', t[1]);
+    el.textContent = initiales(nom); el.setAttribute('aria-hidden','true');
+  }
+  document.querySelectorAll('.avatar[data-nom]').forEach(function(a){ peindreAvatar(a, a.dataset.nom); });
+  var inNom = document.getElementById('in-nom'), avLive = document.getElementById('avatar-live');
+  inNom.addEventListener('input', function(){ peindreAvatar(avLive, inNom.value); });
+
+  // ---------- SIREN ----------
+  var inSiren = document.getElementById('in-siren'), champSiren = document.getElementById('champ-siren'), aideSiren = document.getElementById('aide-siren');
+  function luhn(ch){ var s=0; for(var i=0;i<ch.length;i++){ var d=+ch[ch.length-1-i]; if(i%2===1){ d*=2; if(d>9) d-=9; } s+=d; } return s%10===0; }
+  function verifierSiren(){
+    var c = inSiren.value.replace(/\D/g,'').slice(0,9);
+    inSiren.value = c.replace(/(\d{3})(?=\d)/g,'$1 ');
+    champSiren.classList.remove('ok','erreur'); inSiren.removeAttribute('aria-invalid');
+    if(c.length === 0){ aideSiren.textContent = '9 chiffres, obligatoire en B2B France'; return; }
+    if(c.length < 9){ aideSiren.textContent = 'Encore ' + (9-c.length) + ' chiffre' + (9-c.length>1?'s':''); return; }
+    if(luhn(c)){ champSiren.classList.add('ok'); aideSiren.textContent = 'Clé de contrôle valide'; }
+    else { champSiren.classList.add('erreur'); inSiren.setAttribute('aria-invalid','true'); aideSiren.textContent = 'Clé de contrôle invalide : vérifiez la saisie'; }
+  }
+  inSiren.addEventListener('input', verifierSiren);
+
+  // ---------- Compteur de total ----------
+  var totalEl = document.getElementById('total-anime'), totalCts = 421800;
+  var fmt = new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'});
+  var reduit = window.matchMedia('(prefers-reduced-motion: reduce)');
+  document.getElementById('btn-compteur').addEventListener('click', function(){
+    var de = totalCts, vers = totalCts === 421800 ? 475800 : 421800, t0 = performance.now(), duree = reduit.matches ? 1 : 300;
+    totalCts = vers;
+    function pas(t){
+      var k = Math.min(1,(t-t0)/duree), e = 1 - Math.pow(1-k,3);
+      totalEl.textContent = fmt.format(Math.round(de + (vers-de)*e)/100);
+      if(k<1) requestAnimationFrame(pas);
+    }
+    requestAnimationFrame(pas);
+  });
+
+  // ---------- Bouton Émettre ----------
+  document.getElementById('btn-emettre').addEventListener('click', function(){ annoncer('Exemple : la facture recevrait son numéro et le tampon ÉMISE'); });
+
+  // ---------- Pile ----------
+  var pile = document.getElementById('pile');
+  function tournerPile(){
+    pile.querySelectorAll('.facture-carte').forEach(function(c){ c.dataset.pos = String((+c.dataset.pos + 2) % 3); });
+  }
+  pile.addEventListener('click', tournerPile);
+  pile.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); tournerPile(); } });
+
+  // ---------- Galet ----------
+  var galet = document.getElementById('galet'), radial = document.getElementById('radial');
+  var boutonsRadial = radial.querySelectorAll('button'), R = 168;
+  boutonsRadial.forEach(function(b,i){
+    var a = (180 + i*22.5) * Math.PI/180;
+    b.style.setProperty('--x', (Math.cos(a)*R).toFixed(1)+'px');
+    b.style.setProperty('--y', (Math.sin(a)*R).toFixed(1)+'px');
+    b.style.setProperty('--i', i);
+    b.tabIndex = -1;
+    b.addEventListener('click', function(){ fermerGalet(true); annoncer('Exemple : nouveau ' + b.dataset.cree.toLowerCase() + ' ouvert'); });
+  });
+  function ouvrirGalet(){ radial.classList.add('ouvert'); galet.setAttribute('aria-expanded','true'); boutonsRadial.forEach(function(b){ b.tabIndex = 0; }); setTimeout(function(){ boutonsRadial[0].focus(); }, 60); }
+  function fermerGalet(rendreFocus){ radial.classList.remove('ouvert'); galet.setAttribute('aria-expanded','false'); boutonsRadial.forEach(function(b){ b.tabIndex = -1; }); if(rendreFocus) galet.focus(); }
+  galet.addEventListener('click', function(){ radial.classList.contains('ouvert') ? fermerGalet(false) : ouvrirGalet(); });
+  radial.addEventListener('keydown', function(e){ if(e.key==='Escape') fermerGalet(true); });
+  galet.addEventListener('keydown', function(e){ if(e.key==='Escape') fermerGalet(false); });
+
+  // ---------- Barre de commande ----------
+  var voile = document.getElementById('voile'), cmdIn = document.getElementById('cmd-in'), cmdListe = document.getElementById('cmd-liste');
+  var ENTREES = [
+    {type:'Facture', txt:'F-2026-0042 · Atelier Dupont · 4 218,00 €', g:'F', c:'var(--ciel)'},
+    {type:'Facture', txt:'F-2026-0039 · Mairie de Vannes · 2 940,00 €', g:'F', c:'var(--st-retard)', f:true},
+    {type:'Facture', txt:'F-2026-0041 · Boulangerie Kerlann · 864,00 €', g:'F', c:'var(--menthe)'},
+    {type:'Client', txt:'Atelier Dupont', g:'AD', c:'#FF5A36'},
+    {type:'Client', txt:'Boulangerie Kerlann', g:'BK', c:'#9FE0BC'},
+    {type:'Action', txt:'Relancer les 3 factures en retard', g:'!', c:'var(--st-retard)', f:true},
+    {type:'Action', txt:'Nouvelle facture', g:'+', c:'var(--tomate)'},
+    {type:'Action', txt:'Nouveau devis', g:'+', c:'var(--beurre)'},
+    {type:'Article', txt:'Création logo · 450,00 € HT', g:'A', c:'var(--menthe)'}
+  ];
+  var resultats = [], actif = 0, dernierFocus = null;
+  function rendre(){
+    var q = normaliser(cmdIn.value);
+    resultats = [];
+    var m = q.match(/^nouveau client\s+([\d\s]{9,11})$/);
+    if(m){
+      var s = m[1].replace(/\s/g,'');
+      if(s.length===9) resultats.push({type:'Annuaire', txt:'Créer le client SIREN ' + s.replace(/(\d{3})(?=\d)/g,'$1 ') + (luhn(s)?' · remplissage automatique':' · SIREN invalide'), g:'+', c:'var(--ciel)'});
+    }
+    var mots = q.split(/\s+/).filter(Boolean);
+    ENTREES.forEach(function(e){
+      var h = normaliser(e.type + ' ' + e.txt);
+      if(mots.every(function(w){ return h.indexOf(w) >= 0; })) resultats.push(e);
+    });
+    if(actif >= resultats.length) actif = 0;
+    cmdListe.innerHTML = '';
+    if(!resultats.length){ cmdListe.innerHTML = '<li class="cmd-vide" role="presentation">Rien ne correspond. Essayez un nom de client ou un numéro de facture.</li>'; cmdIn.removeAttribute('aria-activedescendant'); return; }
+    resultats.forEach(function(e,i){
+      var li = document.createElement('li');
+      li.id = 'cmd-r' + i; li.setAttribute('role','option'); li.setAttribute('aria-selected', String(i===actif));
+      li.innerHTML = '<span class="glyphe" style="background:' + e.c + (e.f?';color:var(--sur-fonce)':'') + '">' + e.g + '</span><span class="txt"></span><span class="type">' + e.type + '</span>';
+      li.querySelector('.txt').textContent = e.txt;
+      li.addEventListener('mousemove', function(){ if(actif!==i){ actif=i; marquer(); } });
+      li.addEventListener('click', function(){ lancer(i); });
+      cmdListe.appendChild(li);
+    });
+    marquer();
+  }
+  function marquer(){
+    cmdListe.querySelectorAll('[role="option"]').forEach(function(li,i){ li.setAttribute('aria-selected', String(i===actif)); });
+    var a = document.getElementById('cmd-r'+actif);
+    if(a){ cmdIn.setAttribute('aria-activedescendant', a.id); a.scrollIntoView({block:'nearest'}); }
+  }
+  function lancer(i){ var e = resultats[i]; if(!e) return; fermerCmd(); annoncer('Exemple : ' + e.txt); }
+  function ouvrirCmd(){ dernierFocus = document.activeElement; voile.hidden = false; cmdIn.value = ''; actif = 0; rendre(); cmdIn.focus(); }
+  function fermerCmd(){ voile.hidden = true; if(dernierFocus && dernierFocus.focus) dernierFocus.focus(); }
+  document.getElementById('btn-cmd').addEventListener('click', ouvrirCmd);
+  cmdIn.addEventListener('input', function(){ actif = 0; rendre(); });
+  cmdIn.addEventListener('keydown', function(e){
+    if(e.key==='ArrowDown'){ e.preventDefault(); if(resultats.length){ actif = (actif+1)%resultats.length; marquer(); } }
+    else if(e.key==='ArrowUp'){ e.preventDefault(); if(resultats.length){ actif = (actif-1+resultats.length)%resultats.length; marquer(); } }
+    else if(e.key==='Enter'){ e.preventDefault(); lancer(actif); }
+    else if(e.key==='Escape'){ e.preventDefault(); fermerCmd(); }
+  });
+  voile.addEventListener('mousedown', function(e){ if(e.target===voile) fermerCmd(); });
+  document.addEventListener('keydown', function(e){
+    if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); voile.hidden ? ouvrirCmd() : fermerCmd(); }
+  });
+})();
+</script>
