@@ -3,7 +3,6 @@
 import Link from 'next/link'
 import { formatTaux, type LigneCalculee, type Totaux as TotauxMoteur } from '@pastille/moteur'
 import { useEffect, useMemo, useState, useTransition, type ReactNode } from 'react'
-import { useRouter } from 'next/navigation'
 import { dupliquerDocument, emettreDocument, enregistrerDocument, lignesDerniereFacture, supprimerBrouillon } from '@/app/actions/documents'
 import { BoutonAction } from './Actions'
 import { Bouton, classesBouton } from '@/components/ui/Bouton'
@@ -41,7 +40,6 @@ const EMISSION = {
 } as const
 
 export function Editeur({ slug, initial, id: idInitial, donnees, lecture = false, origine }: Props) {
-  const router = useRouter()
   const [confirmer, setConfirmer] = useState(false)
   const [erreurEmission, setErreurEmission] = useState<string | null>(null)
   const [emission, demarrerEmission] = useTransition()
@@ -104,8 +102,9 @@ export function Editeur({ slug, initial, id: idInitial, donnees, lecture = false
         return
       }
       setConfirmer(false)
-      router.replace(`/${slug}/${CHEMINS[doc.type]}/${cible}`)
-      router.refresh()
+      // Navigation complète : créé depuis « nouveau », le routeur croit encore être sur cette page
+      // (l'adresse a été remplacée par history.replaceState) et garderait l'éditeur à l'écran.
+      window.location.assign(new URL(`/${slug}/${CHEMINS[doc.type]}/${cible}`, window.location.href))
     })
   }
 

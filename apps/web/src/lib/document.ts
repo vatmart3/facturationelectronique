@@ -186,6 +186,57 @@ export function versLignesDb(lignes: readonly LigneEdition[], totaux: Totaux | n
   }))
 }
 
+/** Document lu en base → état d'édition. */
+export function editionDepuisDb(
+  doc: {
+    id: string
+    type: TypeDocument
+    client_id: string | null
+    issue_date: string
+    service_date: string | null
+    service_period_start: string | null
+    service_period_end: string | null
+    valid_until: string | null
+    purchase_order: string | null
+    subject: string | null
+    public_notes: string | null
+    internal_notes: string | null
+    currency: string
+    language: 'fr' | 'en'
+    payment_terms: ConditionsPaiement | null
+    early_payment_discount: string | null
+    discount_kind: 'pourcentage' | 'montant' | null
+    discount_value: number | null
+    deducted_deposits: unknown
+    origin_document_id: string | null
+  },
+  lignes: ReadonlyArray<Omit<LigneDb, 'line_net_cents'> & { id?: string }>,
+  conditionsDefaut: ConditionsPaiement,
+): DocumentEdition {
+  return {
+    id: doc.id,
+    type: doc.type,
+    clientId: doc.client_id,
+    issueDate: doc.issue_date,
+    serviceDate: doc.service_date,
+    servicePeriodStart: doc.service_period_start,
+    servicePeriodEnd: doc.service_period_end,
+    validUntil: doc.valid_until,
+    purchaseOrder: doc.purchase_order ?? '',
+    subject: doc.subject ?? '',
+    publicNotes: doc.public_notes ?? '',
+    internalNotes: doc.internal_notes ?? '',
+    currency: doc.currency,
+    language: doc.language,
+    paymentTerms: doc.payment_terms ?? conditionsDefaut,
+    earlyPaymentDiscount: doc.early_payment_discount ?? '',
+    remise: doc.discount_kind && doc.discount_value != null ? { type: doc.discount_kind, valeur: Number(doc.discount_value) } : null,
+    lignes: [...lignes].sort((a, b) => a.position - b.position).map(depuisLigneDb),
+    acomptes: Array.isArray(doc.deducted_deposits) ? (doc.deducted_deposits as DeductionAcompte[]) : [],
+    originDocumentId: doc.origin_document_id,
+  }
+}
+
 /** Lignes recopiées depuis un autre document (« comme la dernière fois », duplication, conversion). */
 export function copierLignes(lignes: readonly LigneEdition[]): LigneEdition[] {
   return lignes.filter(ligneSignificative).map((l) => ({ ...l, cle: nouvelleCle() }))

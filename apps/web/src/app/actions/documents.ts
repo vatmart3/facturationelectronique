@@ -3,15 +3,14 @@
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
 import { verifierConformite } from '@/lib/conformite'
-import { aujourdHui, calculer, depuisLigneDb, echeance, validerEdition, versLignesDb, type DocumentEdition, type LigneEdition, type TypeDocument } from '@/lib/document'
+import { aujourdHui, calculer, depuisLigneDb, type DocumentEdition, type LigneEdition, type TypeDocument } from '@/lib/document'
 import { acompteDepuis, avoirDepuis, copieDe, deductions, factureDepuis } from '@/lib/derives'
-import { chargerDocument, chargerReferentiels } from '@/lib/documents-serveur'
+import { chargerDocument, chargerReferentiels, sauverBrouillon, type ResultatEnregistrement } from '@/lib/documents-serveur'
 import { peutFacturer } from '@/lib/roles'
 import { chargerContexte } from '@/lib/session'
 import { creerClientServeur } from '@/lib/supabase/serveur'
 import type { DocumentStatus } from '@/lib/supabase/types'
 
-export type ResultatEnregistrement = { ok: true; id: string; le: string } | { ok: false; erreur: string }
 export type ResultatAction = { ok: true } | { ok: false; erreur: string }
 
 const CHEMINS: Record<TypeDocument, string> = {
@@ -29,64 +28,8 @@ function chemin(slug: string, type: TypeDocument, id?: string): string {
 export async function enregistrerDocument(slug: string, doc: DocumentEdition, id: string | null): Promise<ResultatEnregistrement> {
   const { organisation, role } = await chargerContexte(slug)
   if (!peutFacturer(role)) return { ok: false, erreur: 'Votre rôle ne permet pas de modifier les documents.' }
-  const invalide = validerEdition(doc)
-  if (invalide) return { ok: false, erreur: invalide }
-
-  const calcul = calculer(doc)
-  const totaux = calcul.ok ? calcul.totaux : null
-  const document = {
-    type: doc.type,
-    client_id: doc.clientId,
-    issue_date: doc.issueDate,
-    service_date: doc.serviceDate,
-    service_period_start: doc.servicePeriodStart,
-    service_period_end: doc.servicePeriodEnd,
-    due_date: echeance(doc),
-    valid_until: doc.type === 'devis' ? doc.validUntil : null,
-    purchase_order: doc.purchaseOrder.trim() || null,
-    subject: doc.subject.trim() || null,
-    public_notes: doc.publicNotes.trim() || null,
-    internal_notes: doc.internalNotes.trim() || null,
-    currency: doc.currency,
-    language: doc.language,
-    payment_terms: doc.paymentTerms,
-    early_payment_discount: doc.earlyPaymentDiscount.trim() || null,
-    discount_kind: doc.remise?.type ?? null,
-    discount_value: doc.remise?.valeur ?? null,
-    total_lines_ht: totaux?.totalLignesHt ?? 0,
-    discount_total: totaux?.remiseGlobale ?? 0,
-    deposits_ht: totaux?.acomptesHt ?? 0,
-    total_ht: totaux?.totalHt ?? 0,
-    total_vat: totaux?.totalTva ?? 0,
-    total_ttc: totaux?.totalTtc ?? 0,
-    amount_due: totaux?.netAPayer ?? 0,
-    operation_category: totaux?.categorieOperation ?? null,
-    origin_document_id: doc.originDocumentId,
-    deducted_deposits: doc.acomptes,
-  }
-  const tva = (totaux?.ventilation ?? []).map((v, i) => ({
-    position: i + 1,
-    vat_category: v.categorie,
-    vat_rate: v.taux,
-    base_cents: v.baseHt,
-    vat_cents: v.tva,
-    exemption_reason: v.motifExoneration ?? null,
-  }))
-
-  const supabase = await creerClientServeur()
-  const { data, error } = await supabase.rpc('enregistrer_brouillon', {
-    p_organization: organisation.id,
-    p_id: id,
-    p_document: document,
-    p_lignes: versLignesDb(doc.lignes, totaux),
-    p_tva: tva,
-  })
-  if (error || !data) {
-    if (error?.message.includes('déjà émis')) return { ok: false, erreur: 'Ce document est émis : il ne peut plus être modifié.' }
-    return { ok: false, erreur: 'Enregistrement impossible. Vos modifications restent à l’écran ; réessayez dans un instant.' }
-  }
   // Pas de revalidatePath ici : l'éditeur ne doit pas être rechargé pendant la saisie ; les listes sont rendues à la demande.
-  return { ok: true, id: data, le: new Date().toISOString() }
+  return sauverBrouillon(await creerClientServeur(), organisation.id, doc, id)
 }
 
 /**

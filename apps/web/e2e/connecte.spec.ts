@@ -88,8 +88,11 @@ test('facture : catalogue, saisie rapide, calcul, enregistrement automatique', a
   await page.waitForURL(/tableau-de-bord/)
 
   // Raccourci « N » : nouvelle facture.
-  await page.keyboard.press('n')
-  await page.waitForURL(/ventes\/factures\/nouvelle/)
+  // Réessayé tant que la page n'est pas hydratée (le raccourci est posé côté client).
+  await expect(async () => {
+    await page.keyboard.press('n')
+    await page.waitForURL(/ventes\/factures\/nouvelle/, { timeout: 2_000 })
+  }).toPass({ timeout: 30_000 })
   await page.getByLabel('Client', { exact: true }).selectOption({ label: 'Atelier Dupont' })
   await expect(page.getByText('Entreprise France').first()).toBeVisible()
 
@@ -196,4 +199,103 @@ test('émission, numéro définitif, document figé, avoir total', async ({ page
 
   await page.goto(`/${slug}/ventes/factures`)
   await expect(page.getByText('Annulée').first()).toBeVisible()
+})
+
+async function connecter(page: import('@playwright/test').Page) {
+  await page.goto('/connexion')
+  await page.getByLabel('Email').fill(email)
+  await page.getByLabel('Mot de passe').fill('facture2027')
+  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.waitForURL(/tableau-de-bord/)
+}
+
+async function nouveauDocument(page: import('@playwright/test').Page, chemin: string, designation: string) {
+  await page.goto(`/${slug}/${chemin}`)
+  await page.getByLabel('Client', { exact: true }).selectOption({ label: 'Atelier Dupont · Lyon' })
+  const ligne = page.getByLabel('Désignation, ligne 1')
+  await ligne.fill(designation)
+  await ligne.press('Tab')
+  await page.waitForURL(/[0-9a-f-]{36}$/)
+  await expect(page.getByText('Prête à émettre')).toBeVisible({ timeout: 15_000 })
+}
+
+test('paiements, envoi, récurrence et exports', async ({ page }) => {
+  test.setTimeout(150_000)
+  page.on('dialog', (d) => void d.accept())
+  await connecter(page)
+
+  await nouveauDocument(page, 'ventes/factures/nouvelle', '3 x Maintenance 100')
+  await page.getByRole('button', { name: 'Émettre la facture' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Émettre la facture' }).click()
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(/F-\d{4}-0043/)
+
+  // Paiement partiel puis solde : 3 × 100 € HT = 360 € TTC.
+  await page.getByLabel('Montant', { exact: true }).fill('100')
+  await page.getByRole('button', { name: 'Enregistrer le paiement' }).click()
+  await expect(page.getByText('Paiement enregistré.')).toBeVisible()
+  await expect(page.getByText('Paiement partiel')).toBeVisible()
+  await expect(page.getByLabel('Montant', { exact: true })).toHaveValue('260,00')
+  await page.getByRole('button', { name: 'Enregistrer le paiement' }).click()
+  await expect(page.getByText(/^Soldée le/)).toBeVisible()
+  await expect(page.getByText('Payée').first()).toBeVisible()
+
+  // Envoi par email (simulé sans messagerie configurée) et lien de partage.
+  await page.getByLabel('Destinataire').fill('compta@dupont.fr')
+  await page.getByRole('button', { name: 'Envoyer par email' }).click()
+  await expect(page.getByText(/Envoi simulé à compta@dupont\.fr/)).toBeVisible()
+  await page.getByRole('button', { name: 'Créer un lien de partage' }).click()
+  const lien = await page.getByLabel('Lien de partage').inputValue()
+  expect(lien).toMatch(/\/d\/[0-9a-f-]{36}$/)
+
+  // Récurrence mensuelle, générée depuis le tableau de bord.
+  await page.getByText('Rendre récurrente').click()
+  await page.getByRole('button', { name: 'Créer la récurrence' }).click()
+  await expect(page.getByText(/Récurrence créée/)).toBeVisible()
+  await page.goto(`/${slug}/tableau-de-bord`)
+  await expect(page.getByText(/360,00/).first()).toBeVisible()
+  await page.getByRole('button', { name: 'Générer maintenant' }).click()
+  await expect(page.getByText(/1 facture créée/)).toBeVisible()
+  await page.goto(`/${slug}/ventes/recurrences`)
+  await expect(page.getByText('Active')).toBeVisible()
+
+  // Exports comptables.
+  await page.goto(`/${slug}/comptabilite/exports`)
+  await expect(page.getByText(/écritures équilibrées/)).toBeVisible()
+  const debut = new Date().toISOString().slice(0, 7)
+  const fecReponse = await page.request.get(`/${slug}/exports?type=fec&du=${debut}-01&au=${debut}-28`)
+  expect(await fecReponse.text()).toContain('JournalCode\tJournalLib')
+  const zip = await page.request.get(`/${slug}/exports?type=archive&du=${debut}-01&au=${debut}-28`)
+  expect(zip.headers()['content-type']).toBe('application/zip')
+})
+
+test('devis accepté en ligne par le client', async ({ page, browser }) => {
+  test.setTimeout(120_000)
+  await connecter(page)
+  await nouveauDocument(page, 'ventes/devis/nouveau', 'Refonte du site 2400')
+  await page.getByRole('button', { name: 'Finaliser le devis' }).click()
+  await page.getByRole('dialog').getByRole('button', { name: 'Finaliser le devis' }).click()
+  await expect(page.getByRole('heading', { level: 1 })).toContainText(/D-\d{4}-0001/)
+  await page.getByRole('button', { name: 'Créer un lien de partage' }).click()
+  const lien = await page.getByLabel('Lien de partage').inputValue()
+
+  // Le client, sans compte.
+  const contexte = await browser.newContext()
+  const client = await contexte.newPage()
+  await client.goto(lien)
+  await expect(client.getByRole('heading', { level: 1 })).toContainText('Devis')
+  await client.getByLabel('Nom et prénom').fill('Claire Dupont')
+  await client.getByRole('button', { name: 'Accepter le devis' }).click()
+  await expect(client.getByText('Cochez « Bon pour accord » pour accepter le devis.')).toBeVisible()
+  await client.getByLabel(/Bon pour accord/).check()
+  await client.getByRole('button', { name: 'Accepter le devis' }).click()
+  await expect(client.getByRole('heading', { name: 'Devis accepté' })).toBeVisible()
+  await expect(client.getByText(/Par Claire Dupont/)).toBeVisible()
+  const pdf = await client.request.get(`${lien}/pdf`)
+  expect(pdf.headers()['content-type']).toBe('application/pdf')
+  await contexte.close()
+
+  await page.reload()
+  await expect(page.getByText('Accepté en ligne')).toBeVisible()
+  await expect(page.getByText(/Par Claire Dupont/)).toBeVisible()
+  await expect(page.getByRole('button', { name: 'Transformer en facture' })).toBeVisible()
 })

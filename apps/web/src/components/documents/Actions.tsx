@@ -14,7 +14,7 @@ export function BoutonAction({
   confirmation,
   className,
 }: {
-  action: () => Promise<ResultatAction>
+  action: () => Promise<ResultatAction | { ok: true } | { ok: false; erreur: string }>
   children: string
   variante?: VarianteBouton
   confirmation?: string
@@ -66,5 +66,30 @@ export function FormulaireAcompte({ action }: { action: (etat: ResultatAction | 
       </div>
       {etat && !etat.ok && <Message ton="erreur">{etat.erreur}</Message>}
     </form>
+  )
+}
+
+/** Petit bouton de suppression d'un paiement, avec confirmation. */
+export function BoutonSupprimerPaiement({ action }: { action: () => Promise<{ ok: true } | { ok: false; erreur: string }> }) {
+  const router = useRouter()
+  const [enCours, demarrer] = useTransition()
+  return (
+    <button
+      type="button"
+      disabled={enCours}
+      aria-label="Supprimer ce paiement"
+      title="Supprimer ce paiement"
+      onClick={() => {
+        if (!window.confirm('Supprimer ce paiement ?')) return
+        demarrer(async () => {
+          const r = await action()
+          if (r.ok) router.refresh()
+          else window.alert(r.erreur)
+        })
+      }}
+      className="grid size-6 place-items-center rounded-s text-encre-3 hover:bg-alerte-doux hover:text-alerte disabled:opacity-40"
+    >
+      ×
+    </button>
   )
 }

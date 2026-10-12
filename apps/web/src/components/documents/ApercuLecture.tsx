@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import { controler } from '@pastille/facturx'
 import { changerStatut, creerAcompte, creerAvoir, dupliquerDocument, facturerDevis } from '@/app/actions/documents'
+import { creerRecurrence, enregistrerPaiement, envoyerParEmail, relancer, supprimerPaiement } from '@/app/actions/suivi'
 import { classesBouton } from '@/components/ui/Bouton'
 import { Icone } from '@/components/ui/Icone'
 import { ListeCles } from '@/components/ui/Panneau'
@@ -8,12 +9,17 @@ import { Statut } from '@/components/ui/Statut'
 import { aujourdHui, LIBELLES_TYPE, statutAffiche } from '@/lib/document'
 import { versEn16931 } from '@/lib/en16931'
 import { formatDate, formatMontant } from '@/lib/format'
+import { centimesEnSaisie } from '@/lib/montant'
+import { origineSite } from '@/lib/site'
+import { libelleMoyen } from '@/lib/suivi'
+import { destinataireClient } from '@/lib/taches'
 import type { DocumentImprimable } from '@/lib/imprimable'
 import { peutFacturer, type Role } from '@/lib/roles'
 import { urlPublique } from '@/lib/supabase/stockage'
 import { creerClientServeur } from '@/lib/supabase/serveur'
 import type { DocumentRow } from '@/lib/supabase/types'
-import { BoutonAction, FormulaireAcompte } from './Actions'
+import { BoutonAction, BoutonSupprimerPaiement, FormulaireAcompte } from './Actions'
+import { ChampsEnvoi, ChampsPaiement, ChampsRecurrence, FormulaireSuivi, Partage } from './Suivi'
 import { DocumentImprime } from './DocumentImprime'
 
 const CHEMINS = { facture: 'factures', acompte: 'factures', devis: 'devis', avoir: 'avoirs' } as const
@@ -36,6 +42,16 @@ export async function ApercuLecture({ org, document: d, imprimable, role }: { or
   const anomalies = en16931 ? controler(en16931) : []
   const bloquantes = anomalies.filter((a) => a.bloquant)
   const base = `/${org}/documents/${d.id}`
+  const jour = aujourdHui()
+  const reste = Math.max(0, Number(d.amount_due) - Number(d.amount_paid))
+  const [{ data: paiements }, { data: envois }, { data: signature }, destinataire, origine] = await Promise.all([
+    facture ? supabase.from('payments').select('*').eq('document_id', d.id).order('paid_on') : Promise.resolve({ data: [] }),
+    supabase.from('reminders').select('*').eq('document_id', d.id).order('sent_at', { ascending: false }).limit(20),
+    d.type === 'devis' ? supabase.from('quote_signatures').select('*').eq('document_id', d.id).maybeSingle() : Promise.resolve({ data: null }),
+    d.client_id ? destinataireClient(supabase, d.organization_id, d.client_id) : Promise.resolve(null),
+    origineSite(),
+  ])
+  const enRetard = statut.cle === 'retard'
 
   return (
     <div className="flex flex-col gap-5">
@@ -156,6 +172,95 @@ export async function ApercuLecture({ org, document: d, imprimable, role }: { or
               </>
             )}
           </section>
+
+          {facture && d.status !== 'annule' && (
+            <section className="flex flex-col gap-3 rounded-l border border-trait bg-surface p-4" aria-labelledby="titre-paiements">
+              <div className="flex items-center justify-between gap-2">
+                <h2 id="titre-paiements" className="text-[14px] font-semibold">
+                  Paiements
+                </h2>
+                <span className="num text-[12.5px] text-encre-3">
+                  {formatMontant(Number(d.amount_paid), d.currency)} / {formatMontant(Number(d.amount_due), d.currency)}
+                </span>
+              </div>
+              {(paiements ?? []).length > 0 && (
+                <ul className="m-0 flex list-none flex-col p-0">
+                  {(paiements ?? []).map((p) => (
+                    <li key={p.id} className="flex items-center justify-between gap-2 border-b border-trait py-1.5 text-[13px] last:border-b-0">
+                      <span className="min-w-0">
+                        <span className="num">{formatDate(p.paid_on)}</span> · {libelleMoyen(p.method)}
+                        {p.reference && <span className="text-encre-3"> · {p.reference}</span>}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <span className="num font-semibold">{formatMontant(Number(p.amount_cents), d.currency)}</span>
+                        {editable && <BoutonSupprimerPaiement action={supprimerPaiement.bind(null, org, p.id)} />}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              )}
+              {reste === 0 && (paiements ?? []).length > 0 && (
+                <p className="flex items-center gap-1.5 text-[13px] font-medium text-ok">
+                  <Icone nom="coche" taille={14} />
+                  Soldée le {formatDate((paiements ?? []).at(-1)!.paid_on)}
+                </p>
+              )}
+              {editable && reste > 0 && (
+                <FormulaireSuivi action={enregistrerPaiement.bind(null, org, d.id)} bouton="Enregistrer le paiement" variante="secondaire">
+                  <ChampsPaiement reste={centimesEnSaisie(reste)} jour={jour} />
+                </FormulaireSuivi>
+              )}
+            </section>
+          )}
+
+          {signature && (
+            <section className="flex flex-col gap-1 rounded-l border border-trait bg-surface p-4">
+              <h2 className="text-[14px] font-semibold">{signature.decision === 'accepte' ? 'Accepté en ligne' : 'Refusé en ligne'}</h2>
+              <p className="text-[13px] text-encre-2">
+                Par {signature.signer_name}
+                {signature.signer_email ? ` (${signature.signer_email})` : ''}, le {new Date(signature.signed_at).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}
+              </p>
+              {signature.comment && <p className="text-[13px] italic text-encre-2">« {signature.comment} »</p>}
+              <p className="num text-[11px] text-encre-3" title={signature.content_hash}>
+                Version signée {signature.content_hash.slice(0, 12)}…
+              </p>
+            </section>
+          )}
+
+          {editable && (
+            <section className="flex flex-col gap-3 rounded-l border border-trait bg-surface p-4" aria-labelledby="titre-envoi">
+              <h2 id="titre-envoi" className="text-[14px] font-semibold">
+                Envoi au client
+              </h2>
+              <Partage slug={org} documentId={d.id} token={d.public_token} origine={origine} />
+              <FormulaireSuivi action={envoyerParEmail.bind(null, org, d.id)} bouton={envois?.some((e) => e.kind === 'envoi') ? 'Renvoyer par email' : 'Envoyer par email'} variante="secondaire">
+                <ChampsEnvoi destinataire={destinataire} />
+              </FormulaireSuivi>
+              {facture && ouverte && enRetard && (
+                <BoutonAction action={relancer.bind(null, org, d.id)}>Relancer maintenant</BoutonAction>
+              )}
+              {(envois ?? []).length > 0 && (
+                <ul className="m-0 flex list-none flex-col gap-1 p-0 text-[12px] text-encre-3">
+                  {(envois ?? []).map((e) => (
+                    <li key={e.id}>
+                      <span className="num">{new Date(e.sent_at).toLocaleDateString('fr-FR')}</span> · {e.kind === 'relance' ? 'Relance' : 'Envoi'} à {e.recipient}
+                      {e.status === 'simule' && ' (simulé)'}
+                      {e.status === 'echec' && <span className="text-alerte"> (échec)</span>}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </section>
+          )}
+
+          {editable && d.type === 'facture' && (
+            <details className="rounded-l border border-trait bg-surface p-4">
+              <summary className="cursor-pointer text-[14px] font-semibold">Rendre récurrente</summary>
+              <FormulaireSuivi action={creerRecurrence.bind(null, org, d.id)} bouton="Créer la récurrence" variante="secondaire" className="mt-3">
+                <ChampsRecurrence jour={jour} nom={d.subject ?? imprimable.client?.name ?? ''} />
+              </FormulaireSuivi>
+            </details>
+          )}
 
           {(lies ?? []).length > 0 && (
             <section className="flex flex-col gap-1 rounded-l border border-trait bg-surface p-4">

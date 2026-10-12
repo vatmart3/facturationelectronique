@@ -48,6 +48,10 @@ export type OrganizationRow = {
   terms_text: string | null
   onboarding_completed_at: string | null
   invoice_start_number: number
+  reminders_enabled: boolean
+  reminder_days: number[]
+  reminder_email_from: string | null
+  reminder_signature: string | null
   created_by: string | null
   created_at: string
   updated_at: string
@@ -193,6 +197,7 @@ export type DocumentRow = {
   content_hash: string | null
   previous_hash: string | null
   chain_position: number | null
+  public_token: string | null
   issued_at: string | null
   issued_by: string | null
   sent_at: string | null
@@ -222,6 +227,67 @@ export type DocumentLineRow = {
   line_net_cents: number
   created_at: string
   updated_at: string
+}
+
+export type PaymentMethod = 'virement' | 'carte' | 'cheque' | 'especes' | 'prelevement' | 'autre'
+export type RecurrenceFrequency = 'mensuelle' | 'trimestrielle' | 'semestrielle' | 'annuelle'
+
+export type PaymentRow = {
+  id: string
+  organization_id: string
+  document_id: string
+  amount_cents: number
+  paid_on: string
+  method: PaymentMethod
+  reference: string | null
+  note: string | null
+  created_by: string | null
+  created_at: string
+}
+
+export type ReminderRow = {
+  id: string
+  organization_id: string
+  document_id: string
+  step: number | null
+  kind: 'envoi' | 'relance' | 'remerciement'
+  recipient: string
+  subject: string
+  status: 'envoye' | 'simule' | 'echec'
+  provider_id: string | null
+  error: string | null
+  sent_by: string | null
+  sent_at: string
+}
+
+export type RecurringInvoiceRow = {
+  id: string
+  organization_id: string
+  client_id: string
+  name: string
+  frequency: RecurrenceFrequency
+  next_date: string
+  end_date: string | null
+  mode: 'brouillon' | 'emission'
+  active: boolean
+  template: unknown
+  last_document_id: string | null
+  last_run_at: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type QuoteSignatureRow = {
+  document_id: string
+  organization_id: string
+  decision: 'accepte' | 'refuse'
+  signer_name: string
+  signer_email: string | null
+  comment: string | null
+  content_hash: string
+  user_agent: string | null
+  signed_at: string
 }
 
 export type DocumentVatSummaryRow = {
@@ -328,6 +394,54 @@ export type Database = {
         Update: never
         Relationships: []
       }
+      payments: {
+        Row: PaymentRow
+        Insert: Insertion<PaymentRow, 'organization_id' | 'document_id' | 'amount_cents'>
+        Update: never
+        Relationships: [
+          {
+            foreignKeyName: 'payments_document_id_organization_id_fkey'
+            columns: ['document_id', 'organization_id']
+            isOneToOne: false
+            referencedRelation: 'documents'
+            referencedColumns: ['id', 'organization_id']
+          },
+        ]
+      }
+      reminders: {
+        Row: ReminderRow
+        Insert: Insertion<ReminderRow, 'organization_id' | 'document_id' | 'kind' | 'recipient' | 'subject' | 'status'>
+        Update: never
+        Relationships: [
+          {
+            foreignKeyName: 'reminders_document_id_organization_id_fkey'
+            columns: ['document_id', 'organization_id']
+            isOneToOne: false
+            referencedRelation: 'documents'
+            referencedColumns: ['id', 'organization_id']
+          },
+        ]
+      }
+      recurring_invoices: {
+        Row: RecurringInvoiceRow
+        Insert: Insertion<RecurringInvoiceRow, 'organization_id' | 'client_id' | 'name' | 'frequency' | 'next_date' | 'template'>
+        Update: Partial<Omit<RecurringInvoiceRow, Auto | 'organization_id'>>
+        Relationships: [
+          {
+            foreignKeyName: 'recurring_invoices_client_id_organization_id_fkey'
+            columns: ['client_id', 'organization_id']
+            isOneToOne: false
+            referencedRelation: 'clients'
+            referencedColumns: ['id', 'organization_id']
+          },
+        ]
+      }
+      quote_signatures: {
+        Row: QuoteSignatureRow
+        Insert: never
+        Update: never
+        Relationships: []
+      }
       vat_rates: {
         Row: { id: string; territory: string; label: string; rate: number; valid_from: string; valid_to: string | null; created_at: string }
         Insert: never
@@ -349,6 +463,12 @@ export type Database = {
         Returns: string
       }
       emettre_document: { Args: { p_id: string }; Returns: DocumentRow }
+      lien_public: { Args: { p_id: string }; Returns: string }
+      document_public: { Args: { p_token: string }; Returns: unknown }
+      signer_devis: {
+        Args: { p_token: string; p_decision: string; p_nom: string; p_email: string | null; p_commentaire: string | null; p_agent: string }
+        Returns: string
+      }
       changer_statut: { Args: { p_id: string; p_statut: DocumentStatus }; Returns: DocumentRow }
       verifier_chaine: {
         Args: { p_organization: string }

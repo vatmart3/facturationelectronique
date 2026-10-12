@@ -1,13 +1,13 @@
 import 'server-only'
 import { notFound } from 'next/navigation'
-import type { DeductionAcompte } from '@pastille/moteur'
-import { ajouterJours, aujourdHui, depuisLigneDb, type DocumentEdition, type TypeDocument } from './document'
+import { ajouterJours, aujourdHui, calculer, echeance, editionDepuisDb, validerEdition, versLignesDb, type DocumentEdition, type TypeDocument } from './document'
 import { appliquerClient, contexteEditeur, ligneLibre, type ClientEditeur, type DonneesEditeur } from './editeur'
 import { construireImprimable, type ClientImprime, type DocumentImprimable, type VendeurImprime } from './imprimable'
 import { chargerContexte } from './session'
 import { urlPublique } from './supabase/stockage'
 import { creerClientServeur } from './supabase/serveur'
-import type { DocumentRow } from './supabase/types'
+import type { SupabaseClient } from '@supabase/supabase-js'
+import type { Database, DocumentRow, OrganizationRow } from './supabase/types'
 
 const COLONNES_CLIENT =
   'id, kind, name, legal_form, siren, vat_number, billing_line1, billing_line2, billing_postal_code, billing_city, billing_country, shipping_different, service_code, default_vat_category, default_vat_rate, exemption_reason, default_discount_kind, default_discount_value, payment_terms, early_payment_discount, currency, language, purchase_order_required, custom_mentions'
@@ -70,71 +70,116 @@ export interface DocumentCharge {
   edition: DocumentEdition
 }
 
-/** Charge un document de l'organisation et le convertit en état d'édition. */
-export async function chargerDocument(slug: string, id: string, types: TypeDocument[]): Promise<DocumentCharge> {
-  const { organisation } = await chargerContexte(slug)
-  if (!/^[0-9a-f-]{36}$/i.test(id)) notFound()
-  const supabase = await creerClientServeur()
+export type ClientSupabase = SupabaseClient<Database>
+
+/** Lecture d'un document et de ses lignes avec un client donné (session ou service). */
+export async function lireDocument(supabase: ClientSupabase, organisation: Pick<OrganizationRow, 'id' | 'default_payment_terms'>, id: string): Promise<DocumentCharge | null> {
   const [{ data: doc }, { data: lignes }] = await Promise.all([
     supabase.from('documents').select('*').eq('id', id).eq('organization_id', organisation.id).maybeSingle(),
     supabase.from('document_lines').select('*').eq('document_id', id).eq('organization_id', organisation.id).order('position'),
   ])
-  if (!doc || !types.includes(doc.type)) notFound()
-  return {
-    ligne: doc,
-    edition: {
-      id: doc.id,
-      type: doc.type,
-      clientId: doc.client_id,
-      issueDate: doc.issue_date,
-      serviceDate: doc.service_date,
-      servicePeriodStart: doc.service_period_start,
-      servicePeriodEnd: doc.service_period_end,
-      validUntil: doc.valid_until,
-      purchaseOrder: doc.purchase_order ?? '',
-      subject: doc.subject ?? '',
-      publicNotes: doc.public_notes ?? '',
-      internalNotes: doc.internal_notes ?? '',
-      currency: doc.currency,
-      language: doc.language,
-      paymentTerms: doc.payment_terms ?? organisation.default_payment_terms,
-      earlyPaymentDiscount: doc.early_payment_discount ?? '',
-      remise: doc.discount_kind && doc.discount_value != null ? { type: doc.discount_kind, valeur: Number(doc.discount_value) } : null,
-      lignes: (lignes ?? []).map(depuisLigneDb),
-      acomptes: Array.isArray(doc.deducted_deposits) ? (doc.deducted_deposits as DeductionAcompte[]) : [],
-      originDocumentId: doc.origin_document_id,
-    },
-  }
+  if (!doc) return null
+  return { ligne: doc, edition: editionDepuisDb(doc, lignes ?? [], organisation.default_payment_terms) }
+}
+
+/** Charge un document de l'organisation et le convertit en état d'édition. */
+export async function chargerDocument(slug: string, id: string, types: TypeDocument[]): Promise<DocumentCharge> {
+  const { organisation } = await chargerContexte(slug)
+  if (!/^[0-9a-f-]{36}$/i.test(id)) notFound()
+  const charge = await lireDocument(await creerClientServeur(), organisation, id)
+  if (!charge || !types.includes(charge.ligne.type)) notFound()
+  return charge
 }
 
 /** Document prêt à imprimer : instantanés figés s'il est émis, données courantes sinon. */
-export async function chargerImprimable(slug: string, id: string): Promise<{ charge: DocumentCharge; imprimable: DocumentImprimable } | null> {
-  const charge = await chargerDocument(slug, id, ['facture', 'acompte', 'devis', 'avoir'])
+export async function imprimableDepuis(supabase: ClientSupabase, organisation: OrganizationRow, charge: DocumentCharge): Promise<DocumentImprimable | null> {
   const { ligne: d, edition } = charge
-  const supabase = await creerClientServeur()
-  const [{ organisation }, mentions, origine, client] = await Promise.all([
-    chargerContexte(slug),
+  const [mentions, origine, client] = await Promise.all([
     supabase.from('legal_mentions').select('key, text'),
     d.origin_document_id
       ? supabase.from('documents').select('number, issue_date').eq('id', d.origin_document_id).maybeSingle()
       : Promise.resolve({ data: null }),
     d.client_snapshot || !d.client_id ? Promise.resolve({ data: null }) : supabase.from('clients').select('*').eq('id', d.client_id).maybeSingle(),
   ])
-  const vendeur = (d.seller_snapshot ?? organisation) as VendeurImprime
-  const acheteur = (d.client_snapshot ?? client.data ?? null) as ClientImprime | null
-  const imprimable = construireImprimable({
+  return construireImprimable({
     edition,
     numero: d.number,
     brouillon: d.status === 'brouillon',
     dateEcheance: d.due_date,
-    vendeur,
-    client: acheteur,
+    vendeur: (d.seller_snapshot ?? organisation) as VendeurImprime,
+    client: (d.client_snapshot ?? client.data ?? null) as ClientImprime | null,
     textes: Object.fromEntries((mentions.data ?? []).map((m) => [m.key, m.text])),
     origine: origine.data?.number ? { numero: origine.data.number, date: origine.data.issue_date } : null,
     empreinte: d.content_hash,
     paye: d.status === 'paye',
   })
+}
+
+export async function chargerImprimable(slug: string, id: string): Promise<{ charge: DocumentCharge; imprimable: DocumentImprimable } | null> {
+  const charge = await chargerDocument(slug, id, ['facture', 'acompte', 'devis', 'avoir'])
+  const { organisation } = await chargerContexte(slug)
+  const imprimable = await imprimableDepuis(await creerClientServeur(), organisation, charge)
   return imprimable ? { charge, imprimable } : null
+}
+
+export type ResultatEnregistrement = { ok: true; id: string; le: string } | { ok: false; erreur: string }
+
+/** Enregistre un brouillon (création si id est null) : document, lignes et TVA en une transaction. */
+export async function sauverBrouillon(supabase: ClientSupabase, organisationId: string, doc: DocumentEdition, id: string | null): Promise<ResultatEnregistrement> {
+  const invalide = validerEdition(doc)
+  if (invalide) return { ok: false, erreur: invalide }
+  const calcul = calculer(doc)
+  const totaux = calcul.ok ? calcul.totaux : null
+  const document = {
+    type: doc.type,
+    client_id: doc.clientId,
+    issue_date: doc.issueDate,
+    service_date: doc.serviceDate,
+    service_period_start: doc.servicePeriodStart,
+    service_period_end: doc.servicePeriodEnd,
+    due_date: echeance(doc),
+    valid_until: doc.type === 'devis' ? doc.validUntil : null,
+    purchase_order: doc.purchaseOrder.trim() || null,
+    subject: doc.subject.trim() || null,
+    public_notes: doc.publicNotes.trim() || null,
+    internal_notes: doc.internalNotes.trim() || null,
+    currency: doc.currency,
+    language: doc.language,
+    payment_terms: doc.paymentTerms,
+    early_payment_discount: doc.earlyPaymentDiscount.trim() || null,
+    discount_kind: doc.remise?.type ?? null,
+    discount_value: doc.remise?.valeur ?? null,
+    total_lines_ht: totaux?.totalLignesHt ?? 0,
+    discount_total: totaux?.remiseGlobale ?? 0,
+    deposits_ht: totaux?.acomptesHt ?? 0,
+    total_ht: totaux?.totalHt ?? 0,
+    total_vat: totaux?.totalTva ?? 0,
+    total_ttc: totaux?.totalTtc ?? 0,
+    amount_due: totaux?.netAPayer ?? 0,
+    operation_category: totaux?.categorieOperation ?? null,
+    origin_document_id: doc.originDocumentId,
+    deducted_deposits: doc.acomptes,
+  }
+  const tva = (totaux?.ventilation ?? []).map((v, i) => ({
+    position: i + 1,
+    vat_category: v.categorie,
+    vat_rate: v.taux,
+    base_cents: v.baseHt,
+    vat_cents: v.tva,
+    exemption_reason: v.motifExoneration ?? null,
+  }))
+  const { data, error } = await supabase.rpc('enregistrer_brouillon', {
+    p_organization: organisationId,
+    p_id: id,
+    p_document: document,
+    p_lignes: versLignesDb(doc.lignes, totaux),
+    p_tva: tva,
+  })
+  if (error || !data) {
+    if (error?.message.includes('déjà émis')) return { ok: false, erreur: 'Ce document est émis : il ne peut plus être modifié.' }
+    return { ok: false, erreur: 'Enregistrement impossible. Vos modifications restent à l’écran ; réessayez dans un instant.' }
+  }
+  return { ok: true, id: data, le: new Date().toISOString() }
 }
 
 /** Logo de l'entreprise (PNG ou JPEG) pour le PDF ; null s'il est absent ou illisible. */
