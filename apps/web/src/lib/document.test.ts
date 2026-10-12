@@ -10,8 +10,10 @@ import {
   ligneVide,
   validerEdition,
   versLignesDb,
+  statutAffiche,
   versLignesMoteur,
   type DocumentEdition,
+  type TypeDocument,
 } from './document'
 
 function doc(p: Partial<DocumentEdition> = {}): DocumentEdition {
@@ -110,5 +112,36 @@ describe('document en édition', () => {
   it('manipule les dates', () => {
     expect(ajouterJours('2026-12-25', 10)).toBe('2027-01-04')
     expect(aujourdHui(new Date('2026-10-12T23:30:00Z'))).toBe('2026-10-13')
+  })
+})
+
+describe('statut affiché', () => {
+  const jour = '2026-10-12'
+  const f = (status: Parameters<typeof statutAffiche>[0]['status'], due_date: string | null = null, type: TypeDocument = 'facture') =>
+    statutAffiche({ type, status, due_date, valid_until: due_date }, jour)
+
+  it('factures', () => {
+    expect(f('brouillon').libelle).toBe('Brouillon')
+    expect(f('emis', '2026-10-30').libelle).toBe('Émise')
+    expect(f('envoye', '2026-10-30').libelle).toBe('Envoyée')
+    expect(f('envoye', '2026-10-01')).toEqual({ cle: 'retard', libelle: 'En retard' })
+    expect(f('partiellement_paye', '2026-10-30').libelle).toBe('Paiement partiel')
+    expect(f('partiellement_paye', '2026-10-01').libelle).toBe('En retard')
+    expect(f('paye', '2026-10-01').cle).toBe('payee')
+    expect(f('annule').libelle).toBe('Annulée')
+  })
+
+  it('avoirs et devis', () => {
+    expect(f('emis', null, 'avoir').libelle).toBe('Avoir')
+    expect(f('paye', null, 'avoir').libelle).toBe('Remboursé')
+    expect(f('brouillon', null, 'avoir').libelle).toBe('Brouillon')
+    expect(f('brouillon', null, 'devis').libelle).toBe('Brouillon')
+    expect(f('envoye', '2026-10-30', 'devis').libelle).toBe('Envoyé')
+    expect(f('envoye', '2026-10-01', 'devis').libelle).toBe('Expiré')
+    expect(f('accepte', null, 'devis').cle).toBe('acceptee')
+    expect(f('refuse', null, 'devis').libelle).toBe('Refusé')
+    expect(f('expire', null, 'devis').libelle).toBe('Expiré')
+    expect(f('transforme', null, 'devis').libelle).toBe('Facturé')
+    expect(f('emis', null, 'devis').libelle).toBe('emis')
   })
 })

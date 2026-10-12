@@ -12,8 +12,10 @@ import { Indicateurs } from '@/components/ui/Indicateurs'
 import { Message } from '@/components/ui/Message'
 import { ListeCles, Panneau, PanneauCorps, PanneauTete } from '@/components/ui/Panneau'
 import { Segments } from '@/components/ui/Segments'
+import { Statut } from '@/components/ui/Statut'
 import { Tableau, Td, Th } from '@/components/ui/Tableau'
 import { libelleConditions, libelleTypeClient } from '@/lib/clients'
+import { ajouterJours, aujourdHui, LIBELLES_TYPE, statutAffiche } from '@/lib/document'
 import { canalTransmission, resoudreTva } from '@/lib/fiscalite'
 import { formatDate, formatMontant, grouperChiffres } from '@/lib/format'
 import { peutFacturer } from '@/lib/roles'
@@ -39,11 +41,26 @@ export default async function FicheClient({ params, searchParams }: { params: Pa
   const { data: client } = await supabase.from('clients').select('*').eq('id', id).eq('organization_id', organisation.id).maybeSingle()
   if (!client) notFound()
 
-  const [{ data: contacts }, { data: prix }, { data: produits }] = await Promise.all([
+  const [{ data: contacts }, { data: prix }, { data: produits }, { data: docs }] = await Promise.all([
     supabase.from('client_contacts').select('*').eq('client_id', id).eq('organization_id', organisation.id).order('created_at'),
     supabase.from('client_prices').select('product_id, unit_price_cents').eq('client_id', id).eq('organization_id', organisation.id),
     supabase.from('products').select('id, name, unit_price_cents, unit').eq('organization_id', organisation.id).is('archived_at', null).order('name'),
+    supabase
+      .from('documents')
+      .select('id, type, status, number, issue_date, due_date, valid_until, total_ht, total_ttc, amount_due, amount_paid, currency')
+      .eq('client_id', id)
+      .eq('organization_id', organisation.id)
+      .order('issue_date', { ascending: false })
+      .order('created_at', { ascending: false }),
   ])
+  const jour = aujourdHui()
+  const documents = (docs ?? []).map((d) => ({ ...d, affiche: statutAffiche(d, jour) }))
+  const emis = documents.filter((d) => d.type !== 'devis' && d.status !== 'brouillon')
+  const ilYAUnAn = ajouterJours(jour, -365)
+  const ca = emis.filter((d) => d.issue_date >= ilYAUnAn && d.status !== 'annule').reduce((s, d) => s + Number(d.total_ht), 0)
+  const ouvertes = emis.filter((d) => d.type !== 'avoir' && ['emis', 'envoye', 'partiellement_paye'].includes(d.status))
+  const encours = ouvertes.reduce((s, d) => s + Number(d.amount_due) - Number(d.amount_paid), 0)
+  const enRetard = ouvertes.filter((d) => d.affiche.cle === 'retard').length
   const parProduit = new Map((produits ?? []).map((p) => [p.id, p]))
   const editable = peutFacturer(role)
   const tvaService = resoudreTva({
@@ -100,8 +117,13 @@ export default async function FicheClient({ params, searchParams }: { params: Pa
 
       <Indicateurs
         indicateurs={[
-          { libelle: 'CA 12 mois', valeur: formatMontant(0), detail: 'HT, factures émises' },
-          { libelle: 'Encours', valeur: formatMontant(0), detail: 'Rien en attente', ton: 'info' },
+          { libelle: 'CA 12 mois', valeur: formatMontant(ca), detail: 'HT, factures émises' },
+          {
+            libelle: 'Encours',
+            valeur: formatMontant(encours),
+            detail: ouvertes.length ? `${ouvertes.length} facture${ouvertes.length > 1 ? 's' : ''} ouverte${ouvertes.length > 1 ? 's' : ''}${enRetard ? `, ${enRetard} en retard` : ''}` : 'Rien en attente',
+            ton: enRetard ? 'alerte' : 'info',
+          },
           { libelle: 'Délai moyen de paiement', valeur: '—', detail: 'Calculé dès le premier paiement', ton: 'ok' },
           { libelle: 'Client depuis', valeur: formatDate(client.created_at) },
         ]}
@@ -113,7 +135,7 @@ export default async function FicheClient({ params, searchParams }: { params: Pa
           { href: base, libelle: 'Aperçu', actif: onglet === 'apercu' },
           { href: `${base}?onglet=contacts`, libelle: 'Contacts', compte: contacts?.length ?? 0, actif: onglet === 'contacts' },
           { href: `${base}?onglet=tarifs`, libelle: 'Tarifs spécifiques', compte: prix?.length ?? 0, actif: onglet === 'tarifs' },
-          { href: `${base}?onglet=documents`, libelle: 'Documents', actif: onglet === 'documents' },
+          { href: `${base}?onglet=documents`, libelle: 'Documents', compte: documents.length, actif: onglet === 'documents' },
         ]}
       />
 
@@ -217,9 +239,55 @@ export default async function FicheClient({ params, searchParams }: { params: Pa
           )}
         </div>
       ) : onglet === 'documents' ? (
-        <EtatVide titre="Aucun document">
-          <p>Les devis, factures et avoirs de ce client apparaîtront ici.</p>
-        </EtatVide>
+        documents.length === 0 ? (
+          <EtatVide
+            titre="Aucun document"
+            action={
+              editable && (
+                <div className="flex flex-wrap justify-center gap-2">
+                  <BoutonLien href={`/${org}/ventes/factures/nouvelle?client=${id}`} variante="primaire" icone="plus">
+                    Nouvelle facture
+                  </BoutonLien>
+                  <BoutonLien href={`/${org}/ventes/devis/nouveau?client=${id}`}>Nouveau devis</BoutonLien>
+                </div>
+              )
+            }
+          >
+            <p>Les devis, factures et avoirs de ce client apparaîtront ici.</p>
+          </EtatVide>
+        ) : (
+          <Tableau legende={`Documents de ${client.name}`}>
+            <thead>
+              <tr>
+                <Th>Document</Th>
+                <Th>Date</Th>
+                <Th>Échéance</Th>
+                <Th numerique>Montant TTC</Th>
+                <Th>Statut</Th>
+              </tr>
+            </thead>
+            <tbody>
+              {documents.map((d) => (
+                <tr key={d.id} className="hover:bg-survol">
+                  <Td>
+                    <Link href={`/${org}/ventes/${d.type === 'devis' ? 'devis' : d.type === 'avoir' ? 'avoirs' : 'factures'}/${d.id}`} className="flex flex-col leading-tight">
+                      <span className="font-semibold">{LIBELLES_TYPE[d.type].titre}</span>
+                      <span className="num text-[12px] text-encre-3">{d.number ?? 'Brouillon'}</span>
+                    </Link>
+                  </Td>
+                  <Td className="num text-encre-3">{formatDate(d.issue_date)}</Td>
+                  <Td className="num text-encre-3">{d.due_date ? formatDate(d.due_date) : '—'}</Td>
+                  <Td numerique className="font-semibold">
+                    {formatMontant(Number(d.total_ttc), d.currency)}
+                  </Td>
+                  <Td>
+                    <Statut statut={d.affiche.cle} libelle={d.affiche.libelle} />
+                  </Td>
+                </tr>
+              ))}
+            </tbody>
+          </Tableau>
+        )
       ) : (
         <div className="grid gap-[18px] lg:grid-cols-2">
           <Panneau>

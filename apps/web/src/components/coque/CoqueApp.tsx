@@ -1,7 +1,7 @@
 'use client'
 
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { seDeconnecter } from '@/app/(auth)/actions'
 import { Logo } from '@/components/marque/Logo'
@@ -22,6 +22,7 @@ export interface CoqueProps {
 
 export function CoqueApp({ organisation, organisations, utilisateur, children }: CoqueProps) {
   const pathname = usePathname()
+  const router = useRouter()
   const [paletteOuverte, setPaletteOuverte] = useState(false)
   const [menuOuvert, setMenuOuvert] = useState(false)
   const chemin = cheminDansOrganisation(pathname, organisation.slug)
@@ -32,11 +33,19 @@ export function CoqueApp({ organisation, organisations, utilisateur, children }:
       if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault()
         setPaletteOuverte((o) => !o)
+        return
+      }
+      // « N » : nouvelle facture, hors champ de saisie.
+      const cible = e.target as HTMLElement | null
+      const saisie = cible?.closest('input, textarea, select, [contenteditable="true"], [role="dialog"]')
+      if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !e.altKey && !saisie) {
+        e.preventDefault()
+        router.push(`/${organisation.slug}/ventes/factures/nouvelle`)
       }
     }
     window.addEventListener('keydown', surTouche)
     return () => window.removeEventListener('keydown', surTouche)
-  }, [])
+  }, [router, organisation.slug])
 
   // Le menu mobile se referme à chaque changement de page.
   const [cheminPrecedent, setCheminPrecedent] = useState(pathname)

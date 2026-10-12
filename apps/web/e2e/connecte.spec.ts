@@ -78,3 +78,50 @@ test('client, catalogue, tarif spécifique et import', async ({ page }) => {
   await expect(page.getByText('1 client importé')).toBeVisible()
   await expect(page.getByText(/Ligne 3/)).toBeVisible()
 })
+
+test('facture : catalogue, saisie rapide, calcul, enregistrement automatique', async ({ page }) => {
+  test.setTimeout(90_000)
+  await page.goto('/connexion')
+  await page.getByLabel('Email').fill(email)
+  await page.getByLabel('Mot de passe').fill('facture2027')
+  await page.getByRole('button', { name: 'Se connecter' }).click()
+  await page.waitForURL(/tableau-de-bord/)
+
+  // Raccourci « N » : nouvelle facture.
+  await page.keyboard.press('n')
+  await page.waitForURL(/ventes\/factures\/nouvelle/)
+  await page.getByLabel('Client', { exact: true }).selectOption({ label: 'Atelier Dupont' })
+  await expect(page.getByText('Entreprise France').first()).toBeVisible()
+
+  const ligne1 = page.getByLabel('Désignation, ligne 1')
+  await ligne1.fill('logo')
+  await expect(page.getByRole('option', { name: /Création logo/ })).toBeVisible()
+  await ligne1.press('Enter')
+  // Prix spécifique du client (420 €) plutôt que le prix catalogue (450 €).
+  await expect(page.getByLabel('Prix unitaire HT, ligne 1')).toHaveValue('420,00')
+  await ligne1.press('Enter')
+  const ligne2 = page.getByLabel('Désignation, ligne 2')
+  await expect(ligne2).toBeFocused()
+  await ligne2.fill('2 x Conseil 80')
+  await ligne2.press('Enter')
+  await expect(page.getByLabel('Désignation, ligne 2')).toHaveValue('Conseil')
+  await expect(page.getByLabel('Quantité, ligne 2')).toHaveValue('2')
+  await expect(page.getByLabel('Total HT, ligne 2')).toHaveText(/160,00/)
+  await expect(page.getByLabel('Désignation, ligne 3')).toBeFocused()
+
+  // 420 + 160 = 580 HT, TVA 20 % = 116, TTC 696.
+  await expect(page.getByText(/696,00/).first()).toBeVisible()
+  await expect(page.getByText(/TVA 20\s%\ssur\s580,00/)).toBeVisible()
+
+  await page.waitForURL(/ventes\/factures\/[0-9a-f-]{36}$/)
+  await expect(page.getByRole('status').filter({ hasText: /^Enregistré/ })).toBeVisible()
+  await expect(page.getByText('SIREN de votre entreprise')).toBeVisible()
+
+  await page.reload()
+  await expect(page.getByLabel('Désignation, ligne 2')).toHaveValue('Conseil')
+  await expect(page.getByLabel('Désignation, ligne 3')).toHaveCount(0)
+
+  await page.goto(`/${slug}/ventes/factures?statut=brouillons`)
+  await expect(page.getByRole('cell', { name: /696,00/ })).toBeVisible()
+  await expect(page.getByText('Brouillon').first()).toBeVisible()
+})

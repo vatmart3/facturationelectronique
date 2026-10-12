@@ -80,7 +80,7 @@ export async function enregistrerDocument(slug: string, doc: DocumentEdition, id
     if (error?.message.includes('déjà émis')) return { ok: false, erreur: 'Ce document est émis : il ne peut plus être modifié.' }
     return { ok: false, erreur: 'Enregistrement impossible. Vos modifications restent à l’écran ; réessayez dans un instant.' }
   }
-  revalidatePath(`/${slug}/${CHEMINS[doc.type]}`)
+  // Pas de revalidatePath ici : l'éditeur ne doit pas être rechargé pendant la saisie ; les listes sont rendues à la demande.
   return { ok: true, id: data, le: new Date().toISOString() }
 }
 

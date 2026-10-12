@@ -209,3 +209,43 @@ export function validerEdition(doc: DocumentEdition): string | null {
   if (!/^[A-Z]{3}$/.test(doc.currency)) return 'Devise invalide.'
   return null
 }
+
+// ---------------------------------------------------------------------------
+// Affichage du statut
+// ---------------------------------------------------------------------------
+
+export type StatutDb = 'brouillon' | 'emis' | 'envoye' | 'partiellement_paye' | 'paye' | 'annule' | 'accepte' | 'refuse' | 'expire' | 'transforme'
+
+export interface StatutAffiche {
+  cle: 'brouillon' | 'envoyee' | 'retard' | 'payee' | 'avoir' | 'annulee' | 'acceptee' | 'refusee'
+  libelle: string
+}
+
+/** Statut lisible : une facture émise dont l'échéance est passée apparaît « En retard ». */
+export function statutAffiche(
+  d: { type: TypeDocument; status: StatutDb; due_date: string | null; valid_until: string | null },
+  jour: string,
+): StatutAffiche {
+  const ouverte = d.status === 'emis' || d.status === 'envoye' || d.status === 'partiellement_paye'
+  if (d.type === 'devis') {
+    if (d.status === 'envoye' && d.valid_until && d.valid_until < jour) return { cle: 'annulee', libelle: 'Expiré' }
+    return (
+      {
+        brouillon: { cle: 'brouillon', libelle: 'Brouillon' },
+        envoye: { cle: 'envoyee', libelle: 'Envoyé' },
+        accepte: { cle: 'acceptee', libelle: 'Accepté' },
+        refuse: { cle: 'refusee', libelle: 'Refusé' },
+        expire: { cle: 'annulee', libelle: 'Expiré' },
+        transforme: { cle: 'payee', libelle: 'Facturé' },
+      } as const
+    )[d.status as 'brouillon'] ?? { cle: 'brouillon', libelle: d.status }
+  }
+  if (d.status === 'brouillon') return { cle: 'brouillon', libelle: 'Brouillon' }
+  if (d.type === 'avoir') return { cle: 'avoir', libelle: d.status === 'paye' ? 'Remboursé' : 'Avoir' }
+  if (d.status === 'annule') return { cle: 'annulee', libelle: 'Annulée' }
+  if (d.status === 'paye') return { cle: 'payee', libelle: 'Payée' }
+  if (ouverte && d.due_date && d.due_date < jour) return { cle: 'retard', libelle: 'En retard' }
+  if (d.status === 'partiellement_paye') return { cle: 'envoyee', libelle: 'Paiement partiel' }
+  if (d.status === 'envoye') return { cle: 'envoyee', libelle: 'Envoyée' }
+  return { cle: 'envoyee', libelle: 'Émise' }
+}

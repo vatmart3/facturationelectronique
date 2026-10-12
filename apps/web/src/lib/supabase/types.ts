@@ -293,7 +293,15 @@ export type Database = {
         Row: DocumentRow
         Insert: Insertion<DocumentRow, 'organization_id' | 'type'>
         Update: Partial<Omit<DocumentRow, Auto | 'organization_id'>>
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: 'documents_client_id_organization_id_fkey'
+            columns: ['client_id', 'organization_id']
+            isOneToOne: false
+            referencedRelation: 'clients'
+            referencedColumns: ['id', 'organization_id']
+          },
+        ]
       }
       document_lines: {
         Row: DocumentLineRow
