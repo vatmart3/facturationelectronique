@@ -6,11 +6,12 @@ Logiciel de facturation électronique pour indépendants, TPE et PME françaises
 
 ```
 apps/web/          Application Next.js 16 (App Router, TypeScript strict, Tailwind v4)
+packages/moteur    Calcul des documents : lignes, remises, TVA multi-taux, acomptes, avoirs, arrondis
+packages/facturx   Modèle EN 16931, générateurs CII et UBL, contrôles, PDF/A-3 Factur-X, lecture XML
 supabase/          Migrations SQL, configuration CLI, tests RLS
+outils/            Validation officielle Factur-X (XSD et Schematron EN 16931 / BR-FR)
 docs/              Propositions, bilans de phase, maquettes
 ```
-
-`packages/moteur` porte le calcul (phase 2) ; `conformite`, `einvoice` et `pa` arrivent avec les phases suivantes.
 
 ## Démarrer en local
 
@@ -40,6 +41,19 @@ Sans clés Supabase, l'application démarre quand même : `/connexion` affiche u
 6. **Emails** : les liens envoyés par défaut passent par `/auth/callback`. Pour des liens qui fonctionnent aussi quand l'email est ouvert dans un autre navigateur, remplacer dans *Authentication > Email Templates* le lien par :
    `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email` (type `recovery` pour le modèle « Reset password », `signup` pour « Confirm signup »).
 7. **Types TypeScript** : après chaque migration, `pnpm db:types` génère `types.generated.ts` ; reporter les changements dans `apps/web/src/lib/supabase/types.ts`.
+
+## Déployer sur Vercel
+
+1. *Add New > Project*, importer ce dépôt GitHub, **Root Directory : `apps/web`** (framework Next.js détecté, pnpm via `packageManager`).
+2. **Variables d'environnement** (*Settings > Environment Variables*), d'après `apps/web/.env.example` :
+   - obligatoires : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SITE_URL` (URL de production) ;
+   - tâches quotidiennes (`vercel.json`, 6 h UTC) : `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET` ;
+   - abonnements : `STRIPE_*` ; emails : `RESEND_API_KEY`, `EMAIL_EXPEDITEUR` ; plateforme agréée : `PA_*` ;
+   - pages légales : `EDITEUR_*`.
+3. Dans Supabase (*Authentication > URL Configuration*), mettre l'URL Vercel en Site URL et ajouter `<site>/auth/callback` et `<site>/auth/confirm` aux Redirect URLs.
+4. **Stripe** : créer trois prix mensuels (Solo 9 €, Pro 19 €, Studio 49 € HT), un webhook vers `<site>/api/stripe` (événements `customer.subscription.created`, `.updated`, `.deleted`, `checkout.session.completed`) et activer le portail client.
+5. **Administrateur de la plateforme** (back-office `/admin`) : après s'être inscrit, exécuter dans l'éditeur SQL Supabase
+   `insert into public.platform_admins (user_id) select id from auth.users where email = 'vous@exemple.fr';`
 
 ## Vérifications
 
