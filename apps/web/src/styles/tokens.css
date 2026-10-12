@@ -1,0 +1,105 @@
+/*
+ * Tokens PASTILLE — source unique des couleurs, formes et ombres.
+ * Clair sur :root, sombre via prefers-color-scheme (sauf data-theme="light")
+ * ou data-theme="dark". Les composants n'utilisent jamais de couleur littérale.
+ */
+:root {
+  --fond: #f4f4f1;
+  --surface: #ffffff;
+  --surface-2: #fafaf8;
+  --survol: #f1f1ed;
+  --encre: #16171b;
+  --encre-2: #585a61;
+  --encre-3: #6a6c73;
+  --trait: #e6e5e0;
+  --trait-fort: #d3d2cc;
+  --accent: #1f3a5f;
+  --accent-doux: #e9eef5;
+  --marque: #ff5a36;
+
+  --ok: #23774f;
+  --ok-doux: #e5f1ea;
+  --info: #2f5e9e;
+  --info-doux: #e7eef8;
+  --attente: #86650f;
+  --attente-doux: #f5eed8;
+  --alerte: #b23c12;
+  --alerte-doux: #f8e6de;
+  --avoir: #5e3fa3;
+  --avoir-doux: #eee9f7;
+  --neutre: #5d5f66;
+  --neutre-doux: #eeeeea;
+
+  /* La facture reste un document papier, quel que soit le thème. */
+  --facture-fond: #ffffff;
+  --facture-encre: #16171b;
+  --facture-trait: #e6e5e0;
+
+  --ombre: 0 1px 2px rgb(16 17 20 / 0.05), 0 1px 1px rgb(16 17 20 / 0.03);
+  --ombre-haute: 0 12px 32px -12px rgb(16 17 20 / 0.18), 0 2px 6px rgb(16 17 20 / 0.05);
+  --voile: rgb(10 10 12 / 0.35);
+
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --fond: #0f1012;
+    --surface: #17181b;
+    --surface-2: #131417;
+    --survol: #1e1f23;
+    --encre: #ededea;
+    --encre-2: #a3a5ac;
+    --encre-3: #85878e;
+    --trait: #26272c;
+    --trait-fort: #35363c;
+    --accent: #9db7dd;
+    --accent-doux: #1a2432;
+    --ok: #6cc59a;
+    --ok-doux: #14271e;
+    --info: #8db1e6;
+    --info-doux: #15202e;
+    --attente: #e0be5e;
+    --attente-doux: #29230f;
+    --alerte: #f0875a;
+    --alerte-doux: #2d1a12;
+    --avoir: #b9a2ec;
+    --avoir-doux: #221b32;
+    --neutre: #a3a5ac;
+    --neutre-doux: #222327;
+    --ombre: 0 1px 2px rgb(0 0 0 / 0.4);
+    --ombre-haute: 0 16px 40px -12px rgb(0 0 0 / 0.6);
+    --voile: rgb(0 0 0 / 0.55);
+    color-scheme: dark;
+  }
+}
+
+:root[data-theme='dark'] {
+  --fond: #0f1012;
+  --surface: #17181b;
+  --surface-2: #131417;
+  --survol: #1e1f23;
+  --encre: #ededea;
+  --encre-2: #a3a5ac;
+  --encre-3: #85878e;
+  --trait: #26272c;
+  --trait-fort: #35363c;
+  --accent: #9db7dd;
+  --accent-doux: #1a2432;
+  --ok: #6cc59a;
+  --ok-doux: #14271e;
+  --info: #8db1e6;
+  --info-doux: #15202e;
+  --attente: #e0be5e;
+  --attente-doux: #29230f;
+  --alerte: #f0875a;
+  --alerte-doux: #2d1a12;
+  --avoir: #b9a2ec;
+  --avoir-doux: #221b32;
+  --neutre: #a3a5ac;
+  --neutre-doux: #222327;
+  --ombre: 0 1px 2px rgb(0 0 0 / 0.4);
+  --ombre-haute: 0 16px 40px -12px rgb(0 0 0 / 0.6);
+  --voile: rgb(0 0 0 / 0.55);
+  color-scheme: dark;
+}

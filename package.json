@@ -1,0 +1,26 @@
+{
+  "name": "pastille",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.28.0",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "pnpm --filter @pastille/web dev",
+    "build": "pnpm --filter @pastille/web build",
+    "lint": "pnpm --filter @pastille/web lint",
+    "typecheck": "pnpm --filter @pastille/web typecheck",
+    "test": "pnpm --filter @pastille/web test",
+    "test:db": "vitest run --config supabase/tests/vitest.config.ts",
+    "test:e2e": "pnpm --filter @pastille/web test:e2e",
+    "db:push": "npx supabase@2.118.0 db push",
+    "db:types": "npx supabase@2.118.0 gen types typescript --linked --schema public > apps/web/src/lib/supabase/types.generated.ts"
+  },
+  "devDependencies": {
+    "@types/pg": "8.15.5",
+    "pg": "8.16.3",
+    "typescript": "5.9.3",
+    "vitest": "4.1.9"
+  }
+}

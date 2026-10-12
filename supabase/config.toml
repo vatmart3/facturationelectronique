@@ -1,0 +1,26 @@
+# Configuration du Supabase CLI (développement local et `supabase db push`).
+# Le projet hébergé doit être créé dans une région de l'Union européenne
+# (Paris eu-west-3 ou Francfort eu-central-1) : voir README.
+
+project_id = "pastille"
+
+[api]
+schemas = ["public"]
+
+[db]
+major_version = 17
+
+[auth]
+site_url = "http://localhost:3000"
+additional_redirect_urls = ["http://localhost:3000/auth/callback", "http://localhost:3000/auth/confirm"]
+enable_signup = true
+minimum_password_length = 10
+
+[auth.email]
+enable_signup = true
+enable_confirmations = true
+
+[auth.external.google]
+enabled = false
+client_id = "env(SUPABASE_AUTH_GOOGLE_CLIENT_ID)"
+secret = "env(SUPABASE_AUTH_GOOGLE_SECRET)"
