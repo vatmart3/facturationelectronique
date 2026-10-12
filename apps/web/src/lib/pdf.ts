@@ -398,3 +398,37 @@ export async function genererPdf(doc: DocumentImprimable, options: { logo?: { oc
   pdf.setCreator('Pastille')
   return { octets: await pdf.save(), facturx: false, anomalies }
 }
+
+/** Document texte simple (DPA, conditions) : titre, sous-titre, sections paginées. */
+export async function pdfTexte(titre: string, sousTitre: string, sections: ReadonlyArray<{ titre: string; paragraphes: string[] }>): Promise<Uint8Array> {
+  const pdf = await PDFDocument.create()
+  pdf.registerFontkit(fontkit)
+  const p = await polices(false)
+  const rendu = new Rendu(pdf, await pdf.embedFont(p.r, { subset: true }), await pdf.embedFont(p.b, { subset: true }))
+  let y = rendu.y
+  const ligne = (t: string, taille: number, gras = false, couleur = ENCRE, apres = 4) => {
+    for (const l of rendu.envelopper(t, taille, L - 2 * M, gras)) {
+      if (y < M + 20) {
+        rendu.nouvellePage()
+        y = rendu.y
+      }
+      rendu.texte(l, M, y, { taille, gras, couleur })
+      y -= taille * 1.45
+    }
+    y -= apres
+  }
+  ligne(titre, 18, true, ENCRE, 2)
+  ligne(sousTitre, 9, false, GRIS_CLAIR, 14)
+  for (const s of sections) {
+    ligne(s.titre, 11.5, true, ENCRE, 3)
+    for (const par of s.paragraphes) ligne(par, 9.5, false, GRIS, 6)
+    y -= 6
+  }
+  rendu.pages.forEach((page, i) => {
+    rendu.page = page
+    rendu.texte(`${i + 1} / ${rendu.pages.length}`, L - M, 22, { taille: 7, couleur: GRIS_CLAIR, align: 'droite' })
+  })
+  pdf.setTitle(titre)
+  pdf.setProducer('Pastille')
+  return pdf.save()
+}

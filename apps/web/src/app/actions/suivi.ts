@@ -171,3 +171,23 @@ export async function genererMaintenant(slug: string, _: EtatSuivi): Promise<Eta
     message: `${b.creees} facture${b.creees > 1 ? 's' : ''} créée${b.creees > 1 ? 's' : ''}${b.emises ? `, ${b.emises} émise${b.emises > 1 ? 's' : ''}` : ''}${b.aVerifier ? `, ${b.aVerifier} en brouillon à vérifier` : ''}.`,
   }
 }
+
+/** Tableau des factures : marquer envoyée, ou payée (paiement du reste dû, par virement, aujourd'hui). */
+export async function deplacerFacture(slug: string, id: string, cible: 'envoyee' | 'payee'): Promise<{ ok: true } | { ok: false; erreur: string }> {
+  const { organisation } = await editeur(slug)
+  const supabase = await creerClientServeur()
+  const { data: d } = await supabase.from('documents').select('status, amount_due, amount_paid, type').eq('id', id).eq('organization_id', organisation.id).maybeSingle()
+  if (!d || (d.type !== 'facture' && d.type !== 'acompte')) return { ok: false, erreur: 'Facture introuvable.' }
+  if (cible === 'envoyee') {
+    if (d.status !== 'emis') return { ok: false, erreur: 'Seule une facture émise peut être marquée envoyée.' }
+    const { error } = await supabase.rpc('changer_statut', { p_id: id, p_statut: 'envoye' })
+    if (error) return { ok: false, erreur: 'Changement impossible.' }
+  } else {
+    const reste = Number(d.amount_due) - Number(d.amount_paid)
+    if (!['emis', 'envoye', 'partiellement_paye'].includes(d.status) || reste <= 0) return { ok: false, erreur: 'Cette facture ne peut pas être soldée.' }
+    const { error } = await supabase.from('payments').insert({ organization_id: organisation.id, document_id: id, amount_cents: reste, paid_on: aujourdHui(), method: 'virement', reference: 'Tableau des factures' })
+    if (error) return { ok: false, erreur: 'Paiement impossible.' }
+  }
+  revalidatePath(`/${slug}/ventes/factures`)
+  return { ok: true }
+}

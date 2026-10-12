@@ -13,6 +13,7 @@ export interface DocStat {
   total_ttc: number
   amount_due: number
   amount_paid: number
+  client?: string | null
 }
 
 export interface PaiementStat {
@@ -40,6 +41,9 @@ export interface Tableau {
   devisEnAttente: { montant: number; nombre: number }
   delaiMoyen: number | null
   brouillons: number
+  /** Encaissements attendus (reste dû) : échus ou dans 30 jours, de 31 à 60, de 61 à 90. */
+  prevision: { j30: number; j60: number; j90: number }
+  topClients: Array<{ client: string; ht: number }>
 }
 
 const OUVERTES = new Set(['emis', 'envoye', 'partiellement_paye'])
@@ -92,7 +96,30 @@ export function calculerTableau(docs: readonly DocStat[], paiements: readonly Pa
     .filter((d) => d.status === 'paye' && dernierPaiement.has(d.id))
     .map((d) => Math.max(0, Math.round((Date.parse(dernierPaiement.get(d.id)!) - Date.parse(d.issue_date)) / 86_400_000)))
 
+  const horizon = (jours: number) => new Date(Date.parse(`${jour}T00:00:00Z`) + jours * 86_400_000).toISOString().slice(0, 10)
+  const [h30, h60, h90] = [horizon(30), horizon(60), horizon(90)]
+  const prevision = { j30: 0, j60: 0, j90: 0 }
+  for (const d of ouvertes) {
+    const ech = d.due_date ?? jour
+    if (ech <= h30) prevision.j30 += reste(d)
+    else if (ech <= h60) prevision.j60 += reste(d)
+    else if (ech <= h90) prevision.j90 += reste(d)
+  }
+  const ilYAUnAn = horizon(-365)
+  const parClient = new Map<string, number>()
+  for (const d of ventes) {
+    if (d.issue_date < ilYAUnAn || !d.client) continue
+    parClient.set(d.client, (parClient.get(d.client) ?? 0) + d.total_ht)
+  }
+  const topClients = [...parClient.entries()]
+    .map(([client, ht]) => ({ client, ht }))
+    .filter((c) => c.ht > 0)
+    .sort((a, b) => b.ht - a.ht)
+    .slice(0, 5)
+
   return {
+    prevision,
+    topClients,
     encaisseMois: paiementsMois.reduce((s, p) => s + p.amount_cents, 0),
     nbPaiementsMois: paiementsMois.length,
     enAttente: { montant: attente.reduce((s, d) => s + reste(d), 0), nombre: attente.length },

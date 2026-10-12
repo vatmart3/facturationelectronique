@@ -16,9 +16,10 @@ const d = (p: Partial<DocStat> & Pick<DocStat, 'id'>): DocStat => ({
 
 describe('tableau de bord', () => {
   const docs = [
-    d({ id: 'attente' }),
+    d({ id: 'attente', client: 'Dupont' }),
     d({ id: 'retard', due_date: '2026-10-01', amount_paid: 2000, status: 'partiellement_paye' }),
-    d({ id: 'payee', issue_date: '2026-09-01', status: 'paye', amount_paid: 12000 }),
+    d({ id: 'payee', issue_date: '2026-09-01', status: 'paye', amount_paid: 12000, client: 'Martin', total_ht: 30000 }),
+    d({ id: 'loin', due_date: '2026-12-01', client: 'Dupont' }),
     d({ id: 'avoir', type: 'avoir', issue_date: '2026-10-05', total_ht: -5000, total_ttc: -6000, amount_due: -6000 }),
     d({ id: 'brouillon', status: 'brouillon', total_ht: 99999 }),
     d({ id: 'devis', type: 'devis', status: 'envoye', valid_until: '2026-11-01', total_ttc: 50000 }),
@@ -40,17 +41,25 @@ describe('tableau de bord', () => {
   it('encaissements, attente et retard', () => {
     expect(t.encaisseMois).toBe(2000)
     expect(t.nbPaiementsMois).toBe(1)
-    expect(t.enAttente).toEqual({ montant: 12000, nombre: 1 })
+    expect(t.enAttente).toEqual({ montant: 24000, nombre: 2 })
     expect(t.enRetard).toEqual({ montant: 10000, nombre: 1 })
     expect(t.brouillons).toBe(1)
   })
 
   it('chiffre d’affaires : exercice et 12 mois, avoirs déduits, brouillons exclus', () => {
-    expect(t.caExercice).toBe(10000 + 10000 + 10000 - 5000)
+    expect(t.caExercice).toBe(10000 + 10000 + 30000 - 5000 + 10000)
     expect(t.caMensuel).toHaveLength(12)
-    expect(t.caMensuel.at(-1)).toMatchObject({ mois: '2026-10', ht: 15000 })
-    expect(t.caMensuel.at(-2)).toMatchObject({ mois: '2026-09', ht: 10000 })
+    expect(t.caMensuel.at(-1)).toMatchObject({ mois: '2026-10', ht: 25000 })
+    expect(t.caMensuel.at(-2)).toMatchObject({ mois: '2026-09', ht: 30000 })
     expect(t.caMensuel[0]!.mois).toBe('2025-11')
+  })
+
+  it('prévision d’encaissement et meilleurs clients', () => {
+    expect(t.prevision).toEqual({ j30: 22000, j60: 12000, j90: 0 })
+    expect(t.topClients).toEqual([
+      { client: 'Martin', ht: 30000 },
+      { client: 'Dupont', ht: 20000 },
+    ])
   })
 
   it('TVA du mois par taux, devis en attente, délai moyen', () => {

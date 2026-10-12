@@ -580,7 +580,9 @@ export type Database = {
         Row: { id: number; organization_id: string | null; kind: 'pdf' | 'facturx' | 'email' | 'plateforme' | 'stripe' | 'autre'; message: string; context: unknown; created_at: string }
         Insert: { organization_id?: string | null; kind: 'pdf' | 'facturx' | 'email' | 'plateforme' | 'stripe' | 'autre'; message: string; context?: unknown }
         Update: never
-        Relationships: []
+        Relationships: [
+          { foreignKeyName: 'error_logs_organization_id_fkey'; columns: ['organization_id']; isOneToOne: false; referencedRelation: 'organizations'; referencedColumns: ['id'] },
+        ]
       }
       quote_signatures: {
         Row: QuoteSignatureRow
@@ -590,14 +592,14 @@ export type Database = {
       }
       vat_rates: {
         Row: { id: string; territory: string; label: string; rate: number; valid_from: string; valid_to: string | null; created_at: string }
-        Insert: never
-        Update: never
+        Insert: { territory: string; label: string; rate: number; valid_from: string; valid_to?: string | null }
+        Update: { valid_to?: string | null }
         Relationships: []
       }
       legal_mentions: {
         Row: { key: string; text: string; applies_when: string; updated_at: string }
         Insert: never
-        Update: never
+        Update: { text?: string; updated_at?: string }
         Relationships: []
       }
     }

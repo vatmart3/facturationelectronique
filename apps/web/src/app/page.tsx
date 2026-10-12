@@ -1,15 +1,36 @@
+import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
-import { connection } from 'next/server'
+import { Accueil, FAQ } from '@/components/site/Accueil'
 import { listerOrganisations, lireUtilisateur } from '@/lib/session'
 import { lireConfigSupabase } from '@/lib/supabase/env'
 
-/** Aiguillage : connexion, création de la première entreprise ou tableau de bord. */
-export default async function Accueil() {
-  await connection()
-  if (!lireConfigSupabase()) redirect('/connexion')
-  const utilisateur = await lireUtilisateur()
-  if (!utilisateur) redirect('/connexion')
-  const organisations = await listerOrganisations()
-  const premiere = organisations[0]
-  redirect(premiere ? `/${premiere.slug}/tableau-de-bord` : '/bienvenue')
+export const metadata: Metadata = {
+  title: { absolute: 'Pastille · Facturation électronique conforme 2027 pour indépendants et TPE' },
+  description:
+    'Créez une facture conforme en 30 secondes : Factur-X EN 16931, plateforme agréée, e-reporting, relances et devis signés en ligne. Essai gratuit de 14 jours sans carte.',
+  robots: { index: true, follow: true },
+  alternates: { canonical: '/' },
+  openGraph: { title: 'Pastille · Une facture conforme en 30 secondes', type: 'website', locale: 'fr_FR' },
+}
+
+/** Visiteur : page d'accueil. Utilisateur connecté : son tableau de bord. */
+export default async function Racine() {
+  if (lireConfigSupabase()) {
+    const utilisateur = await lireUtilisateur()
+    if (utilisateur) {
+      const organisations = await listerOrganisations()
+      redirect(organisations[0] ? `/${organisations[0].slug}/tableau-de-bord` : '/bienvenue')
+    }
+  }
+  const donnees = {
+    '@context': 'https://schema.org',
+    '@type': 'FAQPage',
+    mainEntity: FAQ.map(([q, r]) => ({ '@type': 'Question', name: q, acceptedAnswer: { '@type': 'Answer', text: r } })),
+  }
+  return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(donnees) }} />
+      <Accueil />
+    </>
+  )
 }

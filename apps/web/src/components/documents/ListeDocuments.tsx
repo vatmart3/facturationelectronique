@@ -6,7 +6,8 @@ import { Icone } from '@/components/ui/Icone'
 import { Segments } from '@/components/ui/Segments'
 import { Statut } from '@/components/ui/Statut'
 import { Tableau, Td, Th } from '@/components/ui/Tableau'
-import { aujourdHui, statutAffiche, type TypeDocument } from '@/lib/document'
+import { ajouterJours, aujourdHui, statutAffiche, type TypeDocument } from '@/lib/document'
+import { Kanban } from './Kanban'
 import { formatDate, formatMontant } from '@/lib/format'
 import { peutFacturer } from '@/lib/roles'
 import { chargerContexte } from '@/lib/session'
@@ -56,7 +57,7 @@ const FILTRES: Record<Vue, Filtre[]> = {
   ],
 }
 
-export async function ListeDocuments({ org, vue, statut, q }: { org: string; vue: Vue; statut?: string; q?: string }) {
+export async function ListeDocuments({ org, vue, statut, q, affichage }: { org: string; vue: Vue; statut?: string; q?: string; affichage?: string }) {
   const { organisation, role } = await chargerContexte(org)
   const config = VUES[vue]
   const supabase = await creerClientServeur()
@@ -93,14 +94,40 @@ export async function ListeDocuments({ org, vue, statut, q }: { org: string; vue
         titre={config.titre}
         description={`${documents.length} document${documents.length > 1 ? 's' : ''}`}
         actions={
-          editable &&
-          nouveau && (
-            <BoutonLien href={`/${org}/${nouveau.href}`} variante="primaire" icone="plus">
-              {nouveau.libelle}
-            </BoutonLien>
-          )
+          <>
+            {vue === 'factures' && (
+              <BoutonLien href={affichage === 'tableau' ? `/${org}/ventes/factures` : `/${org}/ventes/factures?affichage=tableau`}>
+                {affichage === 'tableau' ? 'Vue liste' : 'Vue tableau'}
+              </BoutonLien>
+            )}
+            {editable && nouveau && (
+              <BoutonLien href={`/${org}/${nouveau.href}`} variante="primaire" icone="plus">
+                {nouveau.libelle}
+              </BoutonLien>
+            )}
+          </>
         }
       />
+      {vue === 'factures' && affichage === 'tableau' ? (
+        <Kanban
+          slug={org}
+          editable={editable}
+          cartes={documents
+            .filter((d) => d.status !== 'annule' && !(d.status === 'paye' && d.issue_date < ajouterJours(jour, -90)))
+            .map((d) => ({
+              id: d.id,
+              status: d.status,
+              colonne: d.status === 'brouillon' ? 'brouillon' : d.status === 'paye' ? 'payee' : d.affiche.cle === 'retard' ? 'retard' : 'envoyee',
+              numero: d.number,
+              client: d.clients?.name ?? '—',
+              montant: Number(d.total_ttc),
+              reste: Math.max(0, Number(d.amount_due) - Number(d.amount_paid)),
+              echeance: d.status === 'paye' ? null : d.due_date,
+              devise: d.currency,
+            }))}
+        />
+      ) : (
+      <>
       <div className="flex flex-wrap items-end justify-between gap-3">
         <Segments
           libelle={`Filtrer les ${config.titre.toLowerCase()}`}
@@ -182,6 +209,8 @@ export async function ListeDocuments({ org, vue, statut, q }: { org: string; vue
             ))}
           </tbody>
         </Tableau>
+      )}
+      </>
       )}
     </>
   )

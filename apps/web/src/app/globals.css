@@ -102,6 +102,70 @@
   *::before,
   *::after {
     animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
     transition-duration: 1ms !important;
+  }
+}
+
+/* Accueil : la facture se construit ligne par ligne, puis reçoit son tampon. */
+@keyframes apparaitre {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes tamponner {
+  0% {
+    opacity: 0;
+    transform: rotate(-12deg) scale(1.6);
+  }
+  60% {
+    opacity: 1;
+    transform: rotate(-12deg) scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: rotate(-12deg) scale(1);
+  }
+}
+.construction {
+  animation: apparaitre 420ms ease-out both;
+}
+.tampon {
+  animation: tamponner 520ms cubic-bezier(0.2, 0.9, 0.3, 1.2) both;
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+}
+
+/* Impression d'un document : seule la feuille A4 apparaît, couleurs de fond conservées. */
+@media print {
+  @page {
+    size: A4;
+    margin: 0;
+  }
+  body * {
+    visibility: hidden;
+  }
+  .document-imprime,
+  .document-imprime * {
+    visibility: visible;
+  }
+  .document-imprime {
+    position: absolute;
+    inset: 0 auto auto 0;
+    width: 210mm;
+    min-height: 297mm;
+    margin: 0;
+    box-shadow: none;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
   }
 }

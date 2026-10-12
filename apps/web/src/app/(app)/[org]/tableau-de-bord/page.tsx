@@ -37,7 +37,14 @@ export default async function TableauDeBord({ params }: { params: Promise<{ org:
     supabase.from('clients').select('id', { count: 'exact', head: true }).eq('organization_id', organisation.id),
     supabase.from('recurring_invoices').select('id').eq('organization_id', organisation.id).eq('active', true).lte('next_date', jour),
   ])
-  const documents = (docs ?? []).map((d) => ({ ...d, total_ht: Number(d.total_ht), total_ttc: Number(d.total_ttc), amount_due: Number(d.amount_due), amount_paid: Number(d.amount_paid) }))
+  const documents = (docs ?? []).map((d) => ({
+    ...d,
+    total_ht: Number(d.total_ht),
+    total_ttc: Number(d.total_ttc),
+    amount_due: Number(d.amount_due),
+    amount_paid: Number(d.amount_paid),
+    client: d.clients?.name ?? null,
+  }))
   const t = calculerTableau(
     documents,
     (paiements ?? []).map((p) => ({ ...p, amount_cents: Number(p.amount_cents) })),
@@ -163,6 +170,30 @@ export default async function TableauDeBord({ params }: { params: Promise<{ org:
               <Link href={`/${org}/ventes/devis?statut=envoyes`} className="text-[13px] text-accent hover:underline">
                 {t.devisEnAttente.nombre} devis en attente de réponse · {formatMontant(t.devisEnAttente.montant)}
               </Link>
+            )}
+          </PanneauCorps>
+        </Panneau>
+      </div>
+      <div className="grid gap-[18px] lg:grid-cols-2">
+        <Panneau>
+          <PanneauTete titre="Prévision d’encaissement" description="Reste dû des factures ouvertes, selon leur échéance" />
+          <PanneauCorps>
+            <ListeCles
+              lignes={[
+                ['Échu ou sous 30 jours', <span key="30" className="num">{formatMontant(t.prevision.j30)}</span>],
+                ['De 31 à 60 jours', <span key="60" className="num">{formatMontant(t.prevision.j60)}</span>],
+                ['De 61 à 90 jours', <span key="90" className="num">{formatMontant(t.prevision.j90)}</span>],
+              ]}
+            />
+          </PanneauCorps>
+        </Panneau>
+        <Panneau>
+          <PanneauTete titre="Meilleurs clients" description="Chiffre d’affaires HT sur 12 mois" />
+          <PanneauCorps>
+            {t.topClients.length === 0 ? (
+              <p className="text-[13.5px] text-encre-3">Les clients apparaîtront ici dès les premières factures émises.</p>
+            ) : (
+              <ListeCles lignes={t.topClients.map((c): [string, React.ReactNode] => [c.client, <span key={c.client} className="num">{formatMontant(c.ht)}</span>])} />
             )}
           </PanneauCorps>
         </Panneau>

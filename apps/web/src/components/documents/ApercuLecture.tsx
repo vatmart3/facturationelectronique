@@ -24,6 +24,7 @@ import type { DocumentRow } from '@/lib/supabase/types'
 import { BoutonAction, BoutonSupprimerPaiement, FormulaireAcompte } from './Actions'
 import { ChampsEnvoi, ChampsPaiement, ChampsRecurrence, FormulaireSuivi, Partage } from './Suivi'
 import { DocumentImprime } from './DocumentImprime'
+import { BoutonImprimer } from './Imprimer'
 
 const CHEMINS = { facture: 'factures', acompte: 'factures', devis: 'devis', avoir: 'avoirs' } as const
 
@@ -147,6 +148,7 @@ export async function ApercuLecture({ org, document: d, imprimable, role }: { or
               <a href={`${base}/pdf?telecharger`} className={classesBouton('fantome', 's')}>
                 Télécharger
               </a>
+              <BoutonImprimer />
             </div>
             {en16931 && (
               <>

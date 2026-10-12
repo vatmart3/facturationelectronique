@@ -339,3 +339,49 @@ test('plateforme agréée : transmission, cycle de vie, réception et e-reportin
   await page.getByRole('button', { name: 'Déposer les transactions' }).click()
   await expect(page.getByText(/Déposé le/).first()).toBeVisible()
 })
+
+test('abonnement, invitation de l’expert-comptable, tableau des factures, export RGPD', async ({ page, browser }) => {
+  test.setTimeout(150_000)
+  await connecter(page)
+
+  await page.goto(`/${slug}/reglages/abonnement`)
+  await expect(page.getByText(/Essai gratuit · 1[34] jours restants/).first()).toBeVisible()
+  await expect(page.getByText('Pastille Pro', { exact: true })).toBeVisible()
+
+  // Invitation : sans messagerie configurée, le lien s'affiche pour être transmis.
+  await page.goto(`/${slug}/reglages/membres`)
+  const comptable = `compta${Date.now()}@cabinet.fr`
+  await page.getByLabel('Email', { exact: true }).fill(comptable)
+  await page.getByRole('button', { name: 'Envoyer l’invitation' }).click()
+  const message = await page.getByText(/transmettez ce lien/).textContent()
+  const lien = /(https?:\/\/\S+\/invitation\/[0-9a-f-]{36})/.exec(message ?? '')![1]!
+
+  const contexte = await browser.newContext()
+  const invite = await contexte.newPage()
+  await invite.goto(new URL(lien).pathname)
+  await expect(invite.getByRole('heading', { name: /Rejoindre Atelier Lumen/ })).toBeVisible()
+  await invite.getByRole('link', { name: 'Créer mon compte' }).click()
+  await invite.getByLabel('Nom et prénom').fill('Jeanne Comptable')
+  await expect(invite.getByLabel('Email professionnel')).toHaveValue(comptable)
+  await invite.getByLabel('Mot de passe').fill('cabinet2027x')
+  await invite.getByRole('button', { name: 'Créer mon compte' }).click()
+  await invite.waitForURL(/\/invitation\//)
+  await invite.getByRole('button', { name: /Rejoindre Atelier Lumen/ }).click()
+  await invite.waitForURL(/tableau-de-bord/)
+  // Rôle expert-comptable : consultation, pas de création.
+  await invite.goto(`/${slug}/ventes/factures`)
+  await expect(invite.getByRole('link', { name: 'Nouvelle facture' })).toHaveCount(1) // celui de l'en-tête uniquement
+  await contexte.close()
+
+  await page.reload()
+  await expect(page.getByText('Jeanne Comptable')).toBeVisible()
+
+  // Tableau des factures par état.
+  await page.goto(`/${slug}/ventes/factures?affichage=tableau`)
+  await expect(page.getByRole('region', { name: 'Payée' })).toContainText(/F-\d{4}-0043/)
+  await expect(page.getByRole('region', { name: 'Brouillon' })).toBeVisible()
+
+  // Export RGPD.
+  const zip = await page.request.get('/compte/export')
+  expect(zip.headers()['content-type']).toBe('application/zip')
+})
