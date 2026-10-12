@@ -1,12 +1,9 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
 import { AvertissementConfig } from '@/components/auth/AvertissementConfig'
-import { BoutonGoogle } from '@/components/auth/BoutonGoogle'
 import { FormulaireInscription } from '@/components/auth/FormulaireInscription'
-import { Separateur } from '@/components/auth/Separateur'
 import { suiteSure } from '@/lib/auth'
 import { lireConfigSupabase } from '@/lib/supabase/env'
-import { lireReglagesAuth } from '@/lib/supabase/reglages-auth'
 
 export const metadata: Metadata = { title: 'Créer un compte' }
 
@@ -14,8 +11,6 @@ export default async function Inscription({ searchParams }: { searchParams: Prom
   const { suite: demandee, email } = await searchParams
   const suite = demandee ? suiteSure(demandee) : '/bienvenue'
   const configure = lireConfigSupabase() !== null
-  // Sans réponse du service, on garde le bouton : mieux vaut un essai qu'une option invisible.
-  const google = configure && ((await lireReglagesAuth())?.google ?? true)
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-1.5">
@@ -28,12 +23,6 @@ export default async function Inscription({ searchParams }: { searchParams: Prom
         </p>
       </div>
       {!configure && <AvertissementConfig />}
-      {google && (
-        <>
-          <BoutonGoogle suite={suite} />
-          <Separateur />
-        </>
-      )}
       <FormulaireInscription desactive={!configure} suite={suite} email={email} />
       <p className="text-[12.5px] text-encre-3">
         En créant un compte, vous acceptez les{' '}

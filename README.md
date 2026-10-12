@@ -37,18 +37,14 @@ Sans clés Supabase, l'application démarre quand même : `/connexion` affiche u
 4. **URLs d'authentification** (*Authentication > URL Configuration*) :
    - Site URL : `http://localhost:3000` en local, l'URL de production ensuite.
    - Redirect URLs : `<site>/auth/callback` et `<site>/auth/confirm`.
-5. **Connexion avec Google** (facultatif). Le bouton « Continuer avec Google » n'apparaît que lorsque le fournisseur est activé dans Supabase (vérifié chaque minute).
-   - [Google Cloud Console](https://console.cloud.google.com) : créer un projet, puis *APIs & Services > OAuth consent screen* (type *External*, nom « Pastille », email d'assistance, domaine du site).
-   - *Credentials > Create credentials > OAuth client ID*, type *Web application* : origine autorisée `https://<votre-site>`, URI de redirection autorisée `https://<ref>.supabase.co/auth/v1/callback`.
-   - Supabase, *Authentication > Sign In / Providers > Google* : activer, coller le *Client ID* et le *Client secret*, enregistrer.
-6. **Confirmation des emails à l'inscription.** Le service d'email intégré à Supabase n'envoie qu'aux adresses des membres de l'équipe du projet, avec un plafond horaire très bas. Deux options :
+5. **Confirmation des emails à l'inscription.** Le service d'email intégré à Supabase n'envoie qu'aux adresses des membres de l'équipe du projet, avec un plafond horaire très bas. Deux options :
    - pour tester : désactiver *Confirm email* dans *Authentication > Sign In / Providers > Email* ; l'inscription connecte alors directement ;
    - pour ouvrir au public : brancher un SMTP (Resend, Brevo…) dans *Authentication > Emails > SMTP Settings*, et garder *Confirm email* activé.
 
    L'application gère les deux cas : écran « Vérifiez votre boîte mail », renvoi de l'email (une fois par minute), message clair si l'envoi échoue.
-7. **Liens dans les emails** : les liens envoyés par défaut passent par `/auth/callback`. Pour des liens qui fonctionnent aussi quand l'email est ouvert dans un autre navigateur, remplacer dans *Authentication > Email Templates* le lien par :
+6. **Liens dans les emails** : les liens envoyés par défaut passent par `/auth/callback`. Pour des liens qui fonctionnent aussi quand l'email est ouvert dans un autre navigateur, remplacer dans *Authentication > Email Templates* le lien par :
    `{{ .SiteURL }}/auth/confirm?token_hash={{ .TokenHash }}&type=email` (type `recovery` pour le modèle « Reset password », `signup` pour « Confirm signup »).
-8. **Types TypeScript** : après chaque migration, `pnpm db:types` génère `types.generated.ts` ; reporter les changements dans `apps/web/src/lib/supabase/types.ts`.
+7. **Types TypeScript** : après chaque migration, `pnpm db:types` génère `types.generated.ts` ; reporter les changements dans `apps/web/src/lib/supabase/types.ts`.
 
 ## Déployer sur Vercel
 

@@ -20,7 +20,7 @@ const MESSAGES: Record<string, string> = {
   same_password: 'Le nouveau mot de passe doit être différent de l’ancien.',
   signup_disabled: 'Les inscriptions sont temporairement fermées.',
   validation_failed: 'Les informations saisies ne sont pas valides.',
-  email_address_not_authorized: 'L’envoi d’emails n’est pas encore ouvert à toutes les adresses sur ce service. Utilisez « Continuer avec Google » ou réessayez plus tard.',
+  email_address_not_authorized: 'L’envoi d’emails n’est pas encore ouvert à toutes les adresses sur ce service. Réessayez plus tard ou contactez le support.',
   email_address_invalid: 'Cette adresse email n’est pas acceptée. Vérifiez-la ou utilisez une autre adresse.',
   email_send_failed: 'L’email de confirmation n’a pas pu être envoyé. Réessayez dans quelques minutes.',
   provider_disabled: 'Ce mode de connexion n’est pas activé.',

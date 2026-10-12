@@ -92,17 +92,6 @@ export async function renvoyerConfirmation(_: EtatFormulaire, formData: FormData
   return { succes: 'Email renvoyé. Pensez à regarder dans les courriers indésirables.', email }
 }
 
-export async function connexionGoogle(formData: FormData): Promise<void> {
-  const suite = suiteSure(formData.get('suite'))
-  const supabase = await creerClientServeur()
-  const { data, error } = await supabase.auth.signInWithOAuth({
-    provider: 'google',
-    options: { redirectTo: `${await origine()}/auth/callback?suite=${encodeURIComponent(suite)}` },
-  })
-  if (error || !data.url) redirect('/connexion?erreur=google')
-  redirect(data.url)
-}
-
 export async function demanderReinitialisation(_: EtatFormulaire, formData: FormData): Promise<EtatFormulaire> {
   const email = texte(formData, 'email').toLowerCase()
   if (!emailValide(email)) return { erreur: 'Saisissez une adresse email valide.', email }
