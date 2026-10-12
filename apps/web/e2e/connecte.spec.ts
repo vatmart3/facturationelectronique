@@ -370,7 +370,7 @@ test('abonnement, invitation de l’expert-comptable, tableau des factures, expo
   await invite.waitForURL(/tableau-de-bord/)
   // Rôle expert-comptable : consultation, pas de création.
   await invite.goto(`/${slug}/ventes/factures`)
-  await expect(invite.getByRole('link', { name: 'Nouvelle facture' })).toHaveCount(1) // celui de l'en-tête uniquement
+  await expect(invite.getByRole('link', { name: 'Nouvelle facture' })).toHaveCount(0)
   await contexte.close()
 
   await page.reload()

@@ -5,9 +5,22 @@ import { sInscrire, type EtatFormulaire } from '@/app/(auth)/actions'
 import { Bouton } from '@/components/ui/Bouton'
 import { Champ } from '@/components/ui/Champ'
 import { Message } from '@/components/ui/Message'
+import { RenvoyerConfirmation } from './RenvoyerConfirmation'
 
 export function FormulaireInscription({ desactive, suite = '/bienvenue', email }: { desactive?: boolean; suite?: string; email?: string }) {
   const [etat, action, enCours] = useActionState<EtatFormulaire, FormData>(sInscrire, {})
+  if (etat.aConfirmer && etat.email) {
+    return (
+      <div className="flex flex-col gap-3 rounded-l border border-trait bg-surface p-5">
+        <h2 className="text-[17px] font-semibold">Vérifiez votre boîte mail</h2>
+        <p className="text-[14px] text-encre-2">
+          Votre compte est créé. Cliquez sur le lien envoyé à <strong className="text-encre">{etat.email}</strong> pour confirmer votre adresse : vous arriverez
+          directement dans Pastille.
+        </p>
+        <RenvoyerConfirmation email={etat.email} suite={suite} />
+      </div>
+    )
+  }
   return (
     <form action={action} className="flex flex-col gap-3.5" noValidate>
       {etat.erreur && <Message ton="erreur">{etat.erreur}</Message>}

@@ -6,6 +6,7 @@ import { envoyerLienMagique, seConnecter, type EtatFormulaire } from '@/app/(aut
 import { Bouton } from '@/components/ui/Bouton'
 import { Champ } from '@/components/ui/Champ'
 import { Message } from '@/components/ui/Message'
+import { RenvoyerConfirmation } from './RenvoyerConfirmation'
 
 type Mode = 'mot_de_passe' | 'lien'
 
@@ -43,6 +44,7 @@ export function FormulaireConnexion({ suite, desactive }: { suite: string; desac
 
       {etat.erreur && <Message ton="erreur">{etat.erreur}</Message>}
       {etat.succes && <Message ton="succes">{etat.succes}</Message>}
+      {mode === 'mot_de_passe' && etatMdp.aConfirmer && etatMdp.email && <RenvoyerConfirmation email={etatMdp.email} suite={suite} />}
 
       {mode === 'mot_de_passe' ? (
         <form action={actionMdp} className="flex flex-col gap-3.5" noValidate>

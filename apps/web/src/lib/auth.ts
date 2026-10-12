@@ -20,10 +20,20 @@ const MESSAGES: Record<string, string> = {
   same_password: 'Le nouveau mot de passe doit être différent de l’ancien.',
   signup_disabled: 'Les inscriptions sont temporairement fermées.',
   validation_failed: 'Les informations saisies ne sont pas valides.',
+  email_address_not_authorized: 'L’envoi d’emails n’est pas encore ouvert à toutes les adresses sur ce service. Utilisez « Continuer avec Google » ou réessayez plus tard.',
+  email_address_invalid: 'Cette adresse email n’est pas acceptée. Vérifiez-la ou utilisez une autre adresse.',
+  email_send_failed: 'L’email de confirmation n’a pas pu être envoyé. Réessayez dans quelques minutes.',
+  provider_disabled: 'Ce mode de connexion n’est pas activé.',
 }
 
-export function traduireErreurAuth(code: string | undefined): string {
-  return (code && MESSAGES[code]) ?? 'Une erreur est survenue. Réessayez dans un instant.'
+export function traduireErreurAuth(code: string | undefined, message?: string): string {
+  // « For security purposes, you can only request this after 59 seconds. »
+  const attente = message?.match(/after (\d+) seconds?/)
+  if (attente) return `Un email vient déjà d’être envoyé. Patientez ${attente[1]} secondes avant d’en demander un autre.`
+  if (code && MESSAGES[code]) return MESSAGES[code]
+  // Échec d'envoi SMTP : Supabase répond « unexpected_failure » avec ce message.
+  if (message && /sending (confirmation|magic link|recovery)? ?email|smtp/i.test(message)) return MESSAGES.email_send_failed!
+  return 'Une erreur est survenue. Réessayez dans un instant.'
 }
 
 export function emailValide(email: string): boolean {

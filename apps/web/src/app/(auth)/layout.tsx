@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { SessionDepuisLien } from '@/components/auth/SessionDepuisLien'
 import { Logo } from '@/components/marque/Logo'
 
 export default function LayoutAuth({ children }: { children: ReactNode }) {
@@ -29,6 +30,7 @@ export default function LayoutAuth({ children }: { children: ReactNode }) {
         <p className="text-[12.5px] text-encre-3">© {new Date().getFullYear()} Pastille</p>
       </aside>
       <main className="flex flex-col items-center justify-center px-4 py-12 sm:px-8">
+        <SessionDepuisLien />
         <div className="mb-8 lg:hidden">
           <Logo />
         </div>

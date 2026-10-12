@@ -7,18 +7,22 @@ import { Separateur } from '@/components/auth/Separateur'
 import { Message } from '@/components/ui/Message'
 import { suiteSure } from '@/lib/auth'
 import { lireConfigSupabase } from '@/lib/supabase/env'
+import { lireReglagesAuth } from '@/lib/supabase/reglages-auth'
 
 export const metadata: Metadata = { title: 'Connexion' }
 
 const ERREURS: Record<string, string> = {
-  lien: 'Ce lien n’est plus valide. Demandez-en un nouveau.',
+  lien: 'Ce lien n’est plus valide, ou il a été ouvert dans un autre navigateur. Si vous venez de confirmer votre adresse, connectez-vous simplement ci-dessous.',
   google: 'La connexion avec Google n’a pas abouti. Réessayez ou utilisez votre email.',
+  annule: 'Connexion avec Google annulée. Choisissez un compte Google ou connectez-vous avec votre email.',
 }
 
 export default async function Connexion({ searchParams }: { searchParams: Promise<Record<string, string | undefined>> }) {
   const params = await searchParams
   const suite = suiteSure(params.suite)
   const configure = lireConfigSupabase() !== null
+  // Sans réponse du service, on garde le bouton : mieux vaut un essai qu'une option invisible.
+  const google = configure && ((await lireReglagesAuth())?.google ?? true)
   const erreur = params.erreur ? ERREURS[params.erreur] : undefined
 
   return (
@@ -34,8 +38,12 @@ export default async function Connexion({ searchParams }: { searchParams: Promis
       </div>
       {!configure && <AvertissementConfig />}
       {erreur && <Message ton="erreur">{erreur}</Message>}
-      <BoutonGoogle suite={suite} desactive={!configure} />
-      <Separateur />
+      {google && (
+        <>
+          <BoutonGoogle suite={suite} />
+          <Separateur />
+        </>
+      )}
       <FormulaireConnexion suite={suite} desactive={!configure} />
     </div>
   )

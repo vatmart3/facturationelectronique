@@ -10,6 +10,8 @@ export interface EtatFormulaire {
   succes?: string
   email?: string
   nom?: string
+  /** Le compte existe mais l'adresse n'est pas encore confirmée : proposer de renvoyer l'email. */
+  aConfirmer?: boolean
 }
 
 async function origine(): Promise<string> {
@@ -33,7 +35,7 @@ export async function seConnecter(_: EtatFormulaire, formData: FormData): Promis
 
   const supabase = await creerClientServeur()
   const { error } = await supabase.auth.signInWithPassword({ email, password: motDePasse })
-  if (error) return { erreur: traduireErreurAuth(error.code), email }
+  if (error) return { erreur: traduireErreurAuth(error.code, error.message), email, aConfirmer: error.code === 'email_not_confirmed' }
   redirect(suiteSure(formData.get('suite')))
 }
 
@@ -47,7 +49,7 @@ export async function envoyerLienMagique(_: EtatFormulaire, formData: FormData):
     email,
     options: { emailRedirectTo: `${await origine()}/auth/callback?suite=${encodeURIComponent(suite)}` },
   })
-  if (error) return { erreur: traduireErreurAuth(error.code), email }
+  if (error) return { erreur: traduireErreurAuth(error.code, error.message), email }
   return { succes: `Lien de connexion envoyé à ${email}. Il est valable une heure.`, email }
 }
 
@@ -69,11 +71,25 @@ export async function sInscrire(_: EtatFormulaire, formData: FormData): Promise<
       emailRedirectTo: `${await origine()}/auth/callback?suite=${encodeURIComponent(suite)}`,
     },
   })
-  if (error) return { erreur: traduireErreurAuth(error.code), email, nom }
+  if (error) return { erreur: traduireErreurAuth(error.code, error.message), email, nom }
   if (!data.session) {
-    return { succes: `Compte créé. Confirmez votre adresse grâce au lien envoyé à ${email}.`, email }
+    return { succes: `Compte créé. Confirmez votre adresse grâce au lien envoyé à ${email}.`, email, aConfirmer: true }
   }
   redirect(suite)
+}
+
+export async function renvoyerConfirmation(_: EtatFormulaire, formData: FormData): Promise<EtatFormulaire> {
+  const email = texte(formData, 'email').toLowerCase()
+  if (!emailValide(email)) return { erreur: 'Saisissez une adresse email valide.', email }
+  const suite = formData.get('suite') ? suiteSure(formData.get('suite')) : '/bienvenue'
+  const supabase = await creerClientServeur()
+  const { error } = await supabase.auth.resend({
+    type: 'signup',
+    email,
+    options: { emailRedirectTo: `${await origine()}/auth/callback?suite=${encodeURIComponent(suite)}` },
+  })
+  if (error) return { erreur: traduireErreurAuth(error.code, error.message), email }
+  return { succes: 'Email renvoyé. Pensez à regarder dans les courriers indésirables.', email }
 }
 
 export async function connexionGoogle(formData: FormData): Promise<void> {
@@ -94,7 +110,7 @@ export async function demanderReinitialisation(_: EtatFormulaire, formData: Form
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
     redirectTo: `${await origine()}/auth/callback?suite=/mot-de-passe/nouveau`,
   })
-  if (error) return { erreur: traduireErreurAuth(error.code), email }
+  if (error) return { erreur: traduireErreurAuth(error.code, error.message), email }
   // Même message que le compte existe ou non, pour ne pas révéler les adresses inscrites.
   return { succes: `Si un compte existe pour ${email}, un lien de réinitialisation vient d’être envoyé.`, email }
 }
@@ -104,7 +120,7 @@ export async function changerMotDePasse(_: EtatFormulaire, formData: FormData): 
   if (!motDePasseValide(motDePasse)) return { erreur: traduireErreurAuth('weak_password') }
   const supabase = await creerClientServeur()
   const { error } = await supabase.auth.updateUser({ password: motDePasse })
-  if (error) return { erreur: traduireErreurAuth(error.code) }
+  if (error) return { erreur: traduireErreurAuth(error.code, error.message) }
   redirect('/')
 }
 

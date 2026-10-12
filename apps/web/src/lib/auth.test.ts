@@ -28,6 +28,9 @@ describe('validations', () => {
   it('traduit les codes d’erreur Supabase', () => {
     expect(traduireErreurAuth('invalid_credentials')).toMatch(/incorrect/)
     expect(traduireErreurAuth('inconnu')).toMatch(/erreur/)
+    expect(traduireErreurAuth('unexpected_failure', 'Error sending confirmation email')).toMatch(/n’a pas pu être envoyé/)
+    expect(traduireErreurAuth('email_address_not_authorized')).toMatch(/Google/)
+    expect(traduireErreurAuth('over_email_send_rate_limit', 'For security purposes, you can only request this after 59 seconds.')).toMatch(/Patientez 59 secondes/)
     expect(traduireErreurAuth(undefined)).toMatch(/erreur/)
   })
 })
