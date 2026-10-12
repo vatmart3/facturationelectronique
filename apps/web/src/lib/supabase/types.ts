@@ -323,6 +323,10 @@ export type Database = {
     Views: Record<string, never>
     Functions: {
       create_organization: { Args: { p_name: string }; Returns: OrganizationRow }
+      enregistrer_brouillon: {
+        Args: { p_organization: string; p_id: string | null; p_document: unknown; p_lignes: unknown; p_tva: unknown }
+        Returns: string
+      }
     }
     Enums: {
       member_role: MemberRole
