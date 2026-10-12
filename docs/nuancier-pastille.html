@@ -1,812 +1,732 @@
 <title>Nuancier Pastille</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..800&family=IBM+Plex+Mono:wght@400;500;600&family=Onest:wght@400..700&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Schibsted+Grotesk:wght@400..800&family=Onest:wght@400..700&family=IBM+Plex+Mono:wght@400;500&display=swap">
 <style>
-/* Mise en page : une feuille de nuancier crème, sections empilées, composants présentés en planches de deux colonnes */
+/* Mise en page : en-tête court, puis la maquette de l'application (barre latérale par catégories + vue), puis le système (tokens, composants, arborescence) */
 :root{
-  /* Palette (section 2 du brief) */
-  --papier:#F6F1E7; --carte:#FFFDF8; --encre:#1C1B22; --encre-douce:#5E5862;
-  --tomate:#FF5A36; --menthe:#9FE0BC; --beurre:#FFD65C; --ciel:#A9D2FF;
-  --prune:#7A4BD0; --brique:#C2410C; --trait:#E6DCCB;
-  /* Couleurs fixes, indépendantes du thème */
-  --sur-clair:#1C1B22; --sur-fonce:#FFFDF8;
-  --facture-fond:#FFFDF8; --facture-encre:#1C1B22; --facture-trait:#E6DCCB;
-  /* Remplissages de statut (pastilles) */
-  --st-brouillon:#FFD65C; --st-envoyee:#A9D2FF; --st-payee:#9FE0BC; --st-retard:#C2410C; --st-avoir:#7A4BD0;
-  /* Matière */
-  --ombre-teinte:84 52 20;
-  --ombre-1:0 1px 0 rgb(var(--ombre-teinte) / .07), 0 10px 22px -10px rgb(var(--ombre-teinte) / .28);
-  --ombre-2:0 2px 0 rgb(var(--ombre-teinte) / .06), 0 26px 48px -18px rgb(var(--ombre-teinte) / .40);
-  --voile:rgb(28 27 34 / .28);
-  --grain:.045;
-  --anneau:0 0 0 2px var(--papier), 0 0 0 4.5px var(--encre);
-  /* Formes */
-  --r-pilule:999px; --r-carte:32px; --r-carte-s:24px; --r-bulle:20px;
-  /* Typo */
-  --f-titre:"Bricolage Grotesque","Trebuchet MS",system-ui,sans-serif;
+  --fond:#F4F4F1; --surface:#FFFFFF; --surface-2:#FAFAF8; --survol:#F1F1ED;
+  --encre:#16171B; --encre-2:#585A61; --encre-3:#8B8D94;
+  --trait:#E6E5E0; --trait-fort:#D3D2CC;
+  --accent:#1F3A5F; --accent-doux:#E9EEF5;
+  --marque:#FF5A36;
+  --ok:#23774F; --ok-doux:#E5F1EA;
+  --info:#2F5E9E; --info-doux:#E7EEF8;
+  --attente:#86650F; --attente-doux:#F5EED8;
+  --alerte:#B23C12; --alerte-doux:#F8E6DE;
+  --avoir:#5E3FA3; --avoir-doux:#EEE9F7;
+  --neutre:#5D5F66; --neutre-doux:#EEEEEA;
+  --ombre:0 1px 2px rgb(16 17 20 / .05), 0 1px 1px rgb(16 17 20 / .03);
+  --ombre-haute:0 12px 32px -12px rgb(16 17 20 / .18), 0 2px 6px rgb(16 17 20 / .05);
+  --anneau:0 0 0 2px var(--surface), 0 0 0 4px var(--accent);
+  --r-s:6px; --r-m:8px; --r-l:12px; --r-xl:16px;
+  --f-titre:"Schibsted Grotesk","Helvetica Neue",Arial,sans-serif;
   --f-texte:"Onest","Segoe UI",system-ui,sans-serif;
-  --f-chiffre:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
-  /* Mouvement */
-  --d-rapide:120ms; --d-base:220ms; --d-compteur:300ms;
-  --e-ressort:cubic-bezier(.34,1.56,.64,1); --e-glisse:cubic-bezier(.22,1,.36,1);
+  --f-chiffre:"IBM Plex Mono",ui-monospace,Menlo,monospace;
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
-    --papier:#17161C; --carte:#22212A; --encre:#F3EEE4; --encre-douce:#ABA4B0;
-    --tomate:#FF6646; --menthe:#8CCBA9; --beurre:#E9C65E; --ciel:#97BFEB;
-    --prune:#A98AE6; --brique:#F0804F; --trait:#36333F;
-    --st-brouillon:#E9C65E; --st-envoyee:#97BFEB; --st-payee:#8CCBA9; --st-retard:#B4441A; --st-avoir:#6E48B8;
-    --ombre-teinte:0 0 0; --voile:rgb(0 0 0 / .5); --grain:.06;
+    --fond:#0F1012; --surface:#17181B; --surface-2:#131417; --survol:#1E1F23;
+    --encre:#EDEDEA; --encre-2:#A3A5AC; --encre-3:#75777E;
+    --trait:#26272C; --trait-fort:#35363C;
+    --accent:#9DB7DD; --accent-doux:#1A2432;
+    --ok:#6CC59A; --ok-doux:#14271E; --info:#8DB1E6; --info-doux:#15202E;
+    --attente:#E0BE5E; --attente-doux:#29230F; --alerte:#F0875A; --alerte-doux:#2D1A12;
+    --avoir:#B9A2EC; --avoir-doux:#221B32; --neutre:#A3A5AC; --neutre-doux:#222327;
+    --ombre:0 1px 2px rgb(0 0 0 / .4); --ombre-haute:0 16px 40px -12px rgb(0 0 0 / .6);
     color-scheme:dark;
   }
 }
 :root[data-theme="dark"]{
-  --papier:#17161C; --carte:#22212A; --encre:#F3EEE4; --encre-douce:#ABA4B0;
-  --tomate:#FF6646; --menthe:#8CCBA9; --beurre:#E9C65E; --ciel:#97BFEB;
-  --prune:#A98AE6; --brique:#F0804F; --trait:#36333F;
-  --st-brouillon:#E9C65E; --st-envoyee:#97BFEB; --st-payee:#8CCBA9; --st-retard:#B4441A; --st-avoir:#6E48B8;
-  --ombre-teinte:0 0 0; --voile:rgb(0 0 0 / .5); --grain:.06;
+  --fond:#0F1012; --surface:#17181B; --surface-2:#131417; --survol:#1E1F23;
+  --encre:#EDEDEA; --encre-2:#A3A5AC; --encre-3:#75777E;
+  --trait:#26272C; --trait-fort:#35363C;
+  --accent:#9DB7DD; --accent-doux:#1A2432;
+  --ok:#6CC59A; --ok-doux:#14271E; --info:#8DB1E6; --info-doux:#15202E;
+  --attente:#E0BE5E; --attente-doux:#29230F; --alerte:#F0875A; --alerte-doux:#2D1A12;
+  --avoir:#B9A2EC; --avoir-doux:#221B32; --neutre:#A3A5AC; --neutre-doux:#222327;
+  --ombre:0 1px 2px rgb(0 0 0 / .4); --ombre-haute:0 16px 40px -12px rgb(0 0 0 / .6);
   color-scheme:dark;
 }
 
 *{box-sizing:border-box}
-html{-webkit-text-size-adjust:100%}
-body{background:var(--papier);color:var(--encre);font-family:var(--f-texte);font-size:16px;line-height:1.55;}
-body::before{content:"";position:fixed;inset:0;pointer-events:none;z-index:200;opacity:var(--grain);
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .35 0 0 0 0 .22 0 0 0 0 .1 0 0 0 1.6 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");}
-.feuille{max-width:1140px;margin:0 auto;padding-inline:20px;padding-block:28px 96px;display:flex;flex-direction:column;gap:72px}
-h1,h2,h3{font-family:var(--f-titre);text-wrap:balance;margin:0;letter-spacing:-.01em}
-h2{font-size:clamp(28px,4vw,40px);font-weight:800;line-height:1.05}
-h3{font-size:21px;font-weight:700}
+body{background:var(--fond);color:var(--encre);font-family:var(--f-texte);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased}
+h1,h2,h3,h4{font-family:var(--f-titre);margin:0;text-wrap:balance;letter-spacing:-.015em}
 p{margin:0}
-.etiquette{font-size:12.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--encre-douce)}
-.chapeau{max-width:62ch;color:var(--encre-douce)}
-code,.mono{font-family:var(--f-chiffre);font-size:.88em}
-:focus-visible{outline:none;box-shadow:var(--anneau)}
+button{font-family:inherit}
+code{font-family:var(--f-chiffre);font-size:.9em}
+:focus-visible{outline:none;box-shadow:var(--anneau);border-radius:var(--r-s)}
+.num{font-family:var(--f-chiffre);font-variant-numeric:tabular-nums;font-size:13px;white-space:nowrap}
+.feuille{max-width:1320px;margin:0 auto;padding-inline:20px;padding-block:28px 88px;display:flex;flex-direction:column;gap:56px}
+.surtitre{font-size:11.5px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--encre-3)}
+.chapeau{color:var(--encre-2);max-width:68ch;font-size:15px}
 
-/* En-tête */
-.entete{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:24px}
-.marque{display:flex;align-items:center;gap:14px}
-.marque-disque{width:46px;height:46px;border-radius:50%;background:var(--tomate);box-shadow:var(--ombre-1);position:relative}
-.marque-disque::after{content:"";position:absolute;inset:12px;border-radius:50%;border:3px solid var(--sur-clair);opacity:.85}
-.marque-nom{font-family:var(--f-titre);font-weight:800;font-size:40px;letter-spacing:-.03em;line-height:1}
-.intro{display:flex;flex-direction:column;gap:18px}
-.intro h1{font-size:clamp(36px,6.4vw,72px);font-weight:800;line-height:.98;max-width:16ch}
-.bascule{display:inline-flex;padding:4px;border-radius:var(--r-pilule);background:var(--carte);border:1px solid var(--trait);box-shadow:var(--ombre-1)}
-.bascule button{font:600 14px var(--f-texte);color:var(--encre-douce);background:none;border:0;border-radius:var(--r-pilule);padding:8px 16px;cursor:pointer;transition:background var(--d-base),color var(--d-base)}
-.bascule button[aria-pressed="true"]{background:var(--encre);color:var(--papier)}
+/* En-tête de page */
+.entete{display:flex;flex-wrap:wrap;gap:20px;justify-content:space-between;align-items:flex-end}
+.entete-txt{display:flex;flex-direction:column;gap:10px}
+.entete h1{font-size:clamp(28px,4vw,40px);font-weight:700;line-height:1.08}
+.bascule{display:inline-flex;padding:3px;border-radius:var(--r-m);background:var(--surface);border:1px solid var(--trait)}
+.bascule button{font-size:13px;font-weight:500;color:var(--encre-2);background:none;border:0;border-radius:6px;padding:6px 12px;cursor:pointer}
+.bascule button[aria-pressed="true"]{background:var(--encre);color:var(--surface)}
 
-.section{display:flex;flex-direction:column;gap:28px}
-.section-tete{display:flex;flex-direction:column;gap:10px}
+/* ===== Application ===== */
+.app{display:grid;grid-template-columns:244px minmax(0,1fr);height:800px;background:var(--surface);border:1px solid var(--trait);border-radius:var(--r-xl);overflow:hidden;box-shadow:var(--ombre-haute)}
+.side{background:var(--surface-2);border-right:1px solid var(--trait);display:flex;flex-direction:column;gap:14px;padding:14px 10px;overflow-y:auto}
+.org{display:flex;align-items:center;gap:10px;padding:8px;border-radius:var(--r-m);border:1px solid var(--trait);background:var(--surface);cursor:pointer;text-align:left;width:100%;color:inherit}
+.org-logo{width:30px;height:30px;border-radius:7px;background:var(--encre);color:var(--surface);display:grid;place-items:center;font:700 12px var(--f-titre);flex:none}
+.org-txt{display:flex;flex-direction:column;min-width:0;flex:1;line-height:1.25}
+.org-txt b{font-weight:600;font-size:13.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.org-txt span{font-size:12px;color:var(--encre-3)}
+.org svg{width:14px;height:14px;color:var(--encre-3);flex:none}
+.recherche-side{display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;border-radius:var(--r-m);border:1px solid var(--trait);background:var(--surface);color:var(--encre-3);font-size:13px;cursor:pointer;width:100%}
+.recherche-side svg{width:15px;height:15px}
+.recherche-side kbd{margin-left:auto}
+kbd{font:500 11px var(--f-chiffre);padding:1px 6px;border-radius:5px;border:1px solid var(--trait);background:var(--surface-2);color:var(--encre-2)}
+.groupe{display:flex;flex-direction:column;gap:1px}
+.groupe-titre{font-size:11px;font-weight:600;letter-spacing:.07em;text-transform:uppercase;color:var(--encre-3);padding:6px 10px 4px}
+.nav{display:flex;align-items:center;gap:10px;height:32px;padding:0 10px;border-radius:var(--r-m);border:0;background:none;color:var(--encre-2);font-size:13.5px;font-weight:500;cursor:pointer;width:100%;text-align:left;white-space:nowrap}
+.nav svg{width:16px;height:16px;flex:none;color:var(--encre-3)}
+.nav:hover{background:var(--survol);color:var(--encre)}
+.nav[aria-current="page"]{background:var(--surface);color:var(--encre);font-weight:600;box-shadow:var(--ombre);outline:1px solid var(--trait)}
+.nav[aria-current="page"] svg{color:var(--accent)}
+.nav .compte{margin-left:auto;font:500 11.5px var(--f-chiffre);color:var(--encre-3)}
+.nav .compte.alerte{color:var(--alerte);background:var(--alerte-doux);padding:1px 6px;border-radius:5px}
+.side-bas{margin-top:auto;display:flex;flex-direction:column;gap:1px;border-top:1px solid var(--trait);padding-top:10px}
+.marque{display:flex;align-items:center;gap:7px;padding:8px 10px 0;font:700 14px var(--f-titre);letter-spacing:-.02em;color:var(--encre-2)}
+.marque i{width:9px;height:9px;border-radius:50%;background:var(--marque);display:inline-block}
 
-/* Couleurs */
-.nuancier{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:18px}
-.teinte{display:flex;gap:14px;align-items:flex-start;padding:16px;border-radius:var(--r-carte-s);background:var(--carte);border:1px solid var(--trait)}
-.teinte-disque{flex:none;width:58px;height:58px;border-radius:50%;box-shadow:inset 0 0 0 1px rgb(var(--ombre-teinte) / .12)}
-.teinte div{min-width:0;display:flex;flex-direction:column;gap:2px}
-.teinte strong{font-family:var(--f-chiffre);font-size:13.5px;font-weight:600}
-.teinte .hex{font-family:var(--f-chiffre);font-size:12.5px;color:var(--encre-douce)}
-.teinte .role{font-size:13.5px}
-.teinte .ratio{font-size:12px;color:var(--encre-douce);margin-top:4px}
+.main{display:flex;flex-direction:column;min-width:0;min-height:0}
+.barre{display:flex;align-items:center;gap:12px;height:56px;padding:0 24px;border-bottom:1px solid var(--trait);flex:none}
+.fil{display:flex;align-items:center;gap:8px;font-size:13.5px;color:var(--encre-3);min-width:0;flex:1;white-space:nowrap;overflow:hidden}
+.fil b{color:var(--encre);font-weight:600;overflow:hidden;text-overflow:ellipsis}
+.fil .sep{color:var(--trait-fort)}
+.contenu{flex:1;overflow-y:auto;padding:24px 28px 40px;display:flex;flex-direction:column;gap:22px;min-height:0}
+.contenu > *{flex-shrink:0}
 
-/* Typo */
-.specimen{background:var(--carte);border:1px solid var(--trait);border-radius:var(--r-carte);padding:clamp(20px,4vw,40px);display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,1fr);gap:36px}
-.total-geant{font-family:var(--f-titre);font-weight:800;font-size:clamp(52px,9vw,96px);line-height:.95;letter-spacing:-.035em;font-variant-numeric:tabular-nums;white-space:nowrap}
-.echelle{display:flex;flex-direction:column;gap:14px}
-.echelle-ligne{display:grid;grid-template-columns:86px minmax(0,1fr);gap:14px;align-items:baseline;border-bottom:1px solid var(--trait);padding-bottom:12px}
-.echelle-ligne:last-child{border-bottom:0}
-.echelle-ligne .mono{color:var(--encre-douce);font-size:12px}
-.tableau-wrap{overflow-x:auto;grid-column:1/-1}
-table.lignes{width:100%;border-collapse:collapse;font-size:14.5px;min-width:520px}
-table.lignes th{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--encre-douce);text-align:left;padding:0 10px 10px;border-bottom:1.5px solid var(--encre)}
-table.lignes td{padding:12px 10px;border-bottom:1px solid var(--trait)}
-table.lignes .n{text-align:right;font-family:var(--f-chiffre);font-variant-numeric:tabular-nums;white-space:nowrap}
-table.lignes th.n{font-family:var(--f-texte)}
+/* Boutons */
+.btn{display:inline-flex;align-items:center;gap:7px;height:34px;padding:0 14px;border-radius:var(--r-m);font-size:13.5px;font-weight:600;cursor:pointer;border:1px solid var(--trait-fort);background:var(--surface);color:var(--encre);white-space:nowrap;box-shadow:var(--ombre);transition:background .15s,border-color .15s}
+.btn:hover{background:var(--survol)}
+.btn svg{width:15px;height:15px}
+.btn.primaire{background:var(--encre);color:var(--surface);border-color:var(--encre)}
+.btn.primaire:hover{background:var(--encre-2);border-color:var(--encre-2)}
+.btn.fantome{background:none;border-color:transparent;box-shadow:none;color:var(--encre-2)}
+.btn.fantome:hover{background:var(--survol);color:var(--encre)}
+.btn.s{height:28px;padding:0 10px;font-size:12.5px}
 
-/* Forme et matière */
-.matieres{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px}
-.matiere{background:var(--carte);border:1px solid var(--trait);border-radius:var(--r-carte-s);padding:20px;display:flex;flex-direction:column;gap:14px}
-.formes{display:flex;gap:12px;align-items:end;flex-wrap:wrap}
-.forme{background:var(--beurre);height:46px;display:grid;place-items:center;font:500 11.5px var(--f-chiffre);color:var(--sur-clair)}
-.ombres{display:flex;gap:16px}
-.ombre{flex:1;height:84px;border-radius:22px;background:var(--carte);display:grid;place-items:center;font:500 12px var(--f-chiffre);color:var(--encre-douce)}
-.liste-tokens{display:flex;flex-direction:column;gap:6px;font-size:13.5px}
-.liste-tokens div{display:flex;justify-content:space-between;gap:12px}
-.liste-tokens span:last-child{font-family:var(--f-chiffre);color:var(--encre-douce);font-size:12.5px;text-align:right}
+/* En-tête de vue */
+.vue-tete{display:flex;flex-wrap:wrap;gap:14px;align-items:flex-end;justify-content:space-between}
+.vue-tete h2{font-size:24px;font-weight:700;line-height:1.15}
+.vue-tete p{color:var(--encre-2);font-size:13.5px;margin-top:4px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
 
-/* Planches de composants */
-.planches{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:22px}
-.planche{background:var(--carte);border:1px solid var(--trait);border-radius:var(--r-carte);padding:24px;display:flex;flex-direction:column;gap:18px;min-width:0}
-.planche.large{grid-column:1/-1}
-.planche-tete{display:flex;flex-direction:column;gap:6px}
-.planche-tete p{color:var(--encre-douce);font-size:14.5px;max-width:60ch}
-.api{font-family:var(--f-chiffre);font-size:12.5px;background:var(--papier);border-radius:14px;padding:10px 14px;overflow-x:auto;white-space:pre;color:var(--encre)}
-.scene{background:var(--papier);border-radius:var(--r-carte-s);padding:22px;display:flex;flex-wrap:wrap;gap:12px;align-items:center}
-.notes{margin:0;padding-left:18px;font-size:14px;color:var(--encre-douce);display:flex;flex-direction:column;gap:4px}
+/* Segments + outils */
+.outils{display:flex;flex-wrap:wrap;gap:10px;align-items:center;justify-content:space-between}
+.segments{display:flex;gap:2px;border-bottom:1px solid var(--trait);overflow-x:auto;max-width:100%}
+.segment{display:inline-flex;align-items:center;gap:7px;height:36px;padding:0 12px;border:0;background:none;color:var(--encre-2);font-size:13.5px;font-weight:500;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-1px;white-space:nowrap}
+.segment:hover{color:var(--encre)}
+.segment[aria-selected="true"]{color:var(--encre);border-bottom-color:var(--encre);font-weight:600}
+.segment .num{font-size:11.5px;color:var(--encre-3)}
+.champ{display:flex;align-items:center;gap:8px;height:34px;padding:0 10px;border:1px solid var(--trait-fort);border-radius:var(--r-m);background:var(--surface);min-width:0}
+.champ:focus-within{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-doux)}
+.champ svg{width:15px;height:15px;color:var(--encre-3);flex:none}
+.champ input{border:0;outline:none;background:none;font:inherit;font-size:13.5px;color:var(--encre);min-width:0;width:200px}
 
-/* Pilule */
-.pilule{--fond:var(--carte);--texte:var(--encre);--bord:var(--trait);
-  display:inline-flex;align-items:center;gap:10px;height:44px;padding:0 22px;border-radius:var(--r-pilule);
-  font:600 15px var(--f-texte);color:var(--texte);background:var(--fond);border:1.5px solid var(--bord);cursor:pointer;
-  box-shadow:var(--ombre-1);transition:transform var(--d-rapide) var(--e-glisse),box-shadow var(--d-base),background var(--d-base);white-space:nowrap}
-.pilule:hover{transform:translateY(-1px);box-shadow:var(--ombre-2)}
-.pilule:active{transform:translateY(1px) scale(.97);box-shadow:none}
-.pilule.tomate{--fond:var(--tomate);--texte:var(--sur-clair);--bord:transparent}
-.pilule.encre{--fond:var(--encre);--texte:var(--papier);--bord:transparent}
-.pilule.fantome{--fond:transparent;--bord:transparent;box-shadow:none}
-.pilule.fantome:hover{background:var(--trait);box-shadow:none;transform:none}
-.pilule.s{height:34px;padding:0 15px;font-size:13.5px}
-.pilule.l{height:58px;padding:0 30px;font-size:17px;font-family:var(--f-titre);font-weight:700}
-.pilule kbd{font:500 11.5px var(--f-chiffre);padding:3px 8px;border-radius:var(--r-pilule);background:rgb(28 27 34 / .12)}
-.pilule.encre kbd{background:rgb(255 253 248 / .16)}
-.pilule[aria-busy="true"]{cursor:progress}
-.point-charge{width:9px;height:9px;border-radius:50%;background:currentColor;animation:pulse 900ms var(--e-glisse) infinite}
-@keyframes pulse{0%,100%{transform:scale(.6);opacity:.5}50%{transform:scale(1);opacity:1}}
+/* Tableaux */
+.tableau{border:1px solid var(--trait);border-radius:var(--r-l);overflow-x:auto;background:var(--surface)}
+.tableau table{width:100%;border-collapse:collapse;min-width:760px}
+.tableau th{font-size:11.5px;font-weight:600;letter-spacing:.05em;text-transform:uppercase;color:var(--encre-3);text-align:left;padding:10px 14px;background:var(--surface-2);border-bottom:1px solid var(--trait);white-space:nowrap}
+.tableau td{padding:11px 14px;border-bottom:1px solid var(--trait);vertical-align:middle}
+.tableau tr:last-child td{border-bottom:0}
+.tableau tbody tr.cliquable{cursor:pointer}
+.tableau tbody tr.cliquable:hover td{background:var(--survol)}
+.tableau .d{text-align:right}
+.cel-client{display:flex;align-items:center;gap:10px;min-width:0}
+.cel-client div{display:flex;flex-direction:column;line-height:1.3;min-width:0}
+.cel-client b{font-weight:600;white-space:nowrap}
+.cel-client span{font-size:12px;color:var(--encre-3)}
+.muet{color:var(--encre-3)}
+.pied-tableau{display:flex;justify-content:space-between;font-size:12.5px;color:var(--encre-3);padding:2px 4px}
 
-/* Champ pilule */
-.champs{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px;width:100%}
-.champ{display:flex;flex-direction:column;gap:7px;min-width:0}
-.champ label{font-size:13.5px;font-weight:600}
-.champ-boite{display:flex;align-items:center;height:48px;border-radius:var(--r-pilule);background:var(--carte);border:1.5px solid var(--trait);padding:0 6px 0 20px;transition:border-color var(--d-base),box-shadow var(--d-base)}
-.champ-boite:focus-within{border-color:var(--encre);box-shadow:var(--anneau)}
-.champ-boite input{flex:1;min-width:0;border:0;background:none;outline:none;font:500 15.5px var(--f-texte);color:var(--encre);height:100%}
-.champ-boite input.mono{font-family:var(--f-chiffre);font-size:15px;font-variant-numeric:tabular-nums;letter-spacing:.02em}
-.champ-boite .suffixe{font:500 12.5px var(--f-chiffre);color:var(--encre-douce);padding:6px 12px;border-radius:var(--r-pilule);background:var(--papier);white-space:nowrap}
-.champ-aide{font-size:13px;color:var(--encre-douce);display:flex;align-items:center;gap:6px}
-.champ.erreur .champ-boite{border-color:var(--brique)}
-.champ.erreur .champ-aide{color:var(--brique)}
-.champ.ok .champ-aide{color:var(--encre)}
+/* Puces */
+.statut{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:var(--r-s);font-size:12.5px;font-weight:500;background:var(--x-doux);color:var(--x);white-space:nowrap}
+.statut::before{content:"";width:6px;height:6px;border-radius:50%;background:currentColor}
+.st-brouillon{--x:var(--attente);--x-doux:var(--attente-doux)}
+.st-envoyee{--x:var(--info);--x-doux:var(--info-doux)}
+.st-retard{--x:var(--alerte);--x-doux:var(--alerte-doux)}
+.st-payee{--x:var(--ok);--x-doux:var(--ok-doux)}
+.st-avoir{--x:var(--avoir);--x-doux:var(--avoir-doux)}
+.st-neutre{--x:var(--neutre);--x-doux:var(--neutre-doux)}
+.categorie{display:inline-flex;align-items:center;gap:6px;height:22px;padding:0 8px;border-radius:var(--r-s);border:1px solid var(--trait);font-size:12px;color:var(--encre-2);white-space:nowrap;background:var(--surface)}
+.categorie i{width:7px;height:7px;border-radius:2px;background:var(--c);display:inline-block}
+.pa{font-size:12.5px;color:var(--encre-2);white-space:nowrap}
+.avatar{width:32px;height:32px;border-radius:50%;display:inline-grid;place-items:center;flex:none;font:600 12px var(--f-titre);background:var(--a-doux);color:var(--a)}
+.avatar.l{width:56px;height:56px;font-size:19px}
 
-/* Pastille de statut */
-.pastille{display:inline-flex;align-items:center;gap:7px;height:30px;padding:0 13px 0 9px;border-radius:var(--r-pilule);font:600 13.5px var(--f-texte);color:var(--sur-clair);background:var(--st);white-space:nowrap}
-.pastille svg{width:14px;height:14px;flex:none}
-.pastille.grande{height:40px;font-size:15.5px;padding:0 18px 0 12px;font-family:var(--f-titre);font-weight:700}
-.pastille.grande svg{width:17px;height:17px}
-.pastille[data-st="brouillon"]{--st:var(--st-brouillon)}
-.pastille[data-st="envoyee"]{--st:var(--st-envoyee)}
-.pastille[data-st="payee"]{--st:var(--st-payee)}
-.pastille[data-st="retard"]{--st:var(--st-retard);color:var(--sur-fonce)}
-.pastille[data-st="avoir"]{--st:var(--st-avoir);color:var(--sur-fonce)}
-.scene.nb{filter:grayscale(1) contrast(1.05)}
+/* Indicateurs */
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));border:1px solid var(--trait);border-radius:var(--r-l);background:var(--surface);overflow:hidden}
+.kpi{padding:16px 18px;display:flex;flex-direction:column;gap:6px;border-right:1px solid var(--trait);min-width:0}
+.kpi:last-child{border-right:0}
+.kpi .lib{font-size:12.5px;color:var(--encre-2);display:flex;align-items:center;gap:6px}
+.kpi .lib i{width:7px;height:7px;border-radius:50%;background:var(--c,var(--encre-3))}
+.kpi .val{font:600 22px var(--f-titre);letter-spacing:-.02em;font-variant-numeric:tabular-nums;white-space:nowrap}
+.kpi .sous{font-size:12px;color:var(--encre-3)}
+.grille-2{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(0,1fr);gap:18px}
+.panneau{border:1px solid var(--trait);border-radius:var(--r-l);background:var(--surface);display:flex;flex-direction:column;min-width:0}
+.panneau-tete{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:14px 18px;border-bottom:1px solid var(--trait)}
+.panneau-tete h3{font-size:14.5px;font-weight:600}
+.panneau-corps{padding:16px 18px;display:flex;flex-direction:column;gap:12px}
+.barres{display:flex;align-items:flex-end;gap:10px;height:170px;padding-top:8px;border-bottom:1px solid var(--trait)}
+.barre-col{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;gap:6px;height:100%;min-width:0}
+.barre-col span.b{width:100%;max-width:30px;border-radius:4px 4px 0 0;background:var(--trait-fort)}
+.barre-col.courant span.b{background:var(--accent)}
+.barre-col em{font-style:normal;font:500 10.5px var(--f-chiffre);color:var(--encre-3)}
+.mois{display:flex;gap:10px}
+.mois span{flex:1;text-align:center;font-size:11.5px;color:var(--encre-3)}
+.taches{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.taches li{display:flex;gap:12px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--trait)}
+.taches li:last-child{border-bottom:0}
+.taches .pt{width:8px;height:8px;border-radius:50%;background:var(--c);margin-top:6px;flex:none}
+.taches .t{flex:1;min-width:0;display:flex;flex-direction:column}
+.taches .t b{font-weight:500}
+.taches .t span{font-size:12.5px;color:var(--encre-3)}
+.lignes-cle{display:flex;flex-direction:column}
+.lignes-cle div{display:flex;justify-content:space-between;gap:12px;padding:8px 0;border-bottom:1px solid var(--trait);font-size:13.5px}
+.lignes-cle div:last-child{border-bottom:0}
+.lignes-cle dt,.lignes-cle .k{color:var(--encre-2)}
+.lignes-cle .v{text-align:right;font-weight:500}
 
-/* Avatar */
-.avatar{--taille:44px;width:var(--taille);height:var(--taille);border-radius:50%;display:inline-grid;place-items:center;flex:none;
-  font:800 calc(var(--taille) * .36) var(--f-titre);letter-spacing:-.02em;background:var(--av-fond);color:var(--av-texte);
-  box-shadow:inset 0 0 0 1.5px rgb(28 27 34 / .08)}
-.avatar.xl{--taille:96px}
-.avatar.s{--taille:30px}
-.avatars{display:flex;flex-wrap:wrap;gap:14px}
-.avatar-carte{display:flex;flex-direction:column;align-items:center;gap:6px;width:92px;text-align:center;font-size:12.5px;line-height:1.25}
+/* Fiche client */
+.fiche-tete{display:flex;flex-wrap:wrap;gap:18px;align-items:center;justify-content:space-between}
+.fiche-id{display:flex;gap:16px;align-items:center;min-width:0}
+.fiche-id h2{font-size:24px;font-weight:700}
+.fiche-meta{display:flex;flex-wrap:wrap;gap:8px 14px;align-items:center;margin-top:6px;font-size:13px;color:var(--encre-2)}
+.retour{display:inline-flex;align-items:center;gap:6px;font-size:13px;color:var(--encre-2);background:none;border:0;cursor:pointer;padding:0;width:max-content}
+.retour:hover{color:var(--encre)}
+.retour svg{width:14px;height:14px}
+.chronologie{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.chronologie li{display:grid;grid-template-columns:62px 14px minmax(0,1fr);gap:10px;padding-bottom:14px;position:relative}
+.chronologie .date{font-size:12px;color:var(--encre-3);text-align:right;padding-top:1px}
+.chronologie .rond{width:9px;height:9px;border-radius:50%;background:var(--surface);border:2px solid var(--c,var(--trait-fort));margin-top:5px;position:relative;z-index:1}
+.chronologie li:not(:last-child)::after{content:"";position:absolute;left:78px;top:16px;bottom:0;width:1px;background:var(--trait)}
+.chronologie .t span{display:block;font-size:12.5px;color:var(--encre-3)}
+.contact{display:flex;gap:10px;align-items:center;padding:10px 0;border-bottom:1px solid var(--trait)}
+.contact:last-child{border-bottom:0}
+.contact div{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.35}
+.contact span{font-size:12.5px;color:var(--encre-3)}
+.regle{font-size:12.5px;color:var(--encre-2);background:var(--surface-2);border:1px dashed var(--trait-fort);border-radius:var(--r-m);padding:10px 12px}
 
-/* Carte + pile */
-.pile{position:relative;height:270px;width:min(100%,380px);margin:8px auto 4px;cursor:pointer}
-.facture-carte{position:absolute;inset:0 0 auto 0;height:210px;border-radius:var(--r-carte);background:var(--facture-fond);color:var(--facture-encre);
-  border:1px solid var(--facture-trait);box-shadow:var(--ombre-1);padding:20px 22px;display:flex;flex-direction:column;gap:12px;
-  transition:transform 420ms var(--e-ressort),box-shadow var(--d-base),opacity var(--d-base);transform-origin:50% 100%}
-.facture-carte[data-pos="0"]{z-index:3;transform:translate(0,0) rotate(0deg)}
-.facture-carte[data-pos="1"]{z-index:2;transform:translate(10px,22px) rotate(2.2deg)}
-.facture-carte[data-pos="2"]{z-index:1;transform:translate(-8px,42px) rotate(-2.6deg)}
-.pile:hover .facture-carte[data-pos="0"]{transform:translate(0,-8px) rotate(-.6deg);box-shadow:var(--ombre-2)}
-.pile:hover .facture-carte[data-pos="1"]{transform:translate(16px,26px) rotate(3.2deg)}
-.pile:hover .facture-carte[data-pos="2"]{transform:translate(-14px,48px) rotate(-3.6deg)}
-.fc-haut{display:flex;align-items:center;gap:12px}
-.fc-haut div{min-width:0;flex:1}
-.fc-client{font-weight:600;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fc-num{font:500 12.5px var(--f-chiffre);color:#6B6470}
-.fc-total{font:800 40px var(--f-titre);letter-spacing:-.03em;font-variant-numeric:tabular-nums;line-height:1;margin-top:auto}
-.fc-bas{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:12.5px;color:#6B6470}
-.carte-variantes{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:14px;width:100%}
-.carte-demo{border-radius:var(--r-carte-s);padding:16px;min-height:92px;display:flex;flex-direction:column;justify-content:space-between;gap:8px;font-size:13.5px}
-.carte-demo strong{font-family:var(--f-titre);font-size:16px}
-.carte-demo.surface{background:var(--carte);box-shadow:var(--ombre-1)}
-.carte-demo.facture{background:var(--facture-fond);color:var(--facture-encre);border:1px solid var(--facture-trait);box-shadow:var(--ombre-1)}
-.carte-demo.encart{background:transparent;border:1.5px dashed var(--trait)}
+.vide{border:1px dashed var(--trait-fort);border-radius:var(--r-l);padding:48px 24px;display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px;color:var(--encre-2)}
+.vide h3{font-size:17px;color:var(--encre)}
+.vide p{max-width:52ch}
 
-/* Galet */
-.scene-galet{position:relative;height:300px;padding:0;overflow:hidden;align-items:stretch}
-.scene-galet .indice{position:absolute;left:22px;top:20px;right:22px;font-size:13.5px;color:var(--encre-douce);max-width:30ch}
-.galet{position:absolute;right:24px;bottom:24px;width:68px;height:68px;border-radius:50%;border:0;background:var(--tomate);color:var(--sur-clair);
-  box-shadow:var(--ombre-2);cursor:pointer;display:grid;place-items:center;z-index:3;transition:transform 320ms var(--e-ressort)}
-.galet svg{width:28px;height:28px;transition:transform 320ms var(--e-ressort)}
-.galet:hover{transform:scale(1.05)}
-.galet:active{transform:scale(.94)}
-.galet[aria-expanded="true"] svg{transform:rotate(45deg)}
-.radial{position:absolute;right:26px;bottom:26px;width:64px;height:64px;z-index:2;list-style:none;margin:0;padding:0}
-.radial li{position:absolute;inset:0}
-.radial button{width:64px;height:64px;border-radius:50%;border:0;cursor:pointer;font:700 11.5px var(--f-texte);color:var(--sur-clair);background:var(--b);box-shadow:var(--ombre-1);
-  transform:translate(0,0) scale(.3);opacity:0;pointer-events:none;
-  transition:transform 380ms var(--e-ressort),opacity 160ms;transition-delay:calc(var(--i) * 30ms)}
-.radial.ouvert button{transform:translate(var(--x),var(--y)) scale(1);opacity:1;pointer-events:auto}
-.radial button:hover{filter:brightness(1.04);box-shadow:var(--ombre-2)}
-.radial button.fonce{color:var(--sur-fonce)}
+/* ===== Système ===== */
+.section{display:flex;flex-direction:column;gap:20px}
+.section h2{font-size:26px;font-weight:700}
+.sys-grille{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:16px}
+.sys-carte{background:var(--surface);border:1px solid var(--trait);border-radius:var(--r-l);padding:20px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.sys-carte h3{font-size:15px;font-weight:600}
+.pastilles-couleur{display:grid;grid-template-columns:repeat(auto-fill,minmax(118px,1fr));gap:10px}
+.couleur{display:flex;flex-direction:column;gap:6px;font-size:12px}
+.couleur span.e{height:44px;border-radius:var(--r-m);border:1px solid var(--trait)}
+.couleur b{font-family:var(--f-chiffre);font-weight:500;font-size:11.5px}
+.couleur em{font-style:normal;color:var(--encre-3);font-size:11.5px}
+.rangee{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.echelle div{display:grid;grid-template-columns:90px minmax(0,1fr);gap:12px;align-items:baseline;padding:7px 0;border-bottom:1px solid var(--trait)}
+.echelle div:last-child{border-bottom:0}
+.echelle code{color:var(--encre-3);font-size:11.5px}
+.arbre{background:var(--surface);border:1px solid var(--trait);border-radius:var(--r-l);padding:20px 22px;overflow-x:auto}
+.arbre pre{margin:0;font:400 12.5px/1.75 var(--f-chiffre);color:var(--encre)}
+.arbre .c{color:var(--encre-3)}
+.arbre .p1{color:var(--accent);font-weight:500}
+.decisions{display:grid;grid-template-columns:repeat(auto-fit,minmax(290px,1fr));gap:16px}
+.decision{background:var(--surface);border:1px solid var(--trait);border-radius:var(--r-l);padding:18px 20px;display:flex;flex-direction:column;gap:8px}
+.decision h3{font-size:15px;font-weight:600}
+.decision p{color:var(--encre-2);font-size:13.5px}
 
-/* Barre de commande */
-.voile{position:fixed;inset:0;background:var(--voile);z-index:150;display:flex;align-items:flex-start;justify-content:center;padding:12vh 16px 16px}
-.bulle-cmd{width:min(100%,580px);background:var(--carte);border-radius:30px;box-shadow:var(--ombre-2);border:1px solid var(--trait);padding:10px;display:flex;flex-direction:column;gap:6px;
-  animation:bulle 260ms var(--e-ressort)}
-@keyframes bulle{from{transform:translateY(8px) scale(.96);opacity:0}to{transform:none;opacity:1}}
-.cmd-champ{display:flex;align-items:center;gap:12px;height:56px;padding:0 18px;border-radius:var(--r-pilule);background:var(--papier)}
-.cmd-champ svg{width:20px;height:20px;flex:none;color:var(--encre-douce)}
-.cmd-champ input{flex:1;min-width:0;border:0;background:none;outline:none;font:500 17px var(--f-texte);color:var(--encre)}
-.cmd-liste{list-style:none;margin:0;padding:4px;display:flex;flex-direction:column;gap:2px;max-height:330px;overflow:auto}
-.cmd-liste li{display:flex;align-items:center;gap:12px;padding:9px 12px;border-radius:var(--r-pilule);cursor:pointer;font-size:15px}
-.cmd-liste li[aria-selected="true"]{background:var(--papier)}
-.cmd-liste .glyphe{width:30px;height:30px;border-radius:50%;flex:none;display:grid;place-items:center;font:800 12px var(--f-titre);color:var(--sur-clair)}
-.cmd-liste .txt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.cmd-liste .type{font:500 11.5px var(--f-chiffre);color:var(--encre-douce)}
-.cmd-pied{display:flex;gap:14px;justify-content:flex-end;padding:4px 14px 6px;font-size:12px;color:var(--encre-douce)}
-.cmd-pied kbd,.kbd{font:500 11.5px var(--f-chiffre);padding:2px 7px;border-radius:8px;border:1px solid var(--trait);background:var(--papier);color:var(--encre)}
-.cmd-vide{padding:16px;color:var(--encre-douce);font-size:14px}
+.toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--encre);color:var(--surface);padding:10px 16px;border-radius:var(--r-m);font-size:13.5px;z-index:90;box-shadow:var(--ombre-haute);max-width:calc(100% - 32px)}
 
-/* Arborescence */
-.arbre{background:var(--carte);border:1px solid var(--trait);border-radius:var(--r-carte);padding:clamp(18px,3vw,30px);overflow-x:auto}
-.arbre pre{margin:0;font:400 13px/1.75 var(--f-chiffre);color:var(--encre)}
-.arbre .c{color:var(--encre-douce)}
-.arbre .p1{color:var(--brique);font-weight:600}
-.arbre-legende{display:flex;flex-wrap:wrap;gap:10px 22px;font-size:13.5px;color:var(--encre-douce)}
-.arbre-legende span{display:inline-flex;align-items:center;gap:8px}
-.puce{width:10px;height:10px;border-radius:50%;display:inline-block}
+/* Palette de commande */
+.voile{position:fixed;inset:0;background:rgb(10 10 12 / .35);z-index:80;display:flex;justify-content:center;align-items:flex-start;padding:14vh 16px 16px}
+.palette{width:min(100%,560px);background:var(--surface);border:1px solid var(--trait);border-radius:var(--r-xl);box-shadow:var(--ombre-haute);overflow:hidden}
+.palette-champ{display:flex;align-items:center;gap:10px;padding:0 16px;height:52px;border-bottom:1px solid var(--trait)}
+.palette-champ svg{width:17px;height:17px;color:var(--encre-3)}
+.palette-champ input{flex:1;border:0;outline:none;background:none;font:inherit;font-size:15px;color:var(--encre);min-width:0}
+.palette ul{list-style:none;margin:0;padding:6px;max-height:320px;overflow:auto}
+.palette li{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:var(--r-m);cursor:pointer;font-size:13.5px}
+.palette li[aria-selected="true"]{background:var(--survol)}
+.palette li .txt{flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.palette li .type{font-size:12px;color:var(--encre-3)}
+.palette li.vide-p{color:var(--encre-3);cursor:default}
 
-/* Décisions */
-.decisions{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px}
-.decision{background:var(--carte);border:1px solid var(--trait);border-radius:var(--r-carte-s);padding:20px 22px;display:flex;flex-direction:column;gap:10px}
-.decision p{font-size:14.5px;color:var(--encre-douce)}
-.decision .reco{font-size:14px;color:var(--encre);display:flex;gap:8px;align-items:flex-start}
-.decision .reco b{font-weight:600}
-
-.toast{position:fixed;left:50%;bottom:calc(24px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--encre);color:var(--papier);
-  padding:12px 20px;border-radius:var(--r-pilule);font-size:14px;font-weight:500;z-index:160;box-shadow:var(--ombre-2);max-width:calc(100% - 32px)}
-
-@media (max-width:820px){
-  .planches{grid-template-columns:minmax(0,1fr)}
-  .specimen{grid-template-columns:minmax(0,1fr)}
+@media (max-width:1000px){
+  .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}
+  .kpi:nth-child(2){border-right:0}
+  .kpi:nth-child(-n+2){border-bottom:1px solid var(--trait)}
+  .grille-2{grid-template-columns:minmax(0,1fr)}
 }
-@media (prefers-reduced-motion: reduce){
-  *,*::before,*::after{animation-duration:1ms!important;animation-iteration-count:1!important;transition-duration:1ms!important;transition-delay:0ms!important}
+@media (max-width:860px){
+  .app{grid-template-columns:minmax(0,1fr);height:auto}
+  .side{flex-direction:row;align-items:center;overflow-x:auto;border-right:0;border-bottom:1px solid var(--trait);padding:10px}
+  .side .groupe{flex-direction:row}
+  .groupe-titre,.recherche-side,.marque,.side-bas,.nav .compte{display:none}
+  .org{width:auto;flex:none}
+  .org-txt span{display:none}
+  .main{min-height:auto}
+  .contenu{overflow:visible;padding:18px 16px 28px}
+  .barre{padding:0 16px}
+  .champ input{width:130px}
 }
+@media (prefers-reduced-motion: reduce){*{transition:none!important;animation:none!important}}
 </style>
 
 <main class="feuille">
 
-  <header class="intro">
-    <div class="entete">
-      <div class="marque"><span class="marque-disque" aria-hidden="true"></span><span class="marque-nom">pastille</span></div>
-      <div class="bascule" role="group" aria-label="Thème d'affichage">
-        <button type="button" id="th-sys" data-t="system" aria-pressed="true">Système</button>
-        <button type="button" id="th-clair" data-t="light" aria-pressed="false">Clair</button>
-        <button type="button" id="th-sombre" data-t="dark" aria-pressed="false">Sombre</button>
-      </div>
+  <header class="entete">
+    <div class="entete-txt">
+      <span class="surtitre">Proposition v2 · Phase 1 · à valider</span>
+      <h1>Pastille, version CRM</h1>
+      <p class="chapeau">Une application organisée par catégories, sobre et dense en information, pensée pour un usage quotidien. Cliquez dans la barre latérale, ouvrez une fiche client, filtrez. Toutes les données affichées sont des exemples.</p>
     </div>
-    <span class="etiquette">Phase 1 · Fondations · proposition à valider</span>
-    <h1>Le nuancier de l'objet rond</h1>
-    <p class="chapeau">Tokens, typographie, matière et les composants de base de PASTILLE, présentés en vrai et manipulables. Rien n'est encore codé dans le dépôt&nbsp;: cette planche sert à valider la direction avant d'écrire la phase&nbsp;1. Les noms de clients et montants sont des exemples.</p>
+    <div class="bascule" role="group" aria-label="Thème">
+      <button type="button" id="th-s" data-t="system" aria-pressed="true">Système</button>
+      <button type="button" id="th-c" data-t="light" aria-pressed="false">Clair</button>
+      <button type="button" id="th-n" data-t="dark" aria-pressed="false">Sombre</button>
+    </div>
   </header>
 
-  <!-- COULEURS -->
-  <section class="section" aria-labelledby="t-couleurs">
-    <div class="section-tete">
-      <span class="etiquette">Tokens</span>
-      <h2 id="t-couleurs">Couleurs</h2>
-      <p class="chapeau">Dix tokens sur <code>:root</code>, redéfinis pour le mode sombre. La facture, elle, garde toujours son papier clair. Les ratios indiqués sont mesurés (WCAG 2.2).</p>
+  <!-- ===== Maquette ===== -->
+  <div class="app" id="app">
+    <nav class="side" aria-label="Navigation principale">
+      <button type="button" class="org" id="org">
+        <span class="org-logo">AL</span>
+        <span class="org-txt"><b>Atelier Lumen</b><span>SAS · Réel normal</span></span>
+        <svg viewBox="0 0 16 16" fill="none"><path d="M5 6l3-3 3 3M5 10l3 3 3-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button type="button" class="recherche-side" id="ouvrir-palette"><svg viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>Rechercher<kbd>Ctrl K</kbd></button>
+      <div id="nav-groupes" style="display:contents"></div>
+      <div class="side-bas" id="nav-bas"></div>
+      <div class="marque"><i></i>pastille</div>
+    </nav>
+    <div class="main">
+      <div class="barre">
+        <div class="fil" id="fil"></div>
+        <button type="button" class="btn primaire" data-action="nouvelle"><svg viewBox="0 0 16 16" fill="none"><path d="M8 3v10M3 8h10" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>Nouvelle facture</button>
+      </div>
+      <div class="contenu" id="contenu"></div>
     </div>
-    <div class="nuancier">
-      <div class="teinte"><span class="teinte-disque" style="background:var(--papier)"></span><div><strong>--papier</strong><span class="hex">#F6F1E7 · sombre #17161C</span><span class="role">Fond général</span></div></div>
-      <div class="teinte"><span class="teinte-disque" style="background:var(--carte)"></span><div><strong>--carte</strong><span class="hex">#FFFDF8 · sombre #22212A</span><span class="role">Surfaces, la facture</span></div></div>
-      <div class="teinte"><span class="teinte-disque" style="background:var(--encre)"></span><div><strong>--encre</strong><span class="hex">#1C1B22 · sombre #F3EEE4</span><span class="role">Texte, gros chiffres</span><span class="ratio">15,2:1 sur papier</span></div></div>
-      <div class="teinte"><span class="teinte-disque" style="background:var(--tomate)"></span><div><strong>--tomate</strong><span class="hex">#FF5A36</span><span class="role">Action principale, Émettre</span><span class="ratio">Texte encre 5,5:1 · texte blanc 3,1:1</span></div></div>
-      <div class="teinte"><span class="teinte-disque" style="background:var(--menthe)"></span><div><strong>--menthe</strong><span class="hex">#9FE0BC</span><span class="role">Payée, succès</span><span class="ratio">Texte encre 11,3:1</span></div></div>
-      <div class="teinte"><span class="teinte-disque" style="background:var(--beurre)"></span><div><strong>--beurre</strong><span class="hex">#FFD65C</span><span class="role">Brouillon, à envoyer</span><span class="ratio">Texte encre 12,2:1</span></div></div>
-      <div class="teinte"><span class="teinte-disque" style="background:var(--ciel)"></span><div><strong>--ciel</strong><span class="hex">#A9D2FF</span><span class="role">Envoyée, en attente</span><span class="ratio">Texte encre 10,8:1</span></div></div>
-      <div class="teinte"><span class="teinte-disque" style="background:var(--st-avoir)"></span><div><strong>--prune</strong><span class="hex">#7A4BD0</span><span class="role">Avoirs, à petite dose</span><span class="ratio">5,0:1 sur papier</span></div></div>
-      <div class="teinte"><span class="teinte-disque" style="background:var(--st-retard)"></span><div><strong>--brique</strong><span class="hex">#C2410C</span><span class="role">Retard, erreurs</span><span class="ratio">4,6:1 sur papier</span></div></div>
-      <div class="teinte"><span class="teinte-disque" style="background:var(--trait)"></span><div><strong>--trait</strong><span class="hex">#E6DCCB · sombre #36333F</span><span class="role">Bordures fines</span></div></div>
-    </div>
-  </section>
+  </div>
 
-  <!-- TYPO -->
-  <section class="section" aria-labelledby="t-typo">
-    <div class="section-tete">
-      <span class="etiquette">Tokens</span>
-      <h2 id="t-typo">Typographie</h2>
-      <p class="chapeau">Bricolage Grotesque pour les titres et les gros montants, Onest pour le texte, IBM Plex Mono en chiffres tabulaires pour tout ce qui s'aligne en colonne. Séparateur de milliers&nbsp;: espace fine insécable, comme <code>Intl.NumberFormat('fr-FR')</code>.</p>
+  <!-- ===== Système ===== -->
+  <section class="section" aria-labelledby="t-sys">
+    <div>
+      <span class="surtitre">Design system</span>
+      <h2 id="t-sys">Tokens et composants</h2>
     </div>
-    <div class="specimen">
-      <div style="display:flex;flex-direction:column;gap:10px;min-width:0">
-        <span class="etiquette">Total TTC · F-2026-0042</span>
-        <div class="total-geant" id="total-anime">4&#8239;218,00&nbsp;€</div>
-        <p style="color:var(--encre-douce);font-size:14px">96&nbsp;px · Bricolage 800 · interlettrage −3,5&nbsp;%. Le compteur s'anime en 300&nbsp;ms quand une ligne change.</p>
-        <div><button type="button" class="pilule s" id="btn-compteur">Changer une ligne</button></div>
-      </div>
-      <div class="echelle">
-        <div class="echelle-ligne"><span class="mono">titre-1 · 48</span><span style="font:800 clamp(30px,4vw,48px)/1 var(--f-titre);letter-spacing:-.02em">Nouvelle facture</span></div>
-        <div class="echelle-ligne"><span class="mono">titre-2 · 32</span><span style="font:700 clamp(24px,3vw,32px)/1.1 var(--f-titre)">Atelier Dupont</span></div>
-        <div class="echelle-ligne"><span class="mono">titre-3 · 21</span><span style="font:700 21px/1.2 var(--f-titre)">Récapitulatif de TVA</span></div>
-        <div class="echelle-ligne"><span class="mono">texte · 16</span><span>Paiement à 30 jours. Pénalités de retard&nbsp;: trois fois le taux d'intérêt légal.</span></div>
-        <div class="echelle-ligne"><span class="mono">petit · 13</span><span class="etiquette" style="color:var(--encre)">Date d'échéance</span></div>
-      </div>
-      <div class="tableau-wrap">
-        <table class="lignes">
-          <thead><tr><th>Désignation</th><th class="n">Qté</th><th class="n">PU HT</th><th class="n">TVA</th><th class="n">Total HT</th></tr></thead>
-          <tbody>
-            <tr><td>Création logo, 3 pistes</td><td class="n">3</td><td class="n">450,00</td><td class="n">20&nbsp;%</td><td class="n">1&#8239;350,00</td></tr>
-            <tr><td>Impression cartes de visite</td><td class="n">500</td><td class="n">0,42</td><td class="n">20&nbsp;%</td><td class="n">210,00</td></tr>
-            <tr><td>Livre « Typographie appliquée »</td><td class="n">2</td><td class="n">34,12</td><td class="n">5,5&nbsp;%</td><td class="n">68,24</td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-  <!-- MATIERE -->
-  <section class="section" aria-labelledby="t-matiere">
-    <div class="section-tete">
-      <span class="etiquette">Tokens</span>
-      <h2 id="t-matiere">Forme, matière, mouvement</h2>
-    </div>
-    <div class="matieres">
-      <div class="matiere">
-        <h3>Rayons</h3>
-        <div class="formes">
-          <span class="forme" style="width:92px;border-radius:999px">999</span>
-          <span class="forme" style="width:70px;height:70px;border-radius:32px">32</span>
-          <span class="forme" style="width:58px;height:58px;border-radius:20px">20</span>
-          <span class="forme" style="width:52px;height:52px;border-radius:50%">50&nbsp;%</span>
-        </div>
-        <div class="liste-tokens">
-          <div><span>Boutons, champs, pastilles</span><span>--r-pilule</span></div>
-          <div><span>Cartes, facture</span><span>--r-carte 32</span></div>
-          <div><span>Cartes secondaires</span><span>--r-carte-s 24</span></div>
-          <div><span>Avatars, galet</span><span>50&nbsp;%</span></div>
+    <div class="sys-grille">
+      <div class="sys-carte">
+        <h3>Neutres et accent</h3>
+        <div class="pastilles-couleur">
+          <div class="couleur"><span class="e" style="background:var(--fond)"></span><b>--fond</b><em>#F4F4F1 · #0F1012</em></div>
+          <div class="couleur"><span class="e" style="background:var(--surface)"></span><b>--surface</b><em>#FFFFFF · #17181B</em></div>
+          <div class="couleur"><span class="e" style="background:var(--trait)"></span><b>--trait</b><em>#E6E5E0 · #26272C</em></div>
+          <div class="couleur"><span class="e" style="background:var(--encre-2)"></span><b>--encre-2</b><em>#585A61 · #A3A5AC</em></div>
+          <div class="couleur"><span class="e" style="background:var(--encre)"></span><b>--encre</b><em>#16171B · #EDEDEA</em></div>
+          <div class="couleur"><span class="e" style="background:var(--accent)"></span><b>--accent</b><em>#1F3A5F · #9DB7DD</em></div>
+          <div class="couleur"><span class="e" style="background:var(--marque)"></span><b>--marque</b><em>#FF5A36, logo seul</em></div>
         </div>
       </div>
-      <div class="matiere">
-        <h3>Ombres chaudes</h3>
-        <div class="ombres">
-          <span class="ombre" style="box-shadow:var(--ombre-1)">--ombre-1</span>
-          <span class="ombre" style="box-shadow:var(--ombre-2)">--ombre-2</span>
+      <div class="sys-carte">
+        <h3>Statuts et catégories</h3>
+        <div class="rangee">
+          <span class="statut st-brouillon">Brouillon</span><span class="statut st-envoyee">Envoyée</span><span class="statut st-retard">En retard</span><span class="statut st-payee">Payée</span><span class="statut st-avoir">Avoir</span><span class="statut st-neutre">Annulée</span>
         </div>
-        <p style="font-size:14px;color:var(--encre-douce)">Deux niveaux seulement, teintés brun (84 52 20). Au repos&nbsp;: niveau 1. Soulevé, survolé, flottant&nbsp;: niveau 2. Grain papier en surimpression à 4,5&nbsp;%.</p>
+        <div class="rangee" id="sys-categories"></div>
+        <p class="muet" style="font-size:12.5px">Couleur toujours doublée d'un libellé. Contraste du texte de statut sur son fond teinté supérieur à 4,5:1 dans les deux thèmes.</p>
       </div>
-      <div class="matiere">
-        <h3>Mouvement</h3>
-        <div class="liste-tokens">
-          <div><span>Pression, survol</span><span>--d-rapide 120ms</span></div>
-          <div><span>Transitions d'état</span><span>--d-base 220ms</span></div>
-          <div><span>Compteur de totaux</span><span>--d-compteur 300ms</span></div>
-          <div><span>Tampon, galet, chute de ligne</span><span>--e-ressort</span></div>
-          <div><span>Glissement de feuille</span><span>--e-glisse</span></div>
+      <div class="sys-carte">
+        <h3>Typographie</h3>
+        <div class="echelle">
+          <div><code>titre · 24/700</code><span style="font:700 22px var(--f-titre);letter-spacing:-.015em">Atelier Dupont</span></div>
+          <div><code>section · 15/600</code><span style="font:600 15px var(--f-titre)">Réglages commerciaux</span></div>
+          <div><code>texte · 14/400</code><span>Paiement à 30 jours, pénalités au taux légal × 3.</span></div>
+          <div><code>montant · 13</code><span class="num">4&#8239;218,00&nbsp;€</span></div>
+          <div><code>indicateur · 22</code><span style="font:600 22px var(--f-titre);font-variant-numeric:tabular-nums">12&#8239;798,00&nbsp;€</span></div>
         </div>
-        <p style="font-size:14px;color:var(--encre-douce)">Tout passe à 1&nbsp;ms sous <code>prefers-reduced-motion</code>.</p>
+        <p class="muet" style="font-size:12.5px">Schibsted Grotesk pour les titres, Onest pour le texte, IBM Plex Mono pour les montants.</p>
+      </div>
+      <div class="sys-carte">
+        <h3>Contrôles</h3>
+        <div class="rangee">
+          <button type="button" class="btn primaire">Émettre</button>
+          <button type="button" class="btn">Dupliquer</button>
+          <button type="button" class="btn fantome">Annuler</button>
+          <button type="button" class="btn s">Petit</button>
+        </div>
+        <label class="champ" for="sys-siren" style="width:100%"><svg viewBox="0 0 16 16" fill="none"><rect x="2.5" y="3" width="11" height="10" rx="2" stroke="currentColor" stroke-width="1.4"/><path d="M5 6.5h6M5 9.5h4" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/></svg><input id="sys-siren" class="num" value="732 829 320" aria-label="SIREN" style="width:100%"></label>
+        <p class="muet" style="font-size:12.5px">Rayons 6 / 8 / 12 / 16 px. Une seule ombre légère, les bordures font la structure. Focus : anneau accent de 2 px.</p>
       </div>
     </div>
   </section>
 
-  <!-- COMPOSANTS -->
-  <section class="section" aria-labelledby="t-composants">
-    <div class="section-tete">
-      <span class="etiquette">Composants · <code>src/components/ui</code></span>
-      <h2 id="t-composants">Les six pièces, plus la barre de commande</h2>
-      <p class="chapeau">Chaque planche est vivante&nbsp;: survolez, cliquez, tapez. La barre de commande, prévue elle aussi en phase&nbsp;1, s'ouvre avec <span class="kbd">Ctrl</span>&nbsp;<span class="kbd">K</span> ou <span class="kbd">⌘</span>&nbsp;<span class="kbd">K</span>.</p>
-    </div>
-
-    <div class="planches">
-
-      <!-- PILULE -->
-      <article class="planche">
-        <div class="planche-tete"><h3>Pilule</h3><p>Le bouton. Une seule pilule tomate par écran&nbsp;: l'action qui fait avancer la facture.</p></div>
-        <div class="scene">
-          <button type="button" class="pilule tomate l" id="btn-emettre">Émettre <kbd>Ctrl ↵</kbd></button>
-          <button type="button" class="pilule encre">Envoyer par email</button>
-          <button type="button" class="pilule">Dupliquer</button>
-          <button type="button" class="pilule fantome">Annuler</button>
-          <button type="button" class="pilule s">Petite</button>
-          <button type="button" class="pilule s" aria-busy="true"><span class="point-charge" aria-hidden="true"></span>Génération du PDF</button>
-        </div>
-        <pre class="api">&lt;Pilule variante="tomate|encre|douce|fantome" taille="s|m|l"
-        raccourci="Ctrl ↵" chargement icone /&gt;</pre>
-        <ul class="notes">
-          <li>Texte encre sur tomate (5,5:1). Le blanc ne fait que 3,1:1.</li>
-          <li>Pression&nbsp;: scale 0,97 et l'ombre s'écrase.</li>
-        </ul>
-      </article>
-
-      <!-- CHAMP -->
-      <article class="planche">
-        <div class="planche-tete"><h3>Champ pilule</h3><p>Libellé au-dessus, jamais de placeholder seul. Suffixe d'unité et validation métier intégrés.</p></div>
-        <div class="scene">
-          <div class="champs">
-            <div class="champ ok" id="champ-siren">
-              <label for="in-siren">SIREN du client</label>
-              <div class="champ-boite"><input id="in-siren" class="mono" inputmode="numeric" autocomplete="off" value="732 829 320" aria-describedby="aide-siren"></div>
-              <span class="champ-aide" id="aide-siren">Clé de contrôle valide</span>
-            </div>
-            <div class="champ">
-              <label for="in-pu">Prix unitaire</label>
-              <div class="champ-boite"><input id="in-pu" class="mono" inputmode="decimal" value="450,00"><span class="suffixe">€ HT</span></div>
-              <span class="champ-aide">Bascule HT / TTC dans le suffixe</span>
-            </div>
-            <div class="champ erreur">
-              <label for="in-iban">IBAN</label>
-              <div class="champ-boite"><input id="in-iban" class="mono" value="FR76 3000 6000 0112" aria-invalid="true" aria-describedby="aide-iban"></div>
-              <span class="champ-aide" id="aide-iban">IBAN incomplet&nbsp;: il manque 15 caractères</span>
-            </div>
-          </div>
-        </div>
-        <pre class="api">&lt;ChampPilule libelle suffixe aide erreur
-             format="siren|siret|iban|montant|tva" /&gt;</pre>
-        <ul class="notes">
-          <li>Tapez un SIREN&nbsp;: groupage 3-3-3 et contrôle de Luhn en direct.</li>
-          <li>Focus&nbsp;: anneau encre, la tomate sur papier ne fait que 2,8:1.</li>
-        </ul>
-      </article>
-
-      <!-- CARTE -->
-      <article class="planche">
-        <div class="planche-tete"><h3>Carte</h3><p>Trois matières. La carte facture garde son papier clair en mode sombre. Cliquez sur la pile pour faire passer la feuille du dessus.</p></div>
-        <div class="pile" id="pile" role="button" tabindex="0" aria-label="Pile de factures récentes, cliquer pour passer à la suivante">
-          <div class="facture-carte" data-pos="0" data-i="0">
-            <div class="fc-haut"><span class="avatar" data-nom="Atelier Dupont"></span><div><div class="fc-client">Atelier Dupont</div><div class="fc-num">F-2026-0042</div></div><span class="pastille" data-st="envoyee"></span></div>
-            <div class="fc-total">4&#8239;218,00&nbsp;€</div>
-            <div class="fc-bas"><span>Échéance 11 nov. 2026</span><span>TTC</span></div>
-          </div>
-          <div class="facture-carte" data-pos="1" data-i="1">
-            <div class="fc-haut"><span class="avatar" data-nom="Boulangerie Kerlann"></span><div><div class="fc-client">Boulangerie Kerlann</div><div class="fc-num">F-2026-0041</div></div><span class="pastille" data-st="payee"></span></div>
-            <div class="fc-total">864,00&nbsp;€</div>
-            <div class="fc-bas"><span>Payée le 8 oct. 2026</span><span>TTC</span></div>
-          </div>
-          <div class="facture-carte" data-pos="2" data-i="2">
-            <div class="fc-haut"><span class="avatar" data-nom="Mairie de Vannes"></span><div><div class="fc-client">Mairie de Vannes</div><div class="fc-num">F-2026-0039</div></div><span class="pastille" data-st="retard"></span></div>
-            <div class="fc-total">2&#8239;940,00&nbsp;€</div>
-            <div class="fc-bas"><span>Échue depuis 12 jours</span><span>TTC</span></div>
-          </div>
-        </div>
-        <div class="carte-variantes">
-          <div class="carte-demo surface"><strong>Surface</strong><span>Panneaux, listes, réglages</span></div>
-          <div class="carte-demo facture"><strong>Facture</strong><span>Toujours papier clair</span></div>
-          <div class="carte-demo encart"><strong>Encart</strong><span>Zones de dépôt, vides</span></div>
-        </div>
-        <pre class="api">&lt;Carte matiere="surface|facture|encart" soulevable /&gt;</pre>
-      </article>
-
-      <!-- PASTILLE -->
-      <article class="planche">
-        <div class="planche-tete"><h3>Pastille de statut</h3><p>Pleine, colorée, avec un glyphe de forme différente pour chaque statut&nbsp;: elle reste lisible imprimée en noir et blanc.</p></div>
-        <div class="scene" id="scene-pastilles">
-          <span class="pastille" data-st="brouillon"></span>
-          <span class="pastille" data-st="envoyee"></span>
-          <span class="pastille" data-st="retard"></span>
-          <span class="pastille" data-st="payee"></span>
-          <span class="pastille" data-st="avoir"></span>
-          <span class="pastille grande" data-st="payee"></span>
-          <span class="pastille grande" data-st="retard"></span>
-        </div>
-        <div><button type="button" class="pilule s" id="btn-nb" aria-pressed="false">Voir en noir et blanc</button></div>
-        <pre class="api">&lt;Pastille statut="brouillon|envoyee|retard|payee|avoir"
-          taille="m|l" /&gt;</pre>
-        <ul class="notes">
-          <li>Brouillon pointillé, envoyée à moitié pleine, retard en point d'exclamation, payée cochée, avoir barré.</li>
-        </ul>
-      </article>
-
-      <!-- AVATAR -->
-      <article class="planche">
-        <div class="planche-tete"><h3>Avatar client</h3><p>Initiales et couleur stables, calculées depuis le nom (hachage FNV-1a sur 8 teintes). Les formes juridiques et articles sont ignorés.</p></div>
-        <div class="scene" style="gap:18px">
-          <span class="avatar xl" id="avatar-live" data-nom="Studio Nébuleuse"></span>
-          <div class="champ" style="flex:1;min-width:180px">
-            <label for="in-nom">Nom du client</label>
-            <div class="champ-boite"><input id="in-nom" value="Studio Nébuleuse" autocomplete="off"></div>
-          </div>
-        </div>
-        <div class="avatars">
-          <div class="avatar-carte"><span class="avatar" data-nom="SARL Atelier Dupont"></span>SARL Atelier Dupont</div>
-          <div class="avatar-carte"><span class="avatar" data-nom="Boulangerie Kerlann"></span>Boulangerie Kerlann</div>
-          <div class="avatar-carte"><span class="avatar" data-nom="Mairie de Vannes"></span>Mairie de Vannes</div>
-          <div class="avatar-carte"><span class="avatar" data-nom="Jeanne Morel"></span>Jeanne Morel</div>
-          <div class="avatar-carte"><span class="avatar" data-nom="Hofmann GmbH"></span>Hofmann GmbH</div>
-        </div>
-        <pre class="api">&lt;Avatar nom="…" taille="s|m|xl" /&gt;</pre>
-      </article>
-
-      <!-- GALET -->
-      <article class="planche">
-        <div class="planche-tete"><h3>Galet</h3><p>Le bouton rond flottant, toujours en bas à droite. Il s'ouvre en éventail sur les cinq créations. <span class="kbd">Échap</span> le referme.</p></div>
-        <div class="scene scene-galet">
-          <span class="indice">Zone de démonstration&nbsp;: dans l'app, le galet est fixé au coin de l'écran.</span>
-          <ul class="radial" id="radial" aria-label="Créer">
-            <li><button type="button" data-cree="Facture" style="--b:var(--tomate)">Facture</button></li>
-            <li><button type="button" data-cree="Devis" style="--b:var(--beurre)">Devis</button></li>
-            <li><button type="button" data-cree="Avoir" class="fonce" style="--b:var(--st-avoir)">Avoir</button></li>
-            <li><button type="button" data-cree="Client" style="--b:var(--ciel)">Client</button></li>
-            <li><button type="button" data-cree="Article" style="--b:var(--menthe)">Article</button></li>
-          </ul>
-          <button type="button" class="galet" id="galet" aria-expanded="false" aria-controls="radial" aria-label="Créer">
-            <svg viewBox="0 0 28 28" fill="none" aria-hidden="true"><path d="M14 5v18M5 14h18" stroke="currentColor" stroke-width="3.2" stroke-linecap="round"/></svg>
-          </button>
-        </div>
-        <pre class="api">&lt;Galet actions={[facture, devis, avoir, client, article]} /&gt;</pre>
-      </article>
-
-      <!-- BARRE DE COMMANDE -->
-      <article class="planche large">
-        <div class="planche-tete"><h3>Barre de commande</h3><p>Une bulle unique pour chercher et agir. Elle comprend des phrases courtes&nbsp;: essayez «&nbsp;facture dupont&nbsp;», «&nbsp;relancer&nbsp;» ou «&nbsp;nouveau client 732829320&nbsp;».</p></div>
-        <div class="scene">
-          <button type="button" class="pilule encre" id="btn-cmd">Ouvrir la barre <kbd>Ctrl K</kbd></button>
-          <span style="font-size:14px;color:var(--encre-douce)">Flèches pour naviguer, Entrée pour lancer, Échap pour fermer.</span>
-        </div>
-        <pre class="api">&lt;BarreCommande sources={[documents, clients, articles, actions]}
-               analyseurs={[nouveauClientParSiren, ligneRapide]} /&gt;</pre>
-      </article>
-
-    </div>
-  </section>
-
-  <!-- ARBORESCENCE -->
   <section class="section" aria-labelledby="t-arbre">
-    <div class="section-tete">
-      <span class="etiquette">Projet</span>
+    <div>
+      <span class="surtitre">Projet</span>
       <h2 id="t-arbre">Arborescence</h2>
-      <p class="chapeau">Monorepo pnpm. L'app Next.js, trois paquets TypeScript purs qui portent la logique sensible (testables sans navigateur ni base), un service Python pour le PDF et Factur-X, et Supabase versionné.</p>
-    </div>
-    <div class="arbre-legende">
-      <span><i class="puce" style="background:var(--brique)"></i>Construit en phase 1</span>
-      <span><i class="puce" style="background:var(--trait)"></i>Prévu, phases suivantes</span>
+      <p class="chapeau" style="margin-top:6px">Les routes suivent les catégories de la barre latérale. En bleu, ce que la phase 1 construit.</p>
     </div>
     <div class="arbre"><pre>pastille/
-├── <span class="p1">apps/web/</span>                          <span class="c">Next.js App Router · TypeScript strict</span>
+├── <span class="p1">apps/web/</span>                              <span class="c">Next.js App Router · TypeScript strict</span>
 │   ├── src/app/
-│   │   ├── (vitrine)/                 <span class="c">landing, tarifs, réforme 2027, pages SEO, légal       · ph. 10</span>
-│   │   ├── <span class="p1">(auth)/</span>                    <span class="c">connexion, inscription, lien magique, Google, callback</span>
-│   │   ├── bienvenue/                 <span class="c">onboarding 8 étapes                                   · ph. 3</span>
-│   │   ├── <span class="p1">(app)/[org]/</span>               <span class="c">coque : sélecteur d'entreprise, galet, barre ⌘K</span>
-│   │   │   ├── <span class="p1">page.tsx</span>               <span class="c">accueil (pile + anneau en ph. 8)</span>
-│   │   │   ├── factures/ devis/ avoirs/                 <span class="c">· ph. 4–5</span>
-│   │   │   ├── clients/ catalogue/                      <span class="c">· ph. 3</span>
-│   │   │   ├── recues/ e-reporting/ reforme/            <span class="c">· ph. 9</span>
-│   │   │   ├── exports/                                 <span class="c">· ph. 8</span>
-│   │   │   └── <span class="p1">reglages/</span>              <span class="c">entreprise, membres, rôles</span>
-│   │   ├── impression/[id]/           <span class="c">rendu A4 nu : source unique de l'aperçu et du PDF     · ph. 6</span>
-│   │   ├── signer/[jeton]/            <span class="c">signature publique de devis                           · ph. 8</span>
-│   │   ├── admin/                     <span class="c">back-office                                          · ph. 10</span>
-│   │   └── api/                       <span class="c">webhooks Stripe et PA, cron relances</span>
+│   │   ├── (vitrine)/                     <span class="c">landing, tarifs, réforme 2027, légal          · ph. 10</span>
+│   │   ├── <span class="p1">(auth)/</span>                        <span class="c">connexion, lien magique, Google</span>
+│   │   ├── bienvenue/                     <span class="c">onboarding                                    · ph. 3</span>
+│   │   └── <span class="p1">(app)/[org]/</span>                   <span class="c">coque : barre latérale, fil d'Ariane, Ctrl K</span>
+│   │       ├── <span class="p1">tableau-de-bord/</span>           <span class="c">Pilotage                                      · ph. 8</span>
+│   │       ├── ventes/                    <span class="c">factures, devis, avoirs, recurrences         · ph. 4–5</span>
+│   │       ├── clients/[id]/              <span class="c">Relation client : liste, fiche, contacts      · ph. 3</span>
+│   │       ├── relances/                  <span class="c">                                              · ph. 8</span>
+│   │       ├── catalogue/                 <span class="c">articles et prestations                       · ph. 3</span>
+│   │       ├── tresorerie/paiements/      <span class="c">                                              · ph. 8</span>
+│   │       ├── e-facturation/             <span class="c">recues, e-reporting, reforme                  · ph. 9</span>
+│   │       ├── comptabilite/exports/      <span class="c">                                              · ph. 8</span>
+│   │       └── <span class="p1">reglages/</span>                  <span class="c">entreprise, membres, rôles</span>
 │   ├── src/components/
-│   │   ├── <span class="p1">ui/</span>                        <span class="c">Pilule, ChampPilule, Carte, Pastille, Avatar, Galet, BarreCommande</span>
-│   │   ├── signatures/                <span class="c">Pile, Tampon, AnneauTresorerie (R3F), PapierVivant</span>
-│   │   └── modeles/                   <span class="c">Galet, Papeterie, Classique                           · ph. 6</span>
-│   ├── src/lib/
-│   │   ├── <span class="p1">supabase/</span>                  <span class="c">clients serveur / navigateur / middleware</span>
-│   │   ├── <span class="p1">org/</span>                       <span class="c">organisation courante, rôles, garde-fous</span>
-│   │   └── <span class="p1">format/</span>                    <span class="c">montants (centimes → fr-FR), dates, SIREN, IBAN</span>
-│   ├── src/styles/
-│   │   ├── <span class="p1">tokens.css</span>                 <span class="c">:root + sombre, source unique des couleurs</span>
-│   │   ├── <span class="p1">globals.css</span>                <span class="c">Tailwind v4 @theme (palette par défaut effacée), grain</span>
-│   │   └── print.css                  <span class="c">@media print A4                                       · ph. 6</span>
-│   └── <span class="p1">e2e/</span>                           <span class="c">Playwright</span>
-├── packages/
-│   ├── moteur/                        <span class="c">calcul TVA, remises, acomptes, avoirs, arrondis       · ph. 2</span>
-│   ├── conformite/                    <span class="c">mentions obligatoires + contrôle (front et serveur)   · ph. 4</span>
-│   ├── einvoice/                      <span class="c">mapping EN 16931 → CII et UBL                         · ph. 7</span>
-│   └── pa/                            <span class="c">PlateformeAgreeeAdapter + adaptateur mock            · ph. 9</span>
-├── services/atelier/                  <span class="c">FastAPI : Playwright → PDF, factur-x → PDF/A-3, validation · ph. 6–7</span>
-├── <span class="p1">supabase/</span>
-│   ├── <span class="p1">migrations/</span>                    <span class="c">organizations, memberships, profils, RLS (le reste ensuite)</span>
-│   ├── <span class="p1">seed.sql</span>
-│   └── <span class="p1">tests/</span>                         <span class="c">pgTAP : non-fuite entre organisations</span>
-├── <span class="p1">docs/</span>                              <span class="c">décisions, mapping-en16931.md (ph. 7)</span>
-└── <span class="p1">.github/workflows/ci.yml</span>           <span class="c">lint, typecheck, Vitest, pgTAP, Playwright</span></pre></div>
+│   │   ├── <span class="p1">ui/</span>                            <span class="c">Bouton, Champ, Statut, Categorie, Avatar, Tableau, Segments, Palette</span>
+│   │   ├── <span class="p1">coque/</span>                         <span class="c">BarreLaterale, SelecteurOrganisation, FilAriane</span>
+│   │   └── modeles-facture/               <span class="c">3 modèles PDF                                 · ph. 6</span>
+│   ├── src/lib/  <span class="p1">supabase/ org/ format/</span>
+│   └── src/styles/  <span class="p1">tokens.css globals.css</span>
+├── packages/  moteur/ conformite/ einvoice/ pa/      <span class="c">· ph. 2, 4, 7, 9</span>
+├── services/atelier/                      <span class="c">PDF + Factur-X (conteneur UE)                 · ph. 6–7</span>
+├── <span class="p1">supabase/</span>  migrations/ seed.sql tests/       <span class="c">organisations, membres, RLS, pgTAP</span>
+└── docs/</pre></div>
   </section>
 
-  <!-- DECISIONS -->
-  <section class="section" aria-labelledby="t-decisions">
-    <div class="section-tete">
-      <span class="etiquette">À valider</span>
-      <h2 id="t-decisions">Ce que je propose de trancher maintenant</h2>
+  <section class="section" aria-labelledby="t-dec">
+    <div>
+      <span class="surtitre">Ce qui change par rapport à la v1</span>
+      <h2 id="t-dec">Points à valider</h2>
     </div>
     <div class="decisions">
-      <div class="decision"><h3>Texte encre sur tomate</h3><p>Le blanc sur #FF5A36 ne fait que 3,1:1, sous le seuil AA du texte courant.</p><div class="reco"><b>Proposé&nbsp;:</b> encre partout sur tomate. La couleur exacte du brief est conservée.</div></div>
-      <div class="decision"><h3>Anneau de focus encre</h3><p>Un contour tomate sur papier fait 2,8:1, sous les 3:1 exigés pour les éléments non textuels.</p><div class="reco"><b>Proposé&nbsp;:</b> double anneau papier + encre, visible dans les deux thèmes.</div></div>
-      <div class="decision"><h3>PDF et Factur-X hors Vercel</h3><p>Chromium et la lib Python factur-x tiennent mal dans des fonctions serverless (taille, démarrage à froid, PDF/A-3).</p><div class="reco"><b>Proposé&nbsp;:</b> un conteneur «&nbsp;atelier&nbsp;» hébergé en UE (Scaleway ou Clever Cloud). Le XML reste généré en TypeScript pour garantir les mêmes totaux qu'à l'écran.</div></div>
-      <div class="decision"><h3>Nommage</h3><p>Le brief mélange noms français (routes, adaptateur PA) et anglais (tables).</p><div class="reco"><b>Proposé&nbsp;:</b> URL et vocabulaire métier en français, tables et colonnes Postgres en anglais comme en section 13.</div></div>
-      <div class="decision"><h3>Statut = couleur + forme</h3><p>Exigence d'impression en noir et blanc, et daltonisme.</p><div class="reco"><b>Proposé&nbsp;:</b> chaque pastille porte un glyphe distinct, y compris sur la facture imprimée.</div></div>
-      <div class="decision"><h3>Couleurs de statut en sombre</h3><p>Prune et brique éclaircies pour le texte en sombre, mais assombries en remplissage de pastille pour garder un texte clair à plus de 5:1.</p><div class="reco"><b>Proposé&nbsp;:</b> tokens <code>--st-*</code> séparés des tokens de texte.</div></div>
+      <div class="decision"><h3>Navigation par catégories</h3><p>Pilotage, Ventes, Relation client, Catalogue, Trésorerie, Facturation électronique, Comptabilité. Chaque catégorie est une route, avec compteurs d'alerte.</p></div>
+      <div class="decision"><h3>Clients au centre</h3><p>Liste segmentée par catégorie fiscale (France, particulier, administration, UE, hors UE). La catégorie pilote la TVA et les mentions, visible sur la fiche.</p></div>
+      <div class="decision"><h3>Formes et couleurs sobres</h3><p>Fini les pilules, le galet et l'anneau 3D. Rayons courts, neutres froids, un accent bleu encre. La tomate ne reste que dans le logo.</p></div>
+      <div class="decision"><h3>Ce que je garde</h3><p>La barre Ctrl K, le contrôle de conformité, l'aperçu facture identique au PDF, et les règles d'accessibilité (contrastes AA, focus visible).</p></div>
     </div>
   </section>
 
 </main>
 
-<div id="toast" class="toast" role="status" hidden></div>
-
+<div class="toast" id="toast" role="status" hidden></div>
 <div class="voile" id="voile" hidden>
-  <div class="bulle-cmd" role="dialog" aria-modal="true" aria-label="Barre de commande">
-    <div class="cmd-champ">
-      <svg viewBox="0 0 20 20" fill="none" aria-hidden="true"><circle cx="9" cy="9" r="6" stroke="currentColor" stroke-width="2"/><path d="M13.5 13.5 17 17" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      <input id="cmd-in" type="text" autocomplete="off" placeholder="Chercher ou agir…" aria-label="Chercher ou agir" role="combobox" aria-expanded="true" aria-controls="cmd-liste">
-    </div>
-    <ul class="cmd-liste" id="cmd-liste" role="listbox"></ul>
-    <div class="cmd-pied"><span><kbd>↑</kbd> <kbd>↓</kbd> naviguer</span><span><kbd>↵</kbd> lancer</span><span><kbd>Échap</kbd> fermer</span></div>
+  <div class="palette" role="dialog" aria-modal="true" aria-label="Recherche et commandes">
+    <div class="palette-champ"><svg viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input id="pal-in" autocomplete="off" placeholder="Client, facture, action…" aria-label="Rechercher" role="combobox" aria-expanded="true" aria-controls="pal-liste"></div>
+    <ul id="pal-liste" role="listbox"></ul>
   </div>
 </div>
 
 <script>
 (function(){
-  // ---------- Thème ----------
-  var root = document.documentElement;
-  var boutonsTheme = document.querySelectorAll('.bascule button');
-  function appliquerTheme(t){
-    if(t === 'system') root.removeAttribute('data-theme'); else root.setAttribute('data-theme', t);
-    boutonsTheme.forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.t === t)); });
-    try{ localStorage.setItem('pastille-theme', t); }catch(e){}
-  }
-  boutonsTheme.forEach(function(b){ b.addEventListener('click', function(){ appliquerTheme(b.dataset.t); }); });
-  try{ var t0 = localStorage.getItem('pastille-theme'); if(t0) appliquerTheme(t0); }catch(e){}
+  /* ---------- Thème ---------- */
+  var root = document.documentElement, bts = document.querySelectorAll('.bascule button');
+  function theme(t){ t==='system' ? root.removeAttribute('data-theme') : root.setAttribute('data-theme', t);
+    bts.forEach(function(b){ b.setAttribute('aria-pressed', String(b.dataset.t===t)); }); try{ localStorage.setItem('pastille-theme', t); }catch(e){} }
+  bts.forEach(function(b){ b.addEventListener('click', function(){ theme(b.dataset.t); }); });
+  try{ var t0 = localStorage.getItem('pastille-theme'); if(t0) theme(t0); }catch(e){}
 
-  // ---------- Toast ----------
-  var toast = document.getElementById('toast'), toastT;
-  function annoncer(msg){
-    toast.textContent = msg; toast.hidden = false;
-    clearTimeout(toastT); toastT = setTimeout(function(){ toast.hidden = true; }, 2200);
-  }
+  var toastEl = document.getElementById('toast'), tt;
+  function toast(m){ toastEl.textContent = m; toastEl.hidden = false; clearTimeout(tt); tt = setTimeout(function(){ toastEl.hidden = true; }, 2400); }
 
-  // ---------- Pastilles ----------
-  var STATUTS = {
-    brouillon:{l:'Brouillon', g:'<circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.8" stroke-dasharray="2.2 1.9"/>'},
-    envoyee:{l:'Envoyée', g:'<circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.8"/><path d="M7 2a5 5 0 0 1 0 10z" fill="currentColor"/>'},
-    retard:{l:'En retard', g:'<path d="M7 2.6v5.2" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><circle cx="7" cy="11.2" r="1.35" fill="currentColor"/>'},
-    payee:{l:'Payée', g:'<path d="M2.8 7.4l2.8 2.8 5.6-6" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>'},
-    avoir:{l:'Avoir', g:'<circle cx="7" cy="7" r="5" stroke="currentColor" stroke-width="1.8"/><path d="M4.4 7h5.2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>'}
+  /* ---------- Utilitaires ---------- */
+  var eur = new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'});
+  function m(c){ return eur.format(c/100); }
+  function luhn(s){ var t=0; for(var i=0;i<s.length;i++){ var d=+s[s.length-1-i]; if(i%2){ d*=2; if(d>9) d-=9; } t+=d; } return t%10===0; }
+  function siren(p8){ for(var d=0; d<10; d++){ if(luhn(p8+d)) return p8+d; } }
+  function grouper(s){ return s.replace(/(\d{3})(?=\d)/g,'$1 '); }
+  function tvaFR(s){ var k = (12 + 3*(Number(s)%97))%97; return 'FR' + String(k).padStart(2,'0') + s; }
+  function norm(s){ return (s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase(); }
+  function initiales(n){ var w = norm(n).split(/[\s'\-]+/).filter(function(x){ return x && ['de','du','la','le','les','sarl','sas','gmbh','ltd'].indexOf(x)<0; }); return w.length>1 ? (w[0][0]+w[1][0]).toUpperCase() : (w[0]||'?').slice(0,2).toUpperCase(); }
+  var TEINTES = ['info','ok','attente','avoir','alerte','neutre'];
+  function avatar(n, cls){ var h=0x811c9dc5; var s=norm(n); for(var i=0;i<s.length;i++){ h^=s.charCodeAt(i); h=Math.imul(h,16777619)>>>0; } var t=TEINTES[h%TEINTES.length];
+    return '<span class="avatar '+(cls||'')+'" style="--a:var(--'+t+');--a-doux:var(--'+t+'-doux)" aria-hidden="true">'+initiales(n)+'</span>'; }
+  var I = {
+    tdb:'<rect x="2.5" y="2.5" width="4.5" height="5.5" rx="1.2"/><rect x="9" y="2.5" width="4.5" height="3.5" rx="1.2"/><rect x="2.5" y="10" width="4.5" height="3.5" rx="1.2"/><rect x="9" y="8" width="4.5" height="5.5" rx="1.2"/>',
+    facture:'<path d="M4 2.5h5.5L12 5v8.5H4z"/><path d="M6 8h4M6 10.5h4"/>',
+    devis:'<path d="M4 2.5h5.5L12 5v8.5H4z"/><path d="M6.2 9.2l1.3 1.3 2.4-2.6"/>',
+    avoir:'<path d="M4 2.5h5.5L12 5v8.5H4z"/><path d="M6 9.3h4"/>',
+    recur:'<path d="M3 7.5a5 5 0 0 1 8.6-3.4L13 5.5M13 8.5a5 5 0 0 1-8.6 3.4L3 10.5"/><path d="M13 2.5v3h-3M3 13.5v-3h3"/>',
+    clients:'<circle cx="6" cy="5.5" r="2.3"/><path d="M2 13c.4-2.3 2-3.6 4-3.6s3.6 1.3 4 3.6"/><path d="M10.5 3.4a2.2 2.2 0 0 1 0 4.2M12 9.6c1 .5 1.7 1.7 2 3.4"/>',
+    relances:'<path d="M4 11V7.5a4 4 0 0 1 8 0V11l1 1.5H3z"/><path d="M6.8 14h2.4"/>',
+    catalogue:'<path d="M2.5 5L8 2.5 13.5 5v6L8 13.5 2.5 11z"/><path d="M2.5 5L8 7.5 13.5 5M8 7.5v6"/>',
+    paiements:'<rect x="2" y="4" width="12" height="8.5" rx="1.5"/><path d="M2 7h12M4.5 10h2.5"/>',
+    recues:'<path d="M2.5 9.5l1.8-6h7.4l1.8 6v4h-11z"/><path d="M2.5 9.5h3l.8 1.5h3.4l.8-1.5h3"/>',
+    ereport:'<path d="M3 13V8M6.5 13V5M10 13V9.5M13.5 13V3"/>',
+    reforme:'<path d="M8 2l5 2v4c0 3-2.2 5-5 6-2.8-1-5-3-5-6V4z"/><path d="M6 8l1.5 1.5L10.2 6.8"/>',
+    exports:'<path d="M8 2.5v7.5M5 7l3 3 3-3"/><path d="M3 11v2.5h10V11"/>',
+    reglages:'<path d="M3 4.5h6M12 4.5h1M3 11.5h1M7 11.5h6"/><circle cx="10.5" cy="4.5" r="1.5"/><circle cx="5.5" cy="11.5" r="1.5"/>',
+    aide:'<circle cx="8" cy="8" r="5.5"/><path d="M6.4 6.4a1.7 1.7 0 0 1 3.2.7c0 1.1-1.6 1.4-1.6 2.4"/><circle cx="8" cy="11.4" r=".4"/>'
   };
-  document.querySelectorAll('.pastille[data-st]').forEach(function(p){
-    var s = STATUTS[p.dataset.st];
-    p.innerHTML = '<svg viewBox="0 0 14 14" fill="none" aria-hidden="true">' + s.g + '</svg>' + s.l;
-  });
-  var btnNb = document.getElementById('btn-nb'), scenePast = document.getElementById('scene-pastilles');
-  btnNb.addEventListener('click', function(){
-    var on = scenePast.classList.toggle('nb');
-    btnNb.setAttribute('aria-pressed', String(on));
-    btnNb.textContent = on ? 'Revenir en couleur' : 'Voir en noir et blanc';
-  });
+  function ic(k){ return '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+I[k]+'</svg>'; }
 
-  // ---------- Avatars ----------
-  var TEINTES = [
-    ['#FF5A36','#1C1B22'],['#9FE0BC','#1C1B22'],['#FFD65C','#1C1B22'],['#A9D2FF','#1C1B22'],
-    ['#7A4BD0','#FFFDF8'],['#FFB8A6','#1C1B22'],['#CFE3A1','#1C1B22'],['#F7B267','#1C1B22']
+  /* ---------- Données d'exemple ---------- */
+  var CAT = {
+    b2b:{l:'Entreprise France', c:'var(--info)'}, b2c:{l:'Particulier', c:'var(--attente)'}, b2g:{l:'Administration', c:'var(--ok)'},
+    ue:{l:'Entreprise UE', c:'var(--avoir)'}, hue:{l:'Hors UE', c:'var(--alerte)'}
+  };
+  function tagCat(k){ return '<span class="categorie" style="--c:'+CAT[k].c+'"><i></i>'+CAT[k].l+'</span>'; }
+  var CLIENTS = [
+    {id:'dupont', nom:'Atelier Dupont', forme:'SARL', cat:'b2b', p8:'73282932', ville:'Nantes', adr:'14 rue de la Fosse, 44000 Nantes', encours:421800, ca:2864000, delai:28, nb:14, der:'12 oct.', contacts:[['Claire Dupont','Gérante','claire@atelier-dupont.fr',true],['Marc Olivier','Comptabilité','compta@atelier-dupont.fr',true]]},
+    {id:'leroy', nom:'Cabinet Leroy Avocats', forme:'SELARL', cat:'b2b', p8:'81204457', ville:'Paris', adr:'8 rue Royale, 75008 Paris', encours:132000, ca:1584000, delai:35, nb:9, der:'15 sept.', contacts:[['Hélène Leroy','Associée','h.leroy@leroy-avocats.fr',true]]},
+    {id:'hofmann', nom:'Hofmann GmbH', forme:'GmbH', cat:'ue', ville:'Hambourg', adr:'Speicherstadt 4, 20457 Hamburg, Allemagne', tva:'DE811234567', encours:540000, ca:1620000, delai:32, nb:6, der:'28 sept.', contacts:[['Jonas Hofmann','Einkauf','einkauf@hofmann.de',true]]},
+    {id:'vannes', nom:'Mairie de Vannes', forme:'Collectivité', cat:'b2g', p8:'21560260', ville:'Vannes', adr:'Place Maurice Marchais, 56000 Vannes', encours:294000, ca:1176000, delai:41, nb:5, der:'31 août', retard:true, contacts:[['Service financier','Mandatement','finances@mairie-vannes.fr',true]]},
+    {id:'kerlann', nom:'Boulangerie Kerlann', forme:'EURL', cat:'b2b', p8:'90133482', ville:'Quimper', adr:'2 quai du Steir, 29000 Quimper', encours:0, ca:1036800, delai:9, nb:12, der:'3 oct.', contacts:[['Yann Kerlann','Gérant','yann@kerlann.bzh',true]]},
+    {id:'nebuleuse', nom:'Studio Nébuleuse', forme:'SAS', cat:'b2b', p8:'88456120', ville:'Lyon', adr:'31 rue Mercière, 69002 Lyon', encours:186000, ca:744000, delai:21, nb:4, der:'1 oct.', contacts:[['Inès Garnier','Directrice artistique','ines@nebuleuse.studio',true]]},
+    {id:'northwind', nom:'Northwind Ltd', forme:'Ltd', cat:'hue', ville:'Londres', adr:'22 Shoreditch High St, London E1 6PG, Royaume-Uni', encours:0, ca:480000, delai:18, nb:3, der:'9 juil.', contacts:[['Sam Patel','Finance','ap@northwind.co.uk',true]]},
+    {id:'morel', nom:'Jeanne Morel', forme:'', cat:'b2c', ville:'Rennes', adr:'5 rue Saint-Michel, 35000 Rennes', encours:0, ca:96000, delai:3, nb:1, der:'10 sept.', contacts:[['Jeanne Morel','','jeanne.morel@exemple.fr',true]]},
+    {id:'bernard', nom:'Lucas Bernard', forme:'', cat:'b2c', ville:'Brest', adr:'40 rue de Siam, 29200 Brest', encours:0, ca:42000, delai:0, nb:1, der:'2 mai', contacts:[['Lucas Bernard','','lucas.b@exemple.fr',true]]}
   ];
-  var IGNORES = ['de','du','des','la','le','les','l','d','et','sarl','sas','sasu','eurl','sa','sci','ei','eirl','gmbh','ltd','scop','snc'];
-  function normaliser(s){ return (s||'').normalize('NFD').replace(/[̀-ͯ]/g,'').toLowerCase().trim(); }
-  function initiales(nom){
-    var mots = normaliser(nom).split(/[\s'’\-]+/).filter(function(m){ return m && IGNORES.indexOf(m) < 0; });
-    if(!mots.length) return '?';
-    if(mots.length === 1) return mots[0].slice(0,2).toUpperCase();
-    return (mots[0][0] + mots[1][0]).toUpperCase();
-  }
-  function fnv1a(s){ var h = 0x811c9dc5; for(var i=0;i<s.length;i++){ h ^= s.charCodeAt(i); h = Math.imul(h, 0x01000193) >>> 0; } return h; }
-  function peindreAvatar(el, nom){
-    var t = TEINTES[fnv1a(normaliser(nom)) % TEINTES.length];
-    el.style.setProperty('--av-fond', t[0]); el.style.setProperty('--av-texte', t[1]);
-    el.textContent = initiales(nom); el.setAttribute('aria-hidden','true');
-  }
-  document.querySelectorAll('.avatar[data-nom]').forEach(function(a){ peindreAvatar(a, a.dataset.nom); });
-  var inNom = document.getElementById('in-nom'), avLive = document.getElementById('avatar-live');
-  inNom.addEventListener('input', function(){ peindreAvatar(avLive, inNom.value); });
-
-  // ---------- SIREN ----------
-  var inSiren = document.getElementById('in-siren'), champSiren = document.getElementById('champ-siren'), aideSiren = document.getElementById('aide-siren');
-  function luhn(ch){ var s=0; for(var i=0;i<ch.length;i++){ var d=+ch[ch.length-1-i]; if(i%2===1){ d*=2; if(d>9) d-=9; } s+=d; } return s%10===0; }
-  function verifierSiren(){
-    var c = inSiren.value.replace(/\D/g,'').slice(0,9);
-    inSiren.value = c.replace(/(\d{3})(?=\d)/g,'$1 ');
-    champSiren.classList.remove('ok','erreur'); inSiren.removeAttribute('aria-invalid');
-    if(c.length === 0){ aideSiren.textContent = '9 chiffres, obligatoire en B2B France'; return; }
-    if(c.length < 9){ aideSiren.textContent = 'Encore ' + (9-c.length) + ' chiffre' + (9-c.length>1?'s':''); return; }
-    if(luhn(c)){ champSiren.classList.add('ok'); aideSiren.textContent = 'Clé de contrôle valide'; }
-    else { champSiren.classList.add('erreur'); inSiren.setAttribute('aria-invalid','true'); aideSiren.textContent = 'Clé de contrôle invalide : vérifiez la saisie'; }
-  }
-  inSiren.addEventListener('input', verifierSiren);
-
-  // ---------- Compteur de total ----------
-  var totalEl = document.getElementById('total-anime'), totalCts = 421800;
-  var fmt = new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR'});
-  var reduit = window.matchMedia('(prefers-reduced-motion: reduce)');
-  document.getElementById('btn-compteur').addEventListener('click', function(){
-    var de = totalCts, vers = totalCts === 421800 ? 475800 : 421800, t0 = performance.now(), duree = reduit.matches ? 1 : 300;
-    totalCts = vers;
-    function pas(t){
-      var k = Math.min(1,(t-t0)/duree), e = 1 - Math.pow(1-k,3);
-      totalEl.textContent = fmt.format(Math.round(de + (vers-de)*e)/100);
-      if(k<1) requestAnimationFrame(pas);
-    }
-    requestAnimationFrame(pas);
-  });
-
-  // ---------- Bouton Émettre ----------
-  document.getElementById('btn-emettre').addEventListener('click', function(){ annoncer('Exemple : la facture recevrait son numéro et le tampon ÉMISE'); });
-
-  // ---------- Pile ----------
-  var pile = document.getElementById('pile');
-  function tournerPile(){
-    pile.querySelectorAll('.facture-carte').forEach(function(c){ c.dataset.pos = String((+c.dataset.pos + 2) % 3); });
-  }
-  pile.addEventListener('click', tournerPile);
-  pile.addEventListener('keydown', function(e){ if(e.key==='Enter'||e.key===' '){ e.preventDefault(); tournerPile(); } });
-
-  // ---------- Galet ----------
-  var galet = document.getElementById('galet'), radial = document.getElementById('radial');
-  var boutonsRadial = radial.querySelectorAll('button'), R = 168;
-  boutonsRadial.forEach(function(b,i){
-    var a = (180 + i*22.5) * Math.PI/180;
-    b.style.setProperty('--x', (Math.cos(a)*R).toFixed(1)+'px');
-    b.style.setProperty('--y', (Math.sin(a)*R).toFixed(1)+'px');
-    b.style.setProperty('--i', i);
-    b.tabIndex = -1;
-    b.addEventListener('click', function(){ fermerGalet(true); annoncer('Exemple : nouveau ' + b.dataset.cree.toLowerCase() + ' ouvert'); });
-  });
-  function ouvrirGalet(){ radial.classList.add('ouvert'); galet.setAttribute('aria-expanded','true'); boutonsRadial.forEach(function(b){ b.tabIndex = 0; }); setTimeout(function(){ boutonsRadial[0].focus(); }, 60); }
-  function fermerGalet(rendreFocus){ radial.classList.remove('ouvert'); galet.setAttribute('aria-expanded','false'); boutonsRadial.forEach(function(b){ b.tabIndex = -1; }); if(rendreFocus) galet.focus(); }
-  galet.addEventListener('click', function(){ radial.classList.contains('ouvert') ? fermerGalet(false) : ouvrirGalet(); });
-  radial.addEventListener('keydown', function(e){ if(e.key==='Escape') fermerGalet(true); });
-  galet.addEventListener('keydown', function(e){ if(e.key==='Escape') fermerGalet(false); });
-
-  // ---------- Barre de commande ----------
-  var voile = document.getElementById('voile'), cmdIn = document.getElementById('cmd-in'), cmdListe = document.getElementById('cmd-liste');
-  var ENTREES = [
-    {type:'Facture', txt:'F-2026-0042 · Atelier Dupont · 4 218,00 €', g:'F', c:'var(--ciel)'},
-    {type:'Facture', txt:'F-2026-0039 · Mairie de Vannes · 2 940,00 €', g:'F', c:'var(--st-retard)', f:true},
-    {type:'Facture', txt:'F-2026-0041 · Boulangerie Kerlann · 864,00 €', g:'F', c:'var(--menthe)'},
-    {type:'Client', txt:'Atelier Dupont', g:'AD', c:'#FF5A36'},
-    {type:'Client', txt:'Boulangerie Kerlann', g:'BK', c:'#9FE0BC'},
-    {type:'Action', txt:'Relancer les 3 factures en retard', g:'!', c:'var(--st-retard)', f:true},
-    {type:'Action', txt:'Nouvelle facture', g:'+', c:'var(--tomate)'},
-    {type:'Action', txt:'Nouveau devis', g:'+', c:'var(--beurre)'},
-    {type:'Article', txt:'Création logo · 450,00 € HT', g:'A', c:'var(--menthe)'}
+  CLIENTS.forEach(function(c){ if(c.p8){ c.siren = siren(c.p8); c.tva = tvaFR(c.siren); } });
+  function client(id){ return CLIENTS.filter(function(c){ return c.id===id; })[0]; }
+  var ST = {brouillon:'Brouillon', envoyee:'Envoyée', retard:'En retard', payee:'Payée', avoir:'Avoir'};
+  var FACTURES = [
+    {n:'—', c:'dupont', em:'—', ech:'—', ttc:128400, st:'brouillon', pa:'—'},
+    {n:'F-2026-0042', c:'dupont', em:'12/10/2026', ech:'11/11/2026', ttc:421800, st:'envoyee', pa:'Déposée'},
+    {n:'F-2026-0041', c:'kerlann', em:'03/10/2026', ech:'02/11/2026', ttc:86400, st:'payee', pa:'Encaissée'},
+    {n:'F-2026-0040', c:'nebuleuse', em:'01/10/2026', ech:'31/10/2026', ttc:186000, st:'envoyee', pa:'Reçue par le client'},
+    {n:'A-2026-0003', c:'nebuleuse', em:'01/10/2026', ech:'—', ttc:-24000, st:'avoir', pa:'Déposée'},
+    {n:'F-2026-0039', c:'vannes', em:'31/08/2026', ech:'30/09/2026', ttc:294000, st:'retard', pa:'Chorus Pro · mise en paiement'},
+    {n:'F-2026-0038', c:'hofmann', em:'28/09/2026', ech:'28/10/2026', ttc:540000, st:'envoyee', pa:'E-reporting'},
+    {n:'F-2026-0037', c:'leroy', em:'15/09/2026', ech:'15/10/2026', ttc:132000, st:'envoyee', pa:'Approuvée'},
+    {n:'F-2026-0036', c:'morel', em:'10/09/2026', ech:'À réception', ttc:96000, st:'payee', pa:'E-reporting'},
+    {n:'F-2026-0035', c:'northwind', em:'09/07/2026', ech:'08/08/2026', ttc:480000, st:'payee', pa:'E-reporting'}
   ];
-  var resultats = [], actif = 0, dernierFocus = null;
+  function statut(s){ return '<span class="statut st-'+s+'">'+ST[s]+'</span>'; }
+
+  /* ---------- Navigation ---------- */
+  var NAV = [
+    {g:'Pilotage', items:[{id:'tdb', l:'Tableau de bord', i:'tdb'}]},
+    {g:'Ventes', items:[{id:'factures', l:'Factures', i:'facture', n:'1', alerte:true},{id:'devis', l:'Devis', i:'devis', n:'4'},{id:'avoirs', l:'Avoirs', i:'avoir'},{id:'recurrences', l:'Récurrences', i:'recur'}]},
+    {g:'Relation client', items:[{id:'clients', l:'Clients', i:'clients', n:String(CLIENTS.length)},{id:'relances', l:'Relances', i:'relances', n:'1', alerte:true}]},
+    {g:'Catalogue', items:[{id:'catalogue', l:'Articles et prestations', i:'catalogue'}]},
+    {g:'Trésorerie', items:[{id:'paiements', l:'Paiements', i:'paiements'}]},
+    {g:'Facturation électronique', items:[{id:'recues', l:'Factures reçues', i:'recues', n:'2'},{id:'ereporting', l:'E-reporting', i:'ereport'},{id:'reforme', l:'Réforme 2027', i:'reforme'}]},
+    {g:'Comptabilité', items:[{id:'exports', l:'Exports comptables', i:'exports'}]}
+  ];
+  var BAS = [{id:'reglages', l:'Réglages', i:'reglages'},{id:'aide', l:'Aide', i:'aide'}];
+  var LIB = {}; var GRP = {};
+  NAV.forEach(function(g){ g.items.forEach(function(it){ LIB[it.id]=it.l; GRP[it.id]=g.g; }); });
+  BAS.forEach(function(it){ LIB[it.id]=it.l; GRP[it.id]='Compte'; });
+  function navBtn(it){ return '<button type="button" class="nav" data-vue="'+it.id+'">'+ic(it.i)+'<span>'+it.l+'</span>'+(it.n?'<span class="compte'+(it.alerte?' alerte':'')+'">'+it.n+'</span>':'')+'</button>'; }
+  document.getElementById('nav-groupes').innerHTML = NAV.map(function(g){ return '<div class="groupe"><div class="groupe-titre">'+g.g+'</div>'+g.items.map(navBtn).join('')+'</div>'; }).join('');
+  document.getElementById('nav-bas').innerHTML = BAS.map(navBtn).join('');
+  document.getElementById('sys-categories').innerHTML = Object.keys(CAT).map(tagCat).join('');
+
+  var etat = {vue:'clients', client:null, seg:'tous', q:'', ff:'toutes', onglet:'apercu'};
+  var contenu = document.getElementById('contenu'), fil = document.getElementById('fil');
+
   function rendre(){
-    var q = normaliser(cmdIn.value);
-    resultats = [];
-    var m = q.match(/^nouveau client\s+([\d\s]{9,11})$/);
-    if(m){
-      var s = m[1].replace(/\s/g,'');
-      if(s.length===9) resultats.push({type:'Annuaire', txt:'Créer le client SIREN ' + s.replace(/(\d{3})(?=\d)/g,'$1 ') + (luhn(s)?' · remplissage automatique':' · SIREN invalide'), g:'+', c:'var(--ciel)'});
-    }
-    var mots = q.split(/\s+/).filter(Boolean);
-    ENTREES.forEach(function(e){
-      var h = normaliser(e.type + ' ' + e.txt);
-      if(mots.every(function(w){ return h.indexOf(w) >= 0; })) resultats.push(e);
-    });
-    if(actif >= resultats.length) actif = 0;
-    cmdListe.innerHTML = '';
-    if(!resultats.length){ cmdListe.innerHTML = '<li class="cmd-vide" role="presentation">Rien ne correspond. Essayez un nom de client ou un numéro de facture.</li>'; cmdIn.removeAttribute('aria-activedescendant'); return; }
-    resultats.forEach(function(e,i){
-      var li = document.createElement('li');
-      li.id = 'cmd-r' + i; li.setAttribute('role','option'); li.setAttribute('aria-selected', String(i===actif));
-      li.innerHTML = '<span class="glyphe" style="background:' + e.c + (e.f?';color:var(--sur-fonce)':'') + '">' + e.g + '</span><span class="txt"></span><span class="type">' + e.type + '</span>';
-      li.querySelector('.txt').textContent = e.txt;
-      li.addEventListener('mousemove', function(){ if(actif!==i){ actif=i; marquer(); } });
-      li.addEventListener('click', function(){ lancer(i); });
-      cmdListe.appendChild(li);
-    });
-    marquer();
+    document.querySelectorAll('.nav').forEach(function(b){ b.toggleAttribute('aria-current', false); if(b.dataset.vue===etat.vue) b.setAttribute('aria-current','page'); });
+    var f = '<span>'+GRP[etat.vue]+'</span><span class="sep">/</span>';
+    if(etat.vue==='clients' && etat.client){ f += '<span>Clients</span><span class="sep">/</span><b>'+client(etat.client).nom+'</b>'; }
+    else f += '<b>'+LIB[etat.vue]+'</b>';
+    fil.innerHTML = f;
+    var html;
+    if(etat.vue==='tdb') html = vueTdb();
+    else if(etat.vue==='clients') html = etat.client ? vueFiche(client(etat.client)) : vueClients();
+    else if(etat.vue==='factures') html = vueFactures();
+    else html = vueVide(etat.vue);
+    contenu.innerHTML = html;
+    contenu.scrollTop = 0;
+    var q = document.getElementById('q-clients'); if(q){ q.value = etat.q; }
   }
-  function marquer(){
-    cmdListe.querySelectorAll('[role="option"]').forEach(function(li,i){ li.setAttribute('aria-selected', String(i===actif)); });
-    var a = document.getElementById('cmd-r'+actif);
-    if(a){ cmdIn.setAttribute('aria-activedescendant', a.id); a.scrollIntoView({block:'nearest'}); }
+
+  /* ---------- Vues ---------- */
+  function vueTdb(){
+    var mois = ['Janv.','Févr.','Mars','Avr.','Mai','Juin','Juil.','Août','Sept.','Oct.'], v = [7200,8900,10400,9100,11800,8200,6400,5100,13600,17700], max = 18000;
+    var j = Math.round((new Date(2027,8,1) - new Date(2026,9,12)) / 864e5);
+    return '<div class="vue-tete"><div><h2>Tableau de bord</h2><p>Octobre 2026 · exercice en cours</p></div><div class="actions"><button type="button" class="btn">Exporter</button></div></div>'+
+    '<div class="kpis">'+
+      kpi('Encaissé en octobre','var(--ok)','18 240,00 €','6 paiements')+
+      kpi('En attente','var(--info)','12 798,00 €','4 factures envoyées')+
+      kpi('En retard','var(--alerte)','2 940,00 €','1 facture, 12 jours')+
+      kpi('Chiffre d’affaires 2026','var(--encre-3)','98 400,00 €','HT, janvier à octobre')+
+    '</div>'+
+    '<div class="grille-2">'+
+      '<section class="panneau"><div class="panneau-tete"><h3>Chiffre d’affaires mensuel HT</h3><span class="muet" style="font-size:12.5px">en milliers d’euros</span></div><div class="panneau-corps">'+
+        '<div class="barres">'+v.map(function(x,i){ return '<div class="barre-col'+(i===9?' courant':'')+'"><em>'+(x/1000).toLocaleString('fr-FR',{maximumFractionDigits:1})+'</em><span class="b" style="height:'+(x/max*100*0.82).toFixed(1)+'%"></span></div>'; }).join('')+'</div>'+
+        '<div class="mois">'+mois.map(function(x){ return '<span>'+x+'</span>'; }).join('')+'</div>'+
+      '</div></section>'+
+      '<section class="panneau"><div class="panneau-tete"><h3>À traiter</h3><span class="muet" style="font-size:12.5px">4</span></div><div class="panneau-corps" style="padding-top:4px;padding-bottom:4px"><ul class="taches">'+
+        tache('var(--alerte)','Relancer la Mairie de Vannes','F-2026-0039 · 2 940,00 € · échue depuis 12 jours')+
+        tache('var(--attente)','Devis D-2026-0018 expire dans 3 jours','Studio Nébuleuse · 3 600,00 € HT')+
+        tache('var(--info)','2 factures fournisseurs à approuver','Reçues via la plateforme agréée')+
+        tache('var(--encre-3)','Émission électronique obligatoire','Dans '+j+' jours, le 1er septembre 2027')+
+      '</ul></div></section>'+
+    '</div>'+
+    '<div class="grille-2">'+
+      '<section class="panneau"><div class="panneau-tete"><h3>Derniers documents</h3><button type="button" class="btn s fantome" data-vue="factures">Tout voir</button></div>'+tableFactures(FACTURES.slice(1,5), true)+'</section>'+
+      '<section class="panneau"><div class="panneau-tete"><h3>TVA collectée · septembre</h3></div><div class="panneau-corps"><dl class="lignes-cle" style="margin:0">'+
+        '<div><dt>20 % · base 12 840,00 €</dt><dd class="v num" style="margin:0">2 568,00 €</dd></div>'+
+        '<div><dt>5,5 % · base 760,00 €</dt><dd class="v num" style="margin:0">41,80 €</dd></div>'+
+        '<div><dt>Autoliquidation UE · base 4 500,00 €</dt><dd class="v num" style="margin:0">0,00 €</dd></div>'+
+        '<div><dt style="color:var(--encre);font-weight:600">Total à déclarer</dt><dd class="v num" style="margin:0;font-weight:600">2 609,80 €</dd></div>'+
+      '</dl></div></section>'+
+    '</div>';
   }
-  function lancer(i){ var e = resultats[i]; if(!e) return; fermerCmd(); annoncer('Exemple : ' + e.txt); }
-  function ouvrirCmd(){ dernierFocus = document.activeElement; voile.hidden = false; cmdIn.value = ''; actif = 0; rendre(); cmdIn.focus(); }
-  function fermerCmd(){ voile.hidden = true; if(dernierFocus && dernierFocus.focus) dernierFocus.focus(); }
-  document.getElementById('btn-cmd').addEventListener('click', ouvrirCmd);
-  cmdIn.addEventListener('input', function(){ actif = 0; rendre(); });
-  cmdIn.addEventListener('keydown', function(e){
-    if(e.key==='ArrowDown'){ e.preventDefault(); if(resultats.length){ actif = (actif+1)%resultats.length; marquer(); } }
-    else if(e.key==='ArrowUp'){ e.preventDefault(); if(resultats.length){ actif = (actif-1+resultats.length)%resultats.length; marquer(); } }
-    else if(e.key==='Enter'){ e.preventDefault(); lancer(actif); }
-    else if(e.key==='Escape'){ e.preventDefault(); fermerCmd(); }
+  function kpi(l,c,v,s){ return '<div class="kpi"><span class="lib" style="--c:'+c+'"><i></i>'+l+'</span><span class="val">'+v+'</span><span class="sous">'+s+'</span></div>'; }
+  function tache(c,t,s){ return '<li><span class="pt" style="--c:'+c+'"></span><div class="t"><b>'+t+'</b><span>'+s+'</span></div></li>'; }
+
+  function vueClients(){
+    var segs = [['tous','Tous']].concat(Object.keys(CAT).map(function(k){ return [k, CAT[k].l]; }));
+    var q = norm(etat.q);
+    var liste = CLIENTS.filter(function(c){ return (etat.seg==='tous'||c.cat===etat.seg) && (!q || norm(c.nom+' '+c.ville+' '+(c.siren||'')).indexOf(q.replace(/\s/g,''))>=0 || norm(c.nom+' '+c.ville).indexOf(q)>=0); });
+    var totalEncours = liste.reduce(function(a,c){ return a+c.encours; },0);
+    return '<div class="vue-tete"><div><h2>Clients</h2><p>'+CLIENTS.length+' clients · encours total '+m(CLIENTS.reduce(function(a,c){return a+c.encours;},0))+'</p></div><div class="actions"><button type="button" class="btn" data-action="import">Importer CSV</button><button type="button" class="btn primaire" data-action="nouveau-client">Nouveau client</button></div></div>'+
+    '<div class="outils"><div class="segments" role="tablist" aria-label="Catégories de clients">'+segs.map(function(s){ var n = s[0]==='tous'?CLIENTS.length:CLIENTS.filter(function(c){return c.cat===s[0];}).length;
+      return '<button type="button" class="segment" role="tab" data-seg="'+s[0]+'" aria-selected="'+(etat.seg===s[0])+'">'+s[1]+' <span class="num">'+n+'</span></button>'; }).join('')+'</div>'+
+      '<label class="champ" for="q-clients"><svg viewBox="0 0 16 16" fill="none"><circle cx="7" cy="7" r="4.5" stroke="currentColor" stroke-width="1.5"/><path d="M10.5 10.5 14 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg><input id="q-clients" placeholder="Nom, ville, SIREN" autocomplete="off"></label></div>'+
+    '<div class="tableau"><table><thead><tr><th>Client</th><th>Catégorie</th><th>Identifiant</th><th class="d">Encours</th><th class="d">CA 12 mois</th><th class="d">Délai moyen</th><th>Dernière facture</th></tr></thead><tbody>'+
+      (liste.length ? liste.map(function(c){ return '<tr class="cliquable" data-client="'+c.id+'" tabindex="0"><td><div class="cel-client">'+avatar(c.nom)+'<div><b>'+c.nom+'</b><span>'+[c.forme,c.ville].filter(Boolean).join(' · ')+'</span></div></div></td><td>'+tagCat(c.cat)+'</td><td class="num muet">'+(c.siren?grouper(c.siren):(c.tva||'—'))+'</td><td class="d num" style="'+(c.retard?'color:var(--alerte)':'')+'">'+(c.encours?m(c.encours):'<span class="muet">—</span>')+'</td><td class="d num">'+m(c.ca)+'</td><td class="d num">'+(c.delai? c.delai+' j':'<span class="muet">—</span>')+'</td><td class="muet">'+c.der+'</td></tr>'; }).join('')
+      : '<tr><td colspan="7" class="muet" style="padding:28px;text-align:center">Aucun client ne correspond à cette recherche.</td></tr>')+
+    '</tbody></table></div><div class="pied-tableau"><span>'+liste.length+' client'+(liste.length>1?'s':'')+'</span><span>Encours affiché : '+m(totalEncours)+'</span></div>';
+  }
+
+  function regles(c){
+    var r = {
+      b2b:['20 %','Facturation électronique via la PA','30 jours fin de mois','Indemnité forfaitaire 40 € · SIREN client obligatoire'],
+      b2g:['20 %','Dépôt sur Chorus Pro','30 jours (délai légal public)','Numéro d’engagement et code service requis'],
+      b2c:['20 %','E-reporting des transactions','À réception','Pas d’indemnité forfaitaire'],
+      ue:['Autoliquidation','E-reporting international','30 jours','« Autoliquidation », art. 283-2 du CGI · n° TVA des deux parties'],
+      hue:['Exonération export','E-reporting international','30 jours','Exonération, art. 262 I du CGI']
+    }[c.cat];
+    return r;
+  }
+  function vueFiche(c){
+    var r = regles(c), docs = FACTURES.filter(function(f){ return f.c===c.id; });
+    var onglets = [['apercu','Aperçu'],['documents','Documents ('+docs.length+')'],['contacts','Contacts ('+c.contacts.length+')'],['tarifs','Tarifs spécifiques']];
+    var corps;
+    if(etat.onglet==='documents') corps = '<section class="panneau">'+(docs.length?tableFactures(docs,false):'<div class="panneau-corps muet">Aucun document récent.</div>')+'</section>';
+    else if(etat.onglet==='contacts') corps = '<section class="panneau"><div class="panneau-corps">'+contacts(c)+'</div></section>';
+    else if(etat.onglet==='tarifs') corps = '<section class="panneau"><div class="tableau" style="border:0"><table style="min-width:520px"><thead><tr><th>Article</th><th class="d">Prix catalogue HT</th><th class="d">Prix client HT</th><th class="d">Écart</th></tr></thead><tbody>'+
+        '<tr><td>Création logo</td><td class="d num">450,00 €</td><td class="d num">420,00 €</td><td class="d num muet">−6,7 %</td></tr>'+
+        '<tr><td>Journée d’atelier</td><td class="d num">650,00 €</td><td class="d num">600,00 €</td><td class="d num muet">−7,7 %</td></tr>'+
+        '<tr><td>Impression cartes de visite (×500)</td><td class="d num">210,00 €</td><td class="d num">210,00 €</td><td class="d num muet">—</td></tr>'+
+      '</tbody></table></div></section>';
+    else corps = '<div class="grille-2">'+
+      '<div style="display:flex;flex-direction:column;gap:18px;min-width:0">'+
+        '<section class="panneau"><div class="panneau-tete"><h3>Activité</h3></div><div class="panneau-corps"><ul class="chronologie">'+
+          evt('12 oct.','var(--info)','Facture '+(docs[1]?docs[1].n:'F-2026-0042')+' déposée sur la plateforme agréée','Statut : Déposée')+
+          evt('12 oct.','var(--encre)','Facture émise par Camille Roux','Numéro attribué, contenu figé et chaîné')+
+          evt('28 sept.','var(--ok)','Paiement reçu · 2 640,00 €','Virement · F-2026-0031')+
+          evt('15 sept.','var(--avoir)','Devis D-2026-0014 signé en ligne','Converti en facture d’acompte de 30 %')+
+          evt('2 sept.','var(--trait-fort)','Note interne','Préfère recevoir les factures le lundi.')+
+        '</ul></div></section>'+
+        '<section class="panneau"><div class="panneau-tete"><h3>Documents récents</h3><button type="button" class="btn s fantome" data-onglet="documents">Tout voir</button></div>'+(docs.length?tableFactures(docs.slice(0,3),true):'<div class="panneau-corps muet">Aucun document récent.</div>')+'</section>'+
+      '</div>'+
+      '<div style="display:flex;flex-direction:column;gap:18px;min-width:0">'+
+        '<section class="panneau"><div class="panneau-tete"><h3>Identité</h3><button type="button" class="btn s fantome">Modifier</button></div><div class="panneau-corps"><dl class="lignes-cle" style="margin:0">'+
+          ligne('Catégorie', CAT[c.cat].l)+
+          (c.siren?ligne('SIREN','<span class="num">'+grouper(c.siren)+'</span>'):'')+
+          (c.tva?ligne('N° TVA','<span class="num">'+c.tva+'</span>'):'')+
+          ligne('Adresse de facturation', c.adr)+
+          (c.siren?ligne('Adresse électronique','<span class="num">'+c.siren+'</span> · annuaire'):'')+
+        '</dl></div></section>'+
+        '<section class="panneau"><div class="panneau-tete"><h3>Réglages commerciaux</h3><button type="button" class="btn s fantome">Modifier</button></div><div class="panneau-corps"><dl class="lignes-cle" style="margin:0">'+
+          ligne('TVA par défaut', r[0])+ligne('Canal', r[1])+ligne('Conditions de paiement', r[2])+ligne('Remise par défaut', c.id==='dupont'?'5 %':'—')+ligne('Langue · devise', (c.cat==='ue'||c.cat==='hue')?'Anglais · EUR':'Français · EUR')+
+        '</dl><p class="regle">Appliqué automatiquement par la catégorie : '+r[3]+'.</p></div></section>'+
+        '<section class="panneau"><div class="panneau-tete"><h3>Contacts</h3><button type="button" class="btn s fantome" data-onglet="contacts">Gérer</button></div><div class="panneau-corps" style="padding-top:4px;padding-bottom:4px">'+contacts(c)+'</div></section>'+
+      '</div></div>';
+    return '<button type="button" class="retour" data-action="retour"><svg viewBox="0 0 16 16" fill="none"><path d="M10 3.5 5.5 8l4.5 4.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>Tous les clients</button>'+
+    '<div class="fiche-tete"><div class="fiche-id">'+avatar(c.nom,'l')+'<div style="min-width:0"><h2>'+c.nom+'</h2><div class="fiche-meta">'+tagCat(c.cat)+(c.forme?'<span>'+c.forme+'</span>':'')+'<span>'+c.ville+'</span>'+(c.retard?'<span class="statut st-retard">1 facture en retard</span>':'')+'</div></div></div>'+
+      '<div class="actions"><button type="button" class="btn" data-action="devis">Nouveau devis</button><button type="button" class="btn primaire" data-action="nouvelle">Nouvelle facture</button></div></div>'+
+    '<div class="kpis">'+kpi('CA 12 mois','var(--encre-3)',m(c.ca),c.nb+' factures')+kpi('Encours',c.retard?'var(--alerte)':'var(--info)',m(c.encours),c.encours?'à encaisser':'rien en attente')+kpi('Délai moyen de paiement','var(--ok)',c.delai?c.delai+' jours':'—','sur 12 mois')+kpi('Dernière facture','var(--encre-3)',c.der,'')+'</div>'+
+    '<div class="segments" role="tablist" aria-label="Sections de la fiche">'+onglets.map(function(o){ return '<button type="button" class="segment" role="tab" data-onglet="'+o[0]+'" aria-selected="'+(etat.onglet===o[0])+'">'+o[1]+'</button>'; }).join('')+'</div>'+corps;
+  }
+  function ligne(k,v){ return '<div><dt class="k">'+k+'</dt><dd class="v" style="margin:0">'+v+'</dd></div>'; }
+  function evt(d,c,t,s){ return '<li style="--c:'+c+'"><span class="date">'+d+'</span><span class="rond"></span><div class="t">'+t+'<span>'+s+'</span></div></li>'; }
+  function contacts(c){ return c.contacts.map(function(k){ return '<div class="contact">'+avatar(k[0])+'<div><b style="font-weight:500">'+k[0]+'</b><span>'+[k[1],k[2]].filter(Boolean).join(' · ')+'</span></div>'+(k[3]?'<span class="categorie">Reçoit les factures</span>':'')+'</div>'; }).join(''); }
+
+  function tableFactures(liste, compacte){
+    return '<div class="tableau" style="border:0;border-radius:0 0 var(--r-l) var(--r-l)"><table style="min-width:'+(compacte?560:720)+'px"><thead><tr><th>Numéro</th>'+(compacte?'':'<th>Émise le</th>')+'<th>Client</th>'+(compacte?'':'<th>Échéance</th>')+'<th class="d">Montant TTC</th><th>Statut</th>'+(compacte?'':'<th>Plateforme</th>')+'</tr></thead><tbody>'+
+      liste.map(function(f){ var c = client(f.c); return '<tr class="cliquable" data-client="'+c.id+'" tabindex="0"><td class="num">'+(f.n==='—'?'<span class="muet">Brouillon</span>':f.n)+'</td>'+(compacte?'':'<td class="num muet">'+f.em+'</td>')+'<td><div class="cel-client">'+avatar(c.nom)+'<div><b>'+c.nom+'</b></div></div></td>'+(compacte?'':'<td class="num muet" style="'+(f.st==='retard'?'color:var(--alerte)':'')+'">'+f.ech+'</td>')+'<td class="d num">'+m(f.ttc)+'</td><td>'+statut(f.st)+'</td>'+(compacte?'':'<td class="pa">'+f.pa+'</td>')+'</tr>'; }).join('')+
+    '</tbody></table></div>';
+  }
+  function vueFactures(){
+    var filtres = [['toutes','Toutes'],['brouillon','Brouillons'],['envoyee','Envoyées'],['retard','En retard'],['payee','Payées'],['avoir','Avoirs']];
+    var liste = FACTURES.filter(function(f){ return etat.ff==='toutes' || f.st===etat.ff; });
+    return '<div class="vue-tete"><div><h2>Factures</h2><p>Exercice 2026 · numérotation F-2026 continue</p></div><div class="actions"><button type="button" class="btn">Exporter</button><button type="button" class="btn" data-action="relancer">Relancer les retards</button></div></div>'+
+    '<div class="segments" role="tablist" aria-label="Statut">'+filtres.map(function(s){ var n = s[0]==='toutes'?FACTURES.length:FACTURES.filter(function(f){return f.st===s[0];}).length;
+      return '<button type="button" class="segment" role="tab" data-ff="'+s[0]+'" aria-selected="'+(etat.ff===s[0])+'">'+s[1]+' <span class="num">'+n+'</span></button>'; }).join('')+'</div>'+
+    '<section class="panneau">'+tableFactures(liste,false)+'</section>'+
+    '<div class="pied-tableau"><span>'+liste.length+' document'+(liste.length>1?'s':'')+'</span><span>Total : '+m(liste.reduce(function(a,f){return a+f.ttc;},0))+'</span></div>';
+  }
+  var PHASE = {devis:'4',avoirs:'5',recurrences:'8',relances:'8',catalogue:'3',paiements:'8',recues:'9',ereporting:'9',reforme:'9',exports:'8',reglages:'1',aide:'11'};
+  var DESC = {
+    devis:'Suivi des devis envoyés, acceptés, refusés ou expirés, signature en ligne et conversion en facture ou en acompte.',
+    avoirs:'Avoirs totaux ou partiels, toujours rattachés à la facture d’origine.',
+    recurrences:'Factures mensuelles, trimestrielles ou annuelles générées en brouillon ou émises automatiquement.',
+    relances:'Scénarios de relance (J-3, J+7, J+15, J+30), modèles d’emails et historique des envois par client.',
+    catalogue:'Articles et prestations, unités, prix HT ou TTC, taux de TVA, nature bien ou service, prix spécifiques par client.',
+    paiements:'Encaissements, paiements partiels, moyens de paiement et rapprochement avec les factures.',
+    recues:'Factures fournisseurs reçues via la plateforme agréée, à approuver, refuser ou marquer payées.',
+    ereporting:'Données de transactions et de paiements hors e-invoicing transmises via la plateforme, avec leur statut.',
+    reforme:'Où en est l’entreprise : réception, émission, e-reporting, annuaire, et les dates limites qui la concernent.',
+    exports:'Écritures de ventes, journal des ventes, état de TVA et archive ZIP des factures d’une période.',
+    reglages:'Identité légale, régime de TVA, IBAN, numérotation, membres et rôles, connexion à la plateforme agréée.',
+    aide:'Centre d’aide et tutoriels courts.'
+  };
+  function vueVide(id){ return '<div class="vue-tete"><div><h2>'+LIB[id]+'</h2><p>'+GRP[id]+'</p></div></div><div class="vide"><h3>Vue construite en phase '+PHASE[id]+'</h3><p>'+DESC[id]+'</p></div>'; }
+
+  /* ---------- Événements ---------- */
+  document.getElementById('app').addEventListener('click', function(e){
+    var t = e.target.closest('[data-vue],[data-seg],[data-ff],[data-onglet],[data-client],[data-action]'); if(!t) return;
+    if(t.dataset.vue){ etat.vue = t.dataset.vue; etat.client = null; etat.onglet = 'apercu'; rendre(); }
+    else if(t.dataset.seg){ etat.seg = t.dataset.seg; rendre(); }
+    else if(t.dataset.ff){ etat.ff = t.dataset.ff; rendre(); }
+    else if(t.dataset.onglet){ etat.onglet = t.dataset.onglet; rendre(); }
+    else if(t.dataset.client){ etat.vue = 'clients'; etat.client = t.dataset.client; etat.onglet = 'apercu'; rendre(); }
+    else if(t.dataset.action==='retour'){ etat.client = null; rendre(); }
+    else if(t.dataset.action==='nouvelle'){ toast('Exemple : l’éditeur de facture s’ouvrirait ici'); }
+    else if(t.dataset.action==='relancer'){ toast('Exemple : 1 relance envoyée à la Mairie de Vannes'); }
+    else toast('Exemple : action disponible dans une phase suivante');
   });
-  voile.addEventListener('mousedown', function(e){ if(e.target===voile) fermerCmd(); });
-  document.addEventListener('keydown', function(e){
-    if((e.metaKey||e.ctrlKey) && e.key.toLowerCase()==='k'){ e.preventDefault(); voile.hidden ? ouvrirCmd() : fermerCmd(); }
+  document.getElementById('app').addEventListener('keydown', function(e){
+    var tr = e.target.closest('tr[data-client]'); if(tr && (e.key==='Enter'||e.key===' ')){ e.preventDefault(); tr.click(); }
   });
+  contenu.addEventListener('input', function(e){
+    if(e.target.id==='q-clients'){ etat.q = e.target.value; var pos = e.target.selectionStart; rendre(); var q = document.getElementById('q-clients'); q.focus(); q.setSelectionRange(pos,pos); }
+  });
+  document.getElementById('org').addEventListener('click', function(){ toast('Exemple : sélecteur d’entreprise (offre Studio)'); });
+
+  /* ---------- Palette Ctrl K ---------- */
+  var voile = document.getElementById('voile'), palIn = document.getElementById('pal-in'), palListe = document.getElementById('pal-liste'), res = [], act = 0, avant = null;
+  var SOURCES = CLIENTS.map(function(c){ return {t:c.nom, type:'Client', go:function(){ etat.vue='clients'; etat.client=c.id; etat.onglet='apercu'; rendre(); }}; })
+    .concat(FACTURES.filter(function(f){return f.n!=='—';}).map(function(f){ return {t:f.n+' · '+client(f.c).nom+' · '+m(f.ttc), type:'Facture', go:function(){ etat.vue='clients'; etat.client=f.c; etat.onglet='documents'; rendre(); }}; }))
+    .concat(NAV.reduce(function(a,g){ return a.concat(g.items.map(function(it){ return {t:it.l, type:'Aller à', go:function(){ etat.vue=it.id; etat.client=null; rendre(); }}; })); },[]))
+    .concat([{t:'Relancer les factures en retard', type:'Action', go:function(){ toast('Exemple : 1 relance envoyée'); }}]);
+  function palRendre(){
+    var q = norm(palIn.value).split(/\s+/).filter(Boolean);
+    res = SOURCES.filter(function(s){ var h = norm(s.type+' '+s.t); return q.every(function(w){ return h.indexOf(w)>=0; }); }).slice(0,9);
+    if(act>=res.length) act=0;
+    palListe.innerHTML = res.length ? res.map(function(s,i){ return '<li role="option" id="pal-'+i+'" data-i="'+i+'" aria-selected="'+(i===act)+'">'+(s.type==='Client'?avatar(s.t):'')+'<span class="txt">'+s.t+'</span><span class="type">'+s.type+'</span></li>'; }).join('')
+      : '<li class="vide-p">Aucun résultat.</li>';
+    if(res.length) palIn.setAttribute('aria-activedescendant','pal-'+act); else palIn.removeAttribute('aria-activedescendant');
+  }
+  function palOuvrir(){ avant = document.activeElement; voile.hidden = false; palIn.value=''; act=0; palRendre(); palIn.focus(); }
+  function palFermer(){ voile.hidden = true; if(avant&&avant.focus) avant.focus(); }
+  function palLancer(i){ var s = res[i]; if(!s) return; palFermer(); s.go(); }
+  document.getElementById('ouvrir-palette').addEventListener('click', palOuvrir);
+  palIn.addEventListener('input', function(){ act=0; palRendre(); });
+  palIn.addEventListener('keydown', function(e){
+    if(e.key==='ArrowDown'&&res.length){ e.preventDefault(); act=(act+1)%res.length; palRendre(); }
+    else if(e.key==='ArrowUp'&&res.length){ e.preventDefault(); act=(act-1+res.length)%res.length; palRendre(); }
+    else if(e.key==='Enter'){ e.preventDefault(); palLancer(act); }
+    else if(e.key==='Escape'){ e.preventDefault(); palFermer(); }
+  });
+  palListe.addEventListener('click', function(e){ var li = e.target.closest('[data-i]'); if(li) palLancer(+li.dataset.i); });
+  voile.addEventListener('mousedown', function(e){ if(e.target===voile) palFermer(); });
+  document.addEventListener('keydown', function(e){ if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='k'){ e.preventDefault(); voile.hidden?palOuvrir():palFermer(); } });
+
+  rendre();
 })();
 </script>

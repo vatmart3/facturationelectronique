@@ -1,51 +1,58 @@
-# PASTILLE · Phase 1 — proposition à valider
+# PASTILLE · Phase 1 — proposition v2 (CRM sobre)
 
-Planche visuelle et interactive : `docs/nuancier-pastille.html` (tokens, typographie, matière, composants).
+Maquette interactive : `docs/nuancier-pastille.html` (barre latérale par catégories, clients, fiche client, factures, tableau de bord, tokens).
+
+La v2 remplace la direction « objet rond » de la v1 à la demande du client : rendu CRM classe, épuré et professionnel.
+
+## Navigation par catégories
+
+| Catégorie | Vues |
+|---|---|
+| Pilotage | Tableau de bord |
+| Ventes | Factures, Devis, Avoirs, Récurrences |
+| Relation client | Clients (segmentés par catégorie fiscale), Relances |
+| Catalogue | Articles et prestations |
+| Trésorerie | Paiements |
+| Facturation électronique | Factures reçues, E-reporting, Réforme 2027 |
+| Comptabilité | Exports comptables |
+| Compte | Réglages, Aide |
+
+Catégories de clients : Entreprise France, Particulier, Administration, Entreprise UE, Hors UE. La catégorie pilote TVA par défaut, canal (PA, Chorus Pro, e-reporting) et mentions.
+
+## Design system
+
+- Neutres : `--fond #F4F4F1`, `--surface #FFFFFF`, `--trait #E6E5E0`, `--encre #16171B`, `--encre-2 #585A61` (variantes sombres définies).
+- Accent unique : `--accent #1F3A5F` (bleu encre). `--marque #FF5A36` réservé au logo.
+- Statuts : puce teintée + point + libellé (brouillon, envoyée, en retard, payée, avoir, annulée).
+- Typo : Schibsted Grotesk (titres), Onest (texte), IBM Plex Mono (montants, chiffres tabulaires).
+- Rayons 6 / 8 / 12 / 16 px, une ombre légère, structure portée par les bordures. Focus : anneau accent 2 px.
 
 ## Arborescence
 
 ```
 pastille/
-├── apps/web/                      Next.js App Router · TypeScript strict
+├── apps/web/
 │   ├── src/app/
-│   │   ├── (vitrine)/             landing, tarifs, réforme 2027, SEO, légal        · ph. 10
-│   │   ├── (auth)/                connexion, inscription, lien magique, Google     · ph. 1
-│   │   ├── bienvenue/             onboarding 8 étapes                              · ph. 3
-│   │   ├── (app)/[org]/           coque : sélecteur d'entreprise, galet, ⌘K        · ph. 1
-│   │   │   ├── page.tsx           accueil (pile + anneau en ph. 8)
-│   │   │   ├── factures/ devis/ avoirs/                                            · ph. 4–5
-│   │   │   ├── clients/ catalogue/                                                 · ph. 3
-│   │   │   ├── recues/ e-reporting/ reforme/                                       · ph. 9
-│   │   │   ├── exports/                                                            · ph. 8
-│   │   │   └── reglages/          entreprise, membres, rôles                       · ph. 1
-│   │   ├── impression/[id]/       rendu A4 nu = source unique aperçu + PDF         · ph. 6
-│   │   ├── signer/[jeton]/        signature publique de devis                      · ph. 8
-│   │   ├── admin/                 back-office                                      · ph. 10
-│   │   └── api/                   webhooks Stripe et PA, cron relances
-│   ├── src/components/
-│   │   ├── ui/                    Pilule, ChampPilule, Carte, Pastille, Avatar, Galet, BarreCommande · ph. 1
-│   │   ├── signatures/            Pile, Tampon, AnneauTresorerie (R3F), PapierVivant
-│   │   └── modeles/               Galet, Papeterie, Classique                      · ph. 6
-│   ├── src/lib/                   supabase/, org/, format/ (centimes → fr-FR, SIREN, IBAN)
-│   ├── src/styles/                tokens.css, globals.css (Tailwind v4 @theme), print.css
-│   └── e2e/                       Playwright
-├── packages/
-│   ├── moteur/                    calcul TVA, remises, acomptes, avoirs, arrondis  · ph. 2
-│   ├── conformite/                mentions obligatoires + contrôle                 · ph. 4
-│   ├── einvoice/                  mapping EN 16931 → CII / UBL                     · ph. 7
-│   └── pa/                        PlateformeAgreeeAdapter + mock                   · ph. 9
-├── services/atelier/              FastAPI : Playwright → PDF, factur-x → PDF/A-3   · ph. 6–7
-├── supabase/                      migrations/, seed.sql, tests/ (pgTAP, RLS)       · ph. 1
-├── docs/
-└── .github/workflows/ci.yml
+│   │   ├── (vitrine)/  (auth)/  bienvenue/
+│   │   └── (app)/[org]/
+│   │       ├── tableau-de-bord/      Pilotage
+│   │       ├── ventes/               factures, devis, avoirs, recurrences
+│   │       ├── clients/[id]/         Relation client
+│   │       ├── relances/
+│   │       ├── catalogue/
+│   │       ├── tresorerie/paiements/
+│   │       ├── e-facturation/        recues, e-reporting, reforme
+│   │       ├── comptabilite/exports/
+│   │       └── reglages/
+│   ├── src/components/  ui/  coque/  modeles-facture/
+│   ├── src/lib/  supabase/  org/  format/
+│   └── src/styles/  tokens.css  globals.css
+├── packages/  moteur/  conformite/  einvoice/  pa/
+├── services/atelier/      PDF + Factur-X (conteneur UE)
+├── supabase/  migrations/  seed.sql  tests/
+└── docs/
 ```
 
-## Décisions proposées
+## Conservé de la v1
 
-1. **Texte encre sur tomate** : blanc sur `#FF5A36` = 3,1:1 (échec AA), encre = 5,5:1.
-2. **Anneau de focus encre** (double anneau papier + encre) : tomate sur papier = 2,8:1, sous le seuil 3:1.
-3. **PDF et Factur-X dans un conteneur « atelier » hébergé en UE**, hors fonctions Vercel. Le XML reste généré en TypeScript (mêmes totaux qu'à l'écran).
-4. **Nommage** : URL et vocabulaire métier en français, tables Postgres en anglais (section 13).
-5. **Statut = couleur + glyphe** pour l'impression N&B et le daltonisme.
-6. **Tokens `--st-*` séparés** pour les remplissages de pastilles (prune et brique gardent un texte clair > 5:1 en sombre).
-7. **Tailwind v4** : `@theme` avec `--color-*: initial` pour effacer la palette par défaut.
+Barre Ctrl K, contrôle de conformité, aperçu facture identique au PDF, contrastes AA et focus visible, PDF/Factur-X dans un conteneur UE, routes et métier en français / tables en anglais.
