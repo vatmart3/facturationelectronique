@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { validerIdentite } from './organisation'
+import { validerFacturation, validerIdentite } from './organisation'
 
 function lecteur(valeurs: Record<string, string>) {
   return (cle: string) => (valeurs[cle] ?? '').trim()
@@ -71,5 +71,32 @@ describe('validerIdentite', () => {
     )
     expect(erreurs.siret).toMatch(/commencer par le SIREN/)
     expect(erreurs.vat_number).toMatch(/ne correspond pas/)
+  })
+})
+
+
+describe('validerFacturation', () => {
+  const base = {
+    default_payment_terms: '30j',
+    late_penalty_terms: 'Taux BCE + 10 points',
+    invoice_number_format: 'F-{AAAA}-{NNNN}',
+    quote_number_format: 'D-{AAAA}-{NNNN}',
+    credit_number_format: 'A-{AAAA}-{NNNN}',
+    accent_color: '#1f3a5f',
+    invoice_template: 'galet',
+  }
+  it('accepte des réglages valides', () => {
+    const { donnees, erreurs } = validerFacturation(lecteur(base))
+    expect(erreurs).toEqual({})
+    expect(donnees).toMatchObject({ accent_color: '#1F3A5F', invoice_font: 'grotesque', footer_text: null })
+    expect(donnees.early_payment_discount).toMatch(/Pas d’escompte/)
+  })
+  it('refuse les formats sans numéro et les valeurs inconnues', () => {
+    const { erreurs } = validerFacturation(
+      lecteur({ ...base, invoice_number_format: 'F-{AAAA}', quote_number_format: 'D {NNN}', accent_color: 'bleu', invoice_template: 'x', default_payment_terms: '90j', late_penalty_terms: '' }),
+    )
+    expect(Object.keys(erreurs).sort()).toEqual(
+      ['accent_color', 'default_payment_terms', 'invoice_number_format', 'invoice_template', 'late_penalty_terms', 'quote_number_format'].sort(),
+    )
   })
 })

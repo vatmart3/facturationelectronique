@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
-import { validerIdentite, type ErreursIdentite } from '@/lib/organisation'
+import { validerFacturation, validerIdentite, type ErreursIdentite } from '@/lib/organisation'
 import { estRole, peutAgirSur, rolesAttribuables } from '@/lib/roles'
 import { chargerContexte, exigerUtilisateur } from '@/lib/session'
 import { creerClientServeur } from '@/lib/supabase/serveur'
@@ -106,4 +106,32 @@ export async function retirerMembre(slug: string, userId: string): Promise<EtatM
   if (userId === utilisateur.id) redirect('/')
   revalidatePath(`/${slug}/reglages/membres`)
   return { succes: 'Membre retiré.' }
+}
+
+export interface EtatFacturation {
+  erreurs?: Record<string, string>
+  erreur?: string
+  succes?: string
+}
+
+export async function enregistrerFacturation(slug: string, _: EtatFacturation, formData: FormData): Promise<EtatFacturation> {
+  const { organisation } = await chargerContexte(slug)
+  const { donnees, erreurs } = validerFacturation((cle) => String(formData.get(cle) ?? '').trim())
+  if (Object.keys(erreurs).length > 0) return { erreurs, erreur: 'Certains champs sont à corriger.' }
+  const supabase = await creerClientServeur()
+  const { data, error } = await supabase.from('organizations').update(donnees).eq('id', organisation.id).select('id')
+  if (error) return { erreur: 'L’enregistrement a échoué.' }
+  if (!data?.length) return { erreur: 'Vous n’avez pas les droits pour modifier ces réglages.' }
+  revalidatePath(`/${slug}`, 'layout')
+  return { succes: 'Réglages de facturation enregistrés.' }
+}
+
+export async function definirLogo(slug: string, chemin: string | null): Promise<{ erreur?: string }> {
+  const { organisation } = await chargerContexte(slug)
+  if (chemin && !chemin.startsWith(`${organisation.id}/`)) return { erreur: 'Emplacement de logo invalide.' }
+  const supabase = await creerClientServeur()
+  const { data, error } = await supabase.from('organizations').update({ logo_path: chemin }).eq('id', organisation.id).select('id')
+  if (error || !data?.length) return { erreur: 'Impossible d’enregistrer le logo.' }
+  revalidatePath(`/${slug}`, 'layout')
+  return {}
 }

@@ -99,3 +99,60 @@ export function validerIdentite(lire: Lecteur): ResultatIdentite {
 
   return { donnees, erreurs }
 }
+
+export const MODELES_FACTURE = [
+  { valeur: 'papeterie', libelle: 'Papeterie', aide: 'Éditorial, typographie forte, filets fins.' },
+  { valeur: 'galet', libelle: 'Galet', aide: 'Grand total en couleur d’accent dans l’en-tête.' },
+  { valeur: 'classique', libelle: 'Classique', aide: 'Noir et blanc, sobre, pour les clients conservateurs.' },
+] as const
+
+export interface DonneesFacturation {
+  default_payment_terms: ConditionsPaiementOrg
+  late_penalty_terms: string
+  early_payment_discount: string
+  invoice_number_format: string
+  quote_number_format: string
+  credit_number_format: string
+  accent_color: string
+  invoice_template: 'galet' | 'papeterie' | 'classique'
+  invoice_font: 'grotesque' | 'serif'
+  footer_text: string | null
+  terms_text: string | null
+}
+
+type ConditionsPaiementOrg = 'reception' | '15j' | '30j' | '30jfm' | '45jfm' | '60j'
+
+export function validerFacturation(lire: Lecteur): { donnees: DonneesFacturation; erreurs: Partial<Record<keyof DonneesFacturation, string>> } {
+  const erreurs: Partial<Record<keyof DonneesFacturation, string>> = {}
+  const formats = ['invoice_number_format', 'quote_number_format', 'credit_number_format'] as const
+  const valeurs = Object.fromEntries(formats.map((f) => [f, lire(f)])) as Record<(typeof formats)[number], string>
+  for (const f of formats) {
+    if (!/\{N+\}/.test(valeurs[f]) || valeurs[f].length > 40 || /[^A-Za-z0-9{}\-_/.]/.test(valeurs[f])) {
+      erreurs[f] = 'Le format doit contenir {NNN} (numéro) et seulement lettres, chiffres, - _ / .'
+    }
+  }
+  const conditions = lire('default_payment_terms') as ConditionsPaiementOrg
+  if (!['reception', '15j', '30j', '30jfm', '45jfm', '60j'].includes(conditions)) erreurs.default_payment_terms = 'Conditions inconnues.'
+  const couleur = lire('accent_color')
+  if (!/^#[0-9A-Fa-f]{6}$/.test(couleur)) erreurs.accent_color = 'Couleur au format #RRVVBB.'
+  const modele = lire('invoice_template')
+  if (!MODELES_FACTURE.some((m) => m.valeur === modele)) erreurs.invoice_template = 'Modèle inconnu.'
+  const penalites = lire('late_penalty_terms')
+  if (!penalites) erreurs.late_penalty_terms = 'Le taux des pénalités de retard est une mention obligatoire.'
+  return {
+    erreurs,
+    donnees: {
+      default_payment_terms: conditions,
+      late_penalty_terms: penalites.slice(0, 400),
+      early_payment_discount: (lire('early_payment_discount') || 'Pas d’escompte pour paiement anticipé').slice(0, 300),
+      invoice_number_format: valeurs.invoice_number_format,
+      quote_number_format: valeurs.quote_number_format,
+      credit_number_format: valeurs.credit_number_format,
+      accent_color: couleur.toUpperCase(),
+      invoice_template: modele as DonneesFacturation['invoice_template'],
+      invoice_font: lire('invoice_font') === 'serif' ? 'serif' : 'grotesque',
+      footer_text: lire('footer_text').slice(0, 600) || null,
+      terms_text: lire('terms_text').slice(0, 20000) || null,
+    },
+  }
+}
