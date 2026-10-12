@@ -10,7 +10,7 @@ supabase/          Migrations SQL, configuration CLI, tests RLS
 docs/              Propositions, bilans de phase, maquettes
 ```
 
-Les paquets `packages/moteur`, `conformite`, `einvoice`, `pa` et le service `services/atelier` arrivent avec les phases 2, 4, 6, 7 et 9.
+`packages/moteur` porte le calcul (phase 2) ; `conformite`, `einvoice` et `pa` arrivent avec les phases suivantes.
 
 ## Démarrer en local
 
@@ -58,7 +58,17 @@ docker run -d --name pastille-pg -e POSTGRES_PASSWORD=postgres -p 54329:5432 pos
 pnpm test:db
 ```
 
-La CI (`.github/workflows/ci.yml`) exécute ces quatre familles de vérifications à chaque pull request.
+### Parcours connecté sur un Supabase local
+
+`supabase/local/demarrer.sh` monte un Supabase minimal sans Docker : le vrai service d'authentification (`supabase/auth`) et PostgREST, sur un Postgres local, derrière un petit routeur sur le port 54321. Il applique toutes les migrations et affiche les clés `ANON` et `SERVICE`.
+
+```bash
+AUTH_BIN=/chemin/auth POSTGREST_BIN=/chemin/postgrest ./supabase/local/demarrer.sh
+NEXT_PUBLIC_SUPABASE_URL=http://localhost:54321 NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=<ANON> pnpm dev
+E2E_CONNECTE=1 PORT=3000 pnpm --filter @pastille/web exec playwright test e2e/connecte.spec.ts
+```
+
+La CI (`.github/workflows/ci.yml`) exécute toutes ces vérifications à chaque pull request, y compris ce parcours connecté.
 
 ## Conventions
 

@@ -14,7 +14,7 @@ import { MODELES_FACTURE } from '@/lib/organisation'
 import { creerClientNavigateur, urlPublique } from '@/lib/supabase/navigateur'
 import type { OrganizationRow } from '@/lib/supabase/types'
 
-const COULEURS = ['#1F3A5F', '#16171B', '#23774F', '#7A2E3A', '#5E3FA3', '#B23C12', '#0F6E78', '#8A6A12']
+export const COULEURS = ['#1F3A5F', '#16171B', '#23774F', '#7A2E3A', '#5E3FA3', '#B23C12', '#0F6E78', '#8A6A12']
 
 function ApercuNumero({ nom, libelle, defaut, erreur }: { nom: string; libelle: string; defaut: string; erreur?: string }) {
   const [format, setFormat] = useState(defaut)
@@ -37,7 +37,7 @@ function ApercuNumero({ nom, libelle, defaut, erreur }: { nom: string; libelle: 
   )
 }
 
-function Logo({ organisation, modifiable }: { organisation: OrganizationRow; modifiable: boolean }) {
+export function Logo({ organisation, modifiable }: { organisation: OrganizationRow; modifiable: boolean }) {
   const [chemin, setChemin] = useState(organisation.logo_path)
   const [erreur, setErreur] = useState<string>()
   const [enCours, demarrer] = useTransition()

@@ -2,10 +2,14 @@
 
 import { revalidatePath } from 'next/cache'
 import { redirect } from 'next/navigation'
+import { normaliserIban } from '@/lib/format'
+import { bicValide, ibanValide } from '@/lib/identifiants'
+import { formatValide } from '@/lib/numerotation'
 import { validerFacturation, validerIdentite, type ErreursIdentite } from '@/lib/organisation'
 import { estRole, peutAgirSur, rolesAttribuables } from '@/lib/roles'
 import { chargerContexte, exigerUtilisateur } from '@/lib/session'
 import { creerClientServeur } from '@/lib/supabase/serveur'
+import type { OrganizationUpdate } from '@/lib/supabase/types'
 
 export interface EtatCreation {
   erreur?: string
@@ -26,7 +30,17 @@ export async function creerOrganisation(_: EtatCreation, formData: FormData): Pr
       nom,
     }
   }
-  redirect(`/${data.slug}/reglages?bienvenue=1`)
+
+  // Identité trouvée dans la base INSEE : enregistrée seulement si elle est valide.
+  const { donnees, erreurs } = validerIdentite((cle) => (cle === 'name' ? nom : String(formData.get(cle) ?? '').trim()))
+  const identite: OrganizationUpdate = {}
+  for (const cle of ['legal_form', 'siren', 'siret', 'vat_number', 'naf_code', 'address_line1', 'postal_code', 'city'] as const) {
+    const valeur = donnees[cle]
+    if (!erreurs[cle] && typeof valeur === 'string' && valeur) identite[cle] = valeur
+  }
+  if (Object.keys(identite).length > 0) await supabase.from('organizations').update(identite).eq('id', data.id)
+
+  redirect(`/${data.slug}/demarrage`)
 }
 
 export interface EtatIdentite {
@@ -134,4 +148,50 @@ export async function definirLogo(slug: string, chemin: string | null): Promise<
   if (error || !data?.length) return { erreur: 'Impossible d’enregistrer le logo.' }
   revalidatePath(`/${slug}`, 'layout')
   return {}
+}
+
+export type EtapeDemarrage = 'tva' | 'banque' | 'apparence' | 'numerotation' | 'fin'
+const SUITE: Record<EtapeDemarrage, EtapeDemarrage | null> = { tva: 'banque', banque: 'apparence', apparence: 'numerotation', numerotation: 'fin', fin: null }
+
+export async function etapeDemarrage(slug: string, etape: EtapeDemarrage, _: EtatFacturation, formData: FormData): Promise<EtatFacturation> {
+  const { organisation } = await chargerContexte(slug)
+  const lire = (cle: string) => String(formData.get(cle) ?? '').trim()
+  const erreurs: Record<string, string> = {}
+  let maj: OrganizationUpdate = {}
+
+  if (etape === 'tva') {
+    const regime = lire('vat_regime')
+    if (!['franchise', 'reel_simplifie', 'reel_normal', 'non_assujetti'].includes(regime)) erreurs.vat_regime = 'Choisissez votre régime de TVA.'
+    maj = { vat_regime: regime as OrganizationUpdate['vat_regime'], vat_on_debits: lire('vat_on_debits') === 'on' && regime !== 'franchise' }
+  } else if (etape === 'banque') {
+    const iban = normaliserIban(lire('iban'))
+    const bic = lire('bic').replace(/\s+/g, '').toUpperCase()
+    if (iban && !ibanValide(iban)) erreurs.iban = 'IBAN invalide : vérifiez la saisie.'
+    if (bic && !bicValide(bic)) erreurs.bic = 'BIC invalide : 8 ou 11 caractères.'
+    const conditions = lire('default_payment_terms')
+    if (!['reception', '15j', '30j', '30jfm', '45jfm', '60j'].includes(conditions)) erreurs.default_payment_terms = 'Conditions inconnues.'
+    maj = { iban: iban || null, bic: bic || null, default_payment_terms: conditions as OrganizationUpdate['default_payment_terms'] }
+  } else if (etape === 'apparence') {
+    const couleur = lire('accent_color')
+    if (!/^#[0-9A-Fa-f]{6}$/.test(couleur)) erreurs.accent_color = 'Couleur invalide.'
+    const modele = lire('invoice_template')
+    if (!['galet', 'papeterie', 'classique'].includes(modele)) erreurs.invoice_template = 'Modèle inconnu.'
+    maj = { accent_color: couleur.toUpperCase(), invoice_template: modele as OrganizationUpdate['invoice_template'] }
+  } else if (etape === 'numerotation') {
+    const format = lire('invoice_number_format')
+    if (!formatValide(format)) erreurs.invoice_number_format = 'Le format doit contenir {NNN} et seulement lettres, chiffres, - _ / .'
+    const depart = Number(lire('invoice_start_number') || '1')
+    if (!Number.isInteger(depart) || depart < 1 || depart > 99_999_999) erreurs.invoice_start_number = 'Numéro de départ invalide.'
+    maj = { invoice_number_format: format, invoice_start_number: depart }
+  } else {
+    maj = { onboarding_completed_at: new Date().toISOString() }
+  }
+  if (Object.keys(erreurs).length) return { erreurs, erreur: 'Certains champs sont à corriger.' }
+
+  const supabase = await creerClientServeur()
+  const { data, error } = await supabase.from('organizations').update(maj).eq('id', organisation.id).select('id')
+  if (error || !data?.length) return { erreur: 'Enregistrement impossible : seuls les propriétaires et administrateurs configurent l’entreprise.' }
+  revalidatePath(`/${slug}`, 'layout')
+  const suivante = SUITE[etape]
+  redirect(suivante ? `/${slug}/demarrage?etape=${suivante}` : `/${slug}/tableau-de-bord`)
 }

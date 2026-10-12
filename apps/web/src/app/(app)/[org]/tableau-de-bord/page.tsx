@@ -28,15 +28,15 @@ export default async function TableauDeBord({ params }: { params: Promise<{ org:
       fait: Boolean(organisation.vat_regime),
       titre: 'Choisir le régime de TVA',
       detail: 'Il détermine les taux et mentions appliqués par défaut.',
-      href: `/${org}/reglages#fiscalite`,
+      href: `/${org}/demarrage?etape=tva`,
     },
     {
       fait: Boolean(organisation.iban),
       titre: 'Renseigner l’IBAN',
       detail: 'Imprimé sur la facture avec un QR code de virement.',
-      href: `/${org}/reglages#banque`,
+      href: `/${org}/demarrage?etape=banque`,
     },
-    { fait: false, titre: 'Ajouter un premier client', detail: 'Disponible en phase 3.', href: `/${org}/clients` },
+    { fait: false, titre: 'Ajouter un premier client', detail: 'Recherche par nom ou SIREN, ou import CSV.', href: `/${org}/clients/nouveau` },
     { fait: false, titre: 'Émettre une première facture', detail: 'Disponible en phase 4.', href: `/${org}/ventes/factures` },
   ]
   const faites = etapes.filter((e) => e.fait).length

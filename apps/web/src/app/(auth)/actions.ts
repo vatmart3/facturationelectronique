@@ -9,6 +9,7 @@ export interface EtatFormulaire {
   erreur?: string
   succes?: string
   email?: string
+  nom?: string
 }
 
 async function origine(): Promise<string> {
@@ -55,8 +56,8 @@ export async function sInscrire(_: EtatFormulaire, formData: FormData): Promise<
   const nom = texte(formData, 'nom').slice(0, 200)
   const motDePasse = String(formData.get('mot_de_passe') ?? '')
   if (!nom) return { erreur: 'Indiquez votre nom.', email }
-  if (!emailValide(email)) return { erreur: 'Saisissez une adresse email valide.', email }
-  if (!motDePasseValide(motDePasse)) return { erreur: traduireErreurAuth('weak_password'), email }
+  if (!emailValide(email)) return { erreur: 'Saisissez une adresse email valide.', email, nom }
+  if (!motDePasseValide(motDePasse)) return { erreur: traduireErreurAuth('weak_password'), email, nom }
 
   const supabase = await creerClientServeur()
   const { data, error } = await supabase.auth.signUp({
@@ -67,7 +68,7 @@ export async function sInscrire(_: EtatFormulaire, formData: FormData): Promise<
       emailRedirectTo: `${await origine()}/auth/callback?suite=/bienvenue`,
     },
   })
-  if (error) return { erreur: traduireErreurAuth(error.code), email }
+  if (error) return { erreur: traduireErreurAuth(error.code), email, nom }
   if (!data.session) {
     return { succes: `Compte créé. Confirmez votre adresse grâce au lien envoyé à ${email}.`, email }
   }

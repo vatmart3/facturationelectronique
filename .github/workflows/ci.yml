@@ -71,3 +71,55 @@ jobs:
           name: playwright
           path: apps/web/test-results/
           retention-days: 7
+
+  e2e-connecte:
+    name: Parcours connecté (Supabase local)
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_PASSWORD: postgres
+        ports: ['54329:5432']
+        options: >-
+          --health-cmd "pg_isready -U postgres"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      PG_ADMIN_URL: postgres://postgres:postgres@localhost:54329/postgres
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Supabase local (auth + PostgREST)
+        run: |
+          mkdir -p /tmp/supa/auth && cd /tmp/supa
+          curl -sSL -o postgrest.tar.xz https://github.com/PostgREST/postgrest/releases/download/v12.2.3/postgrest-v12.2.3-linux-static-x64.tar.xz
+          tar -xJf postgrest.tar.xz
+          curl -sSL -o auth.tar.gz https://github.com/supabase/auth/releases/download/v2.177.0/auth-v2.177.0-x86.tar.gz
+          tar -xzf auth.tar.gz -C auth
+          cd "$GITHUB_WORKSPACE"
+          AUTH_BIN=/tmp/supa/auth/auth POSTGREST_BIN=/tmp/supa/postgrest DOSSIER_LOGS=/tmp/supa/logs ./supabase/local/demarrer.sh > /tmp/supa/cles.env
+          grep '^ANON=' /tmp/supa/cles.env | sed 's/^ANON=/NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY=/' >> "$GITHUB_ENV"
+      - run: pnpm build
+        env:
+          NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
+          NEXT_PUBLIC_SITE_URL: http://localhost:3100
+      - run: pnpm --filter @pastille/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @pastille/web exec playwright test e2e/connecte.spec.ts --project=bureau
+        env:
+          E2E_CONNECTE: '1'
+          NEXT_PUBLIC_SUPABASE_URL: http://localhost:54321
+      - uses: actions/upload-artifact@v4
+        if: failure()
+        with:
+          name: playwright-connecte
+          path: |
+            apps/web/test-results/
+            /tmp/supa/logs/
+          retention-days: 7

@@ -12,7 +12,7 @@ export function FormulaireInscription({ desactive }: { desactive?: boolean }) {
     <form action={action} className="flex flex-col gap-3.5" noValidate>
       {etat.erreur && <Message ton="erreur">{etat.erreur}</Message>}
       {etat.succes && <Message ton="succes">{etat.succes}</Message>}
-      <Champ libelle="Nom et prénom" name="nom" autoComplete="name" required />
+      <Champ libelle="Nom et prénom" name="nom" autoComplete="name" required defaultValue={etat.nom} />
       <Champ libelle="Email professionnel" name="email" type="email" autoComplete="email" required defaultValue={etat.email} />
       <Champ
         libelle="Mot de passe"
