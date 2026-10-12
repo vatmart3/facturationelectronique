@@ -27,7 +27,7 @@ beforeAll(async () => {
     await banc.enTantQue(alice).query<{ id: string }>("insert into documents (organization_id, type, client_id) values ($1, 'facture', $2) returning id", [orgA, clientA])
   ).rows[0]!.id
   await banc.enTantQue(alice).query("insert into document_lines (organization_id, document_id, position, designation) values ($1, $2, 1, 'Ligne')", [orgA, emis])
-  // Émission simulée (la fonction d'émission arrive en phase 5).
+  // Émission simulée (la vraie fonction est testée dans emission.test.ts).
   await banc.admin.query("update documents set status = 'emis', number = 'F-2026-0001' where id = $1", [emis])
 })
 
@@ -72,7 +72,7 @@ describe('documents', () => {
   it('les lignes d’un document émis sont figées', async () => {
     await expect(
       banc.enTantQue(alice).query("insert into document_lines (organization_id, document_id, position, designation) values ($1, $2, 2, 'Ajout')", [orgA, emis]),
-    ).rejects.toThrow(/row-level security/)
+    ).rejects.toThrow(/figées|row-level security/)
     expect((await banc.enTantQue(alice).query("update document_lines set designation = 'X' where document_id = $1", [emis])).rowCount).toBe(0)
     expect((await banc.enTantQue(alice).query('delete from document_lines where document_id = $1', [emis])).rowCount).toBe(0)
   })

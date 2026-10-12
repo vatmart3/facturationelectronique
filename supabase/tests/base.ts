@@ -15,6 +15,8 @@ const DOSSIER = join(import.meta.dirname, '..')
 
 export interface Banc {
   admin: pg.Client
+  /** Adresse de la base jetable, pour ouvrir des connexions concurrentes. */
+  url: string
   creerUtilisateur(email: string, nom?: string): Promise<string>
   enTantQue(userId: string | null): Requeteur
   fermer(): Promise<void>
@@ -22,6 +24,21 @@ export interface Banc {
 
 export interface Requeteur {
   query<T extends pg.QueryResultRow = pg.QueryResultRow>(sql: string, params?: unknown[]): Promise<pg.QueryResult<T>>
+}
+
+/** Exécute une requête « en tant que » sur une connexion donnée, dans sa propre transaction. */
+export async function enTantQueSur(client: pg.Client, userId: string, sql: string, params?: unknown[]) {
+  await client.query('begin')
+  try {
+    await client.query('set local role authenticated')
+    await client.query("select set_config('request.jwt.claims', $1, true)", [JSON.stringify({ sub: userId, role: 'authenticated' })])
+    const r = await client.query(sql, params)
+    await client.query('commit')
+    return r
+  } catch (e) {
+    await client.query('rollback')
+    throw e
+  }
 }
 
 export async function ouvrirBanc(): Promise<Banc> {
@@ -45,6 +62,7 @@ export async function ouvrirBanc(): Promise<Banc> {
 
   return {
     admin,
+    url: url.toString(),
     async creerUtilisateur(email, nom) {
       const { rows } = await admin.query<{ id: string }>(
         'insert into auth.users (email, raw_user_meta_data) values ($1, $2) returning id',
