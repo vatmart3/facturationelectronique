@@ -51,6 +51,8 @@ export interface LigneImprimee {
   taux: number
   motif: string | null
   nature: LigneEdition['nature']
+  montantBrut: number
+  montantRemise: number
   montantNet: number
 }
 
@@ -112,7 +114,7 @@ export function construireImprimable(e: Entree): DocumentImprimable | null {
   if (!calcul.ok) return null
   const d = e.edition
   const { totaux } = calcul
-  const nets = new Map(totaux.lignes.map((l) => [l.id, l.montantNet]))
+  const calculees = new Map(totaux.lignes.map((l) => [l.id, l]))
   const conformite = verifierConformite(d, e.vendeur, e.client, totaux, e.textes)
   const mentions = [...conformite.mentions]
   if (d.type === 'avoir' && e.origine) {
@@ -131,7 +133,9 @@ export function construireImprimable(e: Entree): DocumentImprimable | null {
       taux: l.categorie === 'S' ? l.taux : 0,
       motif: l.motif,
       nature: l.nature,
-      montantNet: nets.get(l.cle) ?? 0,
+      montantBrut: calculees.get(l.cle)?.montantBrut ?? 0,
+      montantRemise: calculees.get(l.cle)?.montantRemise ?? 0,
+      montantNet: calculees.get(l.cle)?.montantNet ?? 0,
     }))
   const dateEch = e.dateEcheance ?? echeance(d)
   return {

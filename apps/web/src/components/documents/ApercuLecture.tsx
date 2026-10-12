@@ -1,13 +1,16 @@
 import Link from 'next/link'
+import { controler } from '@pastille/facturx'
 import { changerStatut, creerAcompte, creerAvoir, dupliquerDocument, facturerDevis } from '@/app/actions/documents'
+import { classesBouton } from '@/components/ui/Bouton'
 import { Icone } from '@/components/ui/Icone'
 import { ListeCles } from '@/components/ui/Panneau'
 import { Statut } from '@/components/ui/Statut'
 import { aujourdHui, LIBELLES_TYPE, statutAffiche } from '@/lib/document'
+import { versEn16931 } from '@/lib/en16931'
 import { formatDate, formatMontant } from '@/lib/format'
 import type { DocumentImprimable } from '@/lib/imprimable'
 import { peutFacturer, type Role } from '@/lib/roles'
-import { urlPublique } from '@/lib/supabase/navigateur'
+import { urlPublique } from '@/lib/supabase/stockage'
 import { creerClientServeur } from '@/lib/supabase/serveur'
 import type { DocumentRow } from '@/lib/supabase/types'
 import { BoutonAction, FormulaireAcompte } from './Actions'
@@ -29,6 +32,10 @@ export async function ApercuLecture({ org, document: d, imprimable, role }: { or
   const facture = d.type === 'facture' || d.type === 'acompte'
   const ouverte = ['emis', 'envoye', 'partiellement_paye'].includes(d.status)
   const logo = imprimable.vendeur.logo_path ? urlPublique('logos', imprimable.vendeur.logo_path) : null
+  const en16931 = versEn16931(imprimable)
+  const anomalies = en16931 ? controler(en16931) : []
+  const bloquantes = anomalies.filter((a) => a.bloquant)
+  const base = `/${org}/documents/${d.id}`
 
   return (
     <div className="flex flex-col gap-5">
@@ -105,6 +112,48 @@ export async function ApercuLecture({ org, document: d, imprimable, role }: { or
                   Dupliquer
                 </BoutonAction>
               </div>
+            )}
+          </section>
+
+          <section className="flex flex-col gap-2 rounded-l border border-trait bg-surface p-4" aria-labelledby="titre-fichiers">
+            <h2 id="titre-fichiers" className="text-[14px] font-semibold">
+              Fichiers
+            </h2>
+            <div className="flex flex-wrap gap-2">
+              <a href={`${base}/pdf`} target="_blank" rel="noopener" className={classesBouton('secondaire', 's')}>
+                Ouvrir le PDF
+              </a>
+              <a href={`${base}/pdf?telecharger`} className={classesBouton('fantome', 's')}>
+                Télécharger
+              </a>
+            </div>
+            {en16931 && (
+              <>
+                <p className={bloquantes.length ? 'text-[12.5px] text-attente' : 'text-[12.5px] text-ok'}>
+                  {bloquantes.length
+                    ? 'PDF simple : les données ne permettent pas un Factur-X conforme.'
+                    : 'PDF/A-3 Factur-X, profil EN 16931 : le XML est joint au PDF.'}
+                </p>
+                {anomalies.length > 0 && (
+                  <ul className="m-0 flex list-none flex-col gap-1 p-0 text-[12px]">
+                    {anomalies.map((a) => (
+                      <li key={a.regle} className={a.bloquant ? 'text-alerte' : 'text-encre-3'}>
+                        <span className="num text-[11px]">{a.regle}</span> · {a.message}
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                {!bloquantes.length && (
+                  <p className="flex flex-wrap gap-3 text-[12.5px]">
+                    <a href={`${base}/xml?format=cii`} className="text-accent hover:underline">
+                      XML CII
+                    </a>
+                    <a href={`${base}/xml?format=ubl`} className="text-accent hover:underline">
+                      XML UBL
+                    </a>
+                  </p>
+                )}
+              </>
             )}
           </section>
 

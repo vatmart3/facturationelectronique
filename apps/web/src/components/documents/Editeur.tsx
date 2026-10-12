@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState, useTransition, type ReactNode } from 'rea
 import { useRouter } from 'next/navigation'
 import { dupliquerDocument, emettreDocument, enregistrerDocument, lignesDerniereFacture, supprimerBrouillon } from '@/app/actions/documents'
 import { BoutonAction } from './Actions'
-import { Bouton } from '@/components/ui/Bouton'
+import { Bouton, classesBouton } from '@/components/ui/Bouton'
 import { Categorie } from '@/components/ui/Categorie'
 import { Icone } from '@/components/ui/Icone'
 import { Kbd, Message } from '@/components/ui/Message'
@@ -553,6 +553,9 @@ export function Editeur({ slug, initial, id: idInitial, donnees, lecture = false
           {id && !lecture && (
             <section className="flex flex-col gap-2 rounded-l border border-trait bg-surface p-4">
               <h2 className="text-[14px] font-semibold">Autres actions</h2>
+              <a href={`/${slug}/documents/${id}/pdf`} target="_blank" rel="noopener" className={cn(classesBouton('fantome'), 'w-full', modifie && 'pointer-events-none opacity-50')}>
+                Aperçu PDF
+              </a>
               <BoutonAction action={dupliquerDocument.bind(null, slug, id)} variante="fantome" className="w-full">
                 Dupliquer
               </BoutonAction>

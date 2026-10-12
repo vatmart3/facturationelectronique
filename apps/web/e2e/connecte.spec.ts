@@ -170,6 +170,18 @@ test('émission, numéro définitif, document figé, avoir total', async ({ page
   await expect(page.locator('.document-imprime')).toContainText('FR44732829320')
   if (process.env.CAPTURES) await page.screenshot({ path: `${process.env.CAPTURES}/facture-emise.png`, fullPage: true })
 
+  // Fichiers : PDF/A-3 Factur-X et XML EN 16931.
+  await expect(page.getByText('PDF/A-3 Factur-X, profil EN 16931')).toBeVisible()
+  const idFacture = page.url().split('/').pop()!
+  const pdf = await page.request.get(`/${slug}/documents/${idFacture}/pdf`)
+  expect(pdf.headers()['content-type']).toBe('application/pdf')
+  expect(pdf.headers()['x-factur-x']).toBe('EN16931')
+  expect((await pdf.body()).subarray(0, 5).toString()).toBe('%PDF-')
+  const cii = await page.request.get(`/${slug}/documents/${idFacture}/xml?format=cii`)
+  expect(await cii.text()).toContain('<ram:TypeCode>380</ram:TypeCode>')
+  const ubl = await page.request.get(`/${slug}/documents/${idFacture}/xml?format=ubl`)
+  expect(await ubl.text()).toContain('<cbc:InvoiceTypeCode>380</cbc:InvoiceTypeCode>')
+
   await page.getByRole('button', { name: 'Marquer comme envoyée' }).click()
   await expect(page.getByText('Envoyée').first()).toBeVisible()
 

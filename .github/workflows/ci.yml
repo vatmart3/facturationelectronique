@@ -20,10 +20,19 @@ jobs:
         with:
           node-version: 22
           cache: pnpm
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: 21
+      - run: sudo apt-get install -y --no-install-recommends libxml2-utils
+      - name: Validateurs officiels Factur-X, EN 16931 et BR-FR
+        run: outils/validateurs-facturx.sh "$RUNNER_TEMP/validateurs"
       - run: pnpm install --frozen-lockfile
       - run: pnpm lint
       - run: pnpm typecheck
       - run: pnpm test
+        env:
+          VALIDATEURS_FACTURX: ${{ runner.temp }}/validateurs
 
   base:
     name: Migrations et RLS (Postgres)

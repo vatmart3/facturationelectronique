@@ -1,0 +1,24 @@
+{
+  "name": "@pastille/facturx",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Factur-X (CII), UBL 2.1 et PDF/A-3 selon la norme EN 16931, profil EN16931.",
+  "exports": {
+    ".": "./src/index.ts",
+    "./exemples": "./src/exemples.ts",
+    "./validateurs": "./src/validateurs.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "pdf-lib": "1.17.1"
+  },
+  "devDependencies": {
+    "@types/node": "22.20.5",
+    "typescript": "5.9.3",
+    "vitest": "4.1.9"
+  }
+}

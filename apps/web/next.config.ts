@@ -9,7 +9,9 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
-  transpilePackages: ['@pastille/moteur'],
+  transpilePackages: ['@pastille/moteur', '@pastille/facturx'],
+  // Polices et profil ICC lus à l'exécution par la génération des PDF.
+  outputFileTracingIncludes: { '/**': ['./ressources/**/*'] },
   reactStrictMode: true,
   async headers() {
     return [{ source: '/:path*', headers: securityHeaders }]

@@ -5,6 +5,7 @@ import { ajouterJours, aujourdHui, depuisLigneDb, type DocumentEdition, type Typ
 import { appliquerClient, contexteEditeur, ligneLibre, type ClientEditeur, type DonneesEditeur } from './editeur'
 import { construireImprimable, type ClientImprime, type DocumentImprimable, type VendeurImprime } from './imprimable'
 import { chargerContexte } from './session'
+import { urlPublique } from './supabase/stockage'
 import { creerClientServeur } from './supabase/serveur'
 import type { DocumentRow } from './supabase/types'
 
@@ -134,4 +135,21 @@ export async function chargerImprimable(slug: string, id: string): Promise<{ cha
     paye: d.status === 'paye',
   })
   return imprimable ? { charge, imprimable } : null
+}
+
+/** Logo de l'entreprise (PNG ou JPEG) pour le PDF ; null s'il est absent ou illisible. */
+export async function chargerLogo(chemin: string | null): Promise<{ octets: Uint8Array; type: string } | null> {
+  if (!chemin || !/\.(png|jpe?g)$/i.test(chemin)) return null
+  try {
+    const r = await fetch(urlPublique('logos', chemin), { cache: 'force-cache' })
+    if (!r.ok) return null
+    return { octets: new Uint8Array(await r.arrayBuffer()), type: r.headers.get('content-type') ?? (chemin.endsWith('.png') ? 'image/png' : 'image/jpeg') }
+  } catch {
+    return null
+  }
+}
+
+/** Nom de fichier sûr : « Facture F-2026-0042.pdf ». */
+export function nomFichier(d: Pick<DocumentImprimable, 'titre' | 'numero'>, extension: string): string {
+  return `${d.titre} ${d.numero ?? 'brouillon'}`.replace(/[’']/g, ' ').replace(/[^\p{L}\p{N} ._-]/gu, '-') + `.${extension}`
 }
