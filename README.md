@@ -47,12 +47,13 @@ Sans clés Supabase, l'application démarre quand même : `/connexion` affiche u
 1. *Add New > Project*, importer ce dépôt GitHub, **Root Directory : `apps/web`** (framework Next.js détecté, pnpm via `packageManager`).
 2. **Variables d'environnement** (*Settings > Environment Variables*), d'après `apps/web/.env.example` :
    - obligatoires : `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, `NEXT_PUBLIC_SITE_URL` (URL de production) ;
-   - tâches quotidiennes (`vercel.json`, 6 h UTC) : `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET` ;
+   - tâches quotidiennes (`vercel.json`, 6 h UTC) et back-office `/admin` : `SUPABASE_SERVICE_ROLE_KEY`, `CRON_SECRET` ;
    - abonnements : `STRIPE_*` ; emails : `RESEND_API_KEY`, `EMAIL_EXPEDITEUR` ; plateforme agréée : `PA_*` ;
    - pages légales : `EDITEUR_*`.
 3. Dans Supabase (*Authentication > URL Configuration*), mettre l'URL Vercel en Site URL et ajouter `<site>/auth/callback` et `<site>/auth/confirm` aux Redirect URLs.
 4. **Stripe** : créer trois prix mensuels (Solo 9 €, Pro 19 €, Studio 49 € HT), un webhook vers `<site>/api/stripe` (événements `customer.subscription.created`, `.updated`, `.deleted`, `checkout.session.completed`) et activer le portail client.
-5. **Administrateur de la plateforme** (back-office `/admin`) : après s'être inscrit, exécuter dans l'éditeur SQL Supabase
+5. **Comptes de démonstration** (facultatif) : `supabase/demo.sql`, à exécuter une fois dans l'éditeur SQL, crée l'entreprise fictive « Atelier Lumen » (clients, factures, avoir, devis, paiements) et trois comptes : `gerant@`, `comptable@` et `admin@pastille-demo.fr`, mot de passe `Pastille-Demo-2026`. Le bas du fichier contient de quoi tout retirer avant l'ouverture au public.
+6. **Administrateur de la plateforme** (back-office `/admin`) : après s'être inscrit, exécuter dans l'éditeur SQL Supabase
    `insert into public.platform_admins (user_id) select id from auth.users where email = 'vous@exemple.fr';`
 
 ## Vérifications

@@ -1,12 +1,13 @@
 import type { ReactNode } from 'react'
 import { CoqueApp } from '@/components/coque/CoqueApp'
 import { REGIMES_TVA } from '@/lib/organisation'
+import { peutFacturer } from '@/lib/roles'
 import { chargerContexte } from '@/lib/session'
 import { creerClientServeur } from '@/lib/supabase/serveur'
 
 export default async function LayoutOrganisation({ children, params }: { children: ReactNode; params: Promise<{ org: string }> }) {
   const { org } = await params
-  const { organisation, organisations, utilisateur, abonnement, roleReel } = await chargerContexte(org)
+  const { organisation, organisations, utilisateur, abonnement, role, roleReel } = await chargerContexte(org)
   const supabase = await creerClientServeur()
   const { data: annonces } = await supabase.from('announcements').select('id, title, body, level').order('starts_at', { ascending: false }).limit(3)
   const lienAbonnement = `/${org}/reglages/abonnement`
@@ -31,6 +32,7 @@ export default async function LayoutOrganisation({ children, params }: { childre
       utilisateur={{ email: utilisateur.email, nom: utilisateur.nom }}
       bandeau={bandeau}
       annonces={annonces ?? []}
+      facturation={peutFacturer(role)}
     >
       {children}
     </CoqueApp>

@@ -22,10 +22,12 @@ export interface CoqueProps {
   /** Essai, paywall doux : bandeau en haut de chaque page. */
   bandeau?: { texte: string; lien: string; libelleLien: string; ton: 'info' | 'alerte' } | null
   annonces?: Array<{ id: string; title: string; body: string; level: 'info' | 'important' }>
+  /** Le rôle peut créer des factures : bouton « Nouvelle facture » et raccourci N. */
+  facturation?: boolean
   children: ReactNode
 }
 
-export function CoqueApp({ organisation, organisations, utilisateur, bandeau, annonces = [], children }: CoqueProps) {
+export function CoqueApp({ organisation, organisations, utilisateur, bandeau, annonces = [], facturation = true, children }: CoqueProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [paletteOuverte, setPaletteOuverte] = useState(false)
@@ -43,14 +45,14 @@ export function CoqueApp({ organisation, organisations, utilisateur, bandeau, an
       // « N » : nouvelle facture, hors champ de saisie.
       const cible = e.target as HTMLElement | null
       const saisie = cible?.closest('input, textarea, select, [contenteditable="true"], [role="dialog"]')
-      if (e.key === 'n' && !e.ctrlKey && !e.metaKey && !e.altKey && !saisie) {
+      if (facturation && e.key === 'n' && !e.ctrlKey && !e.metaKey && !e.altKey && !saisie) {
         e.preventDefault()
         router.push(`/${organisation.slug}/ventes/factures/nouvelle`)
       }
     }
     window.addEventListener('keydown', surTouche)
     return () => window.removeEventListener('keydown', surTouche)
-  }, [router, organisation.slug])
+  }, [router, organisation.slug, facturation])
 
   // Le menu mobile se referme à chaque changement de page.
   const [cheminPrecedent, setCheminPrecedent] = useState(pathname)
@@ -168,14 +170,16 @@ export function CoqueApp({ organisation, organisations, utilisateur, bandeau, an
           >
             <Icone nom="recherche" />
           </button>
-          <Link
-            href={`/${organisation.slug}/ventes/factures/nouvelle`}
-            className="inline-flex h-[34px] items-center gap-2 whitespace-nowrap rounded-m border border-encre bg-encre px-3.5 text-[13.5px] font-semibold text-surface shadow-douce hover:border-encre-2 hover:bg-encre-2"
-          >
-            <Icone nom="plus" taille={15} />
-            <span className="hidden sm:inline">Nouvelle facture</span>
-            <span className="sm:hidden">Facture</span>
-          </Link>
+          {facturation && (
+            <Link
+              href={`/${organisation.slug}/ventes/factures/nouvelle`}
+              className="inline-flex h-[34px] items-center gap-2 whitespace-nowrap rounded-m border border-encre bg-encre px-3.5 text-[13.5px] font-semibold text-surface shadow-douce hover:border-encre-2 hover:bg-encre-2"
+            >
+              <Icone nom="plus" taille={15} />
+              <span className="hidden sm:inline">Nouvelle facture</span>
+              <span className="sm:hidden">Facture</span>
+            </Link>
+          )}
         </header>
         {bandeau && (
           <div className={cn('flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2 text-[13px] sm:px-7 print:hidden', bandeau.ton === 'alerte' ? 'border-alerte/30 bg-alerte-doux' : 'border-info/30 bg-info-doux')}>
