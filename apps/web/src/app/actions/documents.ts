@@ -6,6 +6,7 @@ import { verifierConformite } from '@/lib/conformite'
 import { aujourdHui, calculer, depuisLigneDb, type DocumentEdition, type LigneEdition, type TypeDocument } from '@/lib/document'
 import { acompteDepuis, avoirDepuis, copieDe, deductions, factureDepuis } from '@/lib/derives'
 import { chargerDocument, chargerReferentiels, sauverBrouillon, type ResultatEnregistrement } from '@/lib/documents-serveur'
+import { transmettreDocument } from '@/lib/plateforme-serveur'
 import { peutFacturer } from '@/lib/roles'
 import { chargerContexte } from '@/lib/session'
 import { creerClientServeur } from '@/lib/supabase/serveur'
@@ -50,6 +51,10 @@ export async function emettreDocument(slug: string, id: string): Promise<Resulta
   const supabase = await creerClientServeur()
   const { error } = await supabase.rpc('emettre_document', { p_id: id })
   if (error) return { ok: false, erreur: error.message || 'Émission impossible.' }
+  // Transmission automatique à la plateforme agréée pour les clients professionnels français.
+  if (donnees.organisation.pa_auto_transmit && edition.type !== 'devis' && client && (client.kind === 'b2b' || client.kind === 'b2g')) {
+    await transmettreDocument(supabase, donnees.organisation, id)
+  }
   revalidatePath(`/${slug}`, 'layout')
   return { ok: true }
 }

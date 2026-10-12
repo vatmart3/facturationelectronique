@@ -1,7 +1,10 @@
 import Link from 'next/link'
 import { controler } from '@pastille/facturx'
 import { changerStatut, creerAcompte, creerAvoir, dupliquerDocument, facturerDevis } from '@/app/actions/documents'
+import { actualiser, transmettre } from '@/app/actions/plateforme'
 import { creerRecurrence, enregistrerPaiement, envoyerParEmail, relancer, supprimerPaiement } from '@/app/actions/suivi'
+import { StatutPa } from '@/components/plateforme/StatutPa'
+import { STATUTS, type Evenement } from '@/lib/pa/cycle'
 import { classesBouton } from '@/components/ui/Bouton'
 import { Icone } from '@/components/ui/Icone'
 import { ListeCles } from '@/components/ui/Panneau'
@@ -44,13 +47,15 @@ export async function ApercuLecture({ org, document: d, imprimable, role }: { or
   const base = `/${org}/documents/${d.id}`
   const jour = aujourdHui()
   const reste = Math.max(0, Number(d.amount_due) - Number(d.amount_paid))
-  const [{ data: paiements }, { data: envois }, { data: signature }, destinataire, origine] = await Promise.all([
+  const [{ data: paiements }, { data: envois }, { data: signature }, destinataire, origine, { data: transmissions }] = await Promise.all([
     facture ? supabase.from('payments').select('*').eq('document_id', d.id).order('paid_on') : Promise.resolve({ data: [] }),
     supabase.from('reminders').select('*').eq('document_id', d.id).order('sent_at', { ascending: false }).limit(20),
     d.type === 'devis' ? supabase.from('quote_signatures').select('*').eq('document_id', d.id).maybeSingle() : Promise.resolve({ data: null }),
     d.client_id ? destinataireClient(supabase, d.organization_id, d.client_id) : Promise.resolve(null),
     origineSite(),
+    d.type === 'devis' ? Promise.resolve({ data: [] }) : supabase.from('einvoice_transmissions').select('*').eq('document_id', d.id).order('sent_at', { ascending: false }),
   ])
+  const transmission = transmissions?.[0] ?? null
   const enRetard = statut.cle === 'retard'
 
   return (
@@ -224,6 +229,51 @@ export async function ApercuLecture({ org, document: d, imprimable, role }: { or
               <p className="num text-[11px] text-encre-3" title={signature.content_hash}>
                 Version signée {signature.content_hash.slice(0, 12)}…
               </p>
+            </section>
+          )}
+
+          {d.type !== 'devis' && (editable || transmission) && (
+            <section className="flex flex-col gap-3 rounded-l border border-trait bg-surface p-4" aria-labelledby="titre-pa">
+              <div className="flex items-center justify-between gap-2">
+                <h2 id="titre-pa" className="text-[14px] font-semibold">
+                  Plateforme agréée
+                </h2>
+                {transmission && <StatutPa code={transmission.status_code} />}
+              </div>
+              {transmission ? (
+                <>
+                  <ol className="m-0 flex list-none flex-col gap-1.5 border-l border-trait p-0 pl-3">
+                    {(transmission.history as Evenement[]).map((e, i) => (
+                      <li key={i} className="text-[12.5px]">
+                        <span className="font-medium">{e.libelle}</span>{' '}
+                        <span className="num text-encre-3">{new Date(e.date).toLocaleString('fr-FR', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                        {e.motif && <span className="block text-encre-2">« {e.motif} »</span>}
+                      </li>
+                    ))}
+                  </ol>
+                  <p className="num text-[11px] text-encre-3">
+                    Flux {transmission.flow_id} · {transmission.provider === 'simulee' ? 'plateforme simulée' : 'API AFNOR'}
+                  </p>
+                  {editable && !STATUTS[transmission.status_code]?.final && (
+                    <BoutonAction action={actualiser.bind(null, org, transmission.id)} variante="secondaire">
+                      Actualiser le statut
+                    </BoutonAction>
+                  )}
+                </>
+              ) : (
+                <>
+                  <p className="text-[12.5px] text-encre-2">
+                    {imprimable.client?.kind === 'b2b' || imprimable.client?.kind === 'b2g'
+                      ? 'Client professionnel français : la facture électronique passe par votre plateforme agréée.'
+                      : 'Client hors facturation électronique : la vente sera déclarée en e-reporting.'}
+                  </p>
+                  {bloquantes.length === 0 && (
+                    <BoutonAction action={transmettre.bind(null, org, d.id)} variante="secondaire">
+                      Transmettre via la plateforme
+                    </BoutonAction>
+                  )}
+                </>
+              )}
             </section>
           )}
 

@@ -299,3 +299,43 @@ test('devis accepté en ligne par le client', async ({ page, browser }) => {
   await expect(page.getByText(/Par Claire Dupont/)).toBeVisible()
   await expect(page.getByRole('button', { name: 'Transformer en facture' })).toBeVisible()
 })
+
+test('plateforme agréée : transmission, cycle de vie, réception et e-reporting', async ({ page }) => {
+  test.setTimeout(150_000)
+  await connecter(page)
+
+  await page.goto(`/${slug}/e-facturation/reforme`)
+  await expect(page.getByText('Plateforme agréée choisie')).toBeVisible()
+  await expect(page.getByText(/plateforme simulée : parfaite pour essayer/)).toBeVisible()
+
+  // Transmission d'une facture émise et suivi de son cycle de vie.
+  await page.goto(`/${slug}/ventes/factures?statut=payees`)
+  await page.getByRole('link', { name: /F-\d{4}-0043/ }).click()
+  await page.getByRole('button', { name: 'Transmettre via la plateforme' }).click()
+  const panneau = page.getByRole('region', { name: 'Plateforme agréée' })
+  await expect(panneau.getByText('Déposée').first()).toBeVisible()
+  await panneau.getByRole('button', { name: 'Actualiser le statut' }).click()
+  await expect(panneau.getByText('Émise').first()).toBeVisible()
+  await panneau.getByRole('button', { name: 'Actualiser le statut' }).click()
+  await expect(panneau.getByText('Reçue').first()).toBeVisible()
+
+  // Réception d'une facture fournisseur, mise en litige motivée.
+  await page.goto(`/${slug}/e-facturation/recues`)
+  await page.getByRole('button', { name: 'Simuler une réception' }).click()
+  await expect(page.getByText('Une facture fournisseur vient d’arriver.')).toBeVisible()
+  await page.getByRole('cell').getByRole('link').first().click()
+  await page.waitForURL(/recues\/[0-9a-f-]{36}$/)
+  await page.getByLabel('Décision').selectOption('litige')
+  await page.getByRole('button', { name: 'Transmettre la décision' }).click()
+  await expect(page.getByText(/Indiquez le motif/)).toBeVisible()
+  await page.getByLabel('Décision').selectOption('litige')
+  await page.getByLabel(/Motif/).fill('Quantité livrée inférieure')
+  await page.getByRole('button', { name: 'Transmettre la décision' }).click()
+  await expect(page.getByText('« Quantité livrée inférieure »')).toBeVisible()
+  await expect(page.getByText('En litige').first()).toBeVisible()
+
+  // E-reporting : la période précédente se dépose une fois.
+  await page.goto(`/${slug}/e-facturation/e-reporting`)
+  await page.getByRole('button', { name: 'Déposer les transactions' }).click()
+  await expect(page.getByText(/Déposé le/).first()).toBeVisible()
+})

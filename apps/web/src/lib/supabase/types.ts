@@ -52,6 +52,11 @@ export type OrganizationRow = {
   reminder_days: number[]
   reminder_email_from: string | null
   reminder_signature: string | null
+  pa_provider: 'simulee' | 'afnor'
+  pa_account_id: string | null
+  pa_auto_transmit: boolean
+  pa_mandate_at: string | null
+  ereporting_frequency: 'decade' | 'mois' | 'bimestre'
   created_by: string | null
   created_at: string
   updated_at: string
@@ -290,6 +295,65 @@ export type QuoteSignatureRow = {
   signed_at: string
 }
 
+export type TransmissionRow = {
+  id: string
+  organization_id: string
+  document_id: string
+  provider: string
+  flow_id: string | null
+  format: 'factur-x' | 'cii' | 'ubl'
+  status_code: number
+  status_label: string
+  history: unknown
+  error: string | null
+  created_by: string | null
+  sent_at: string
+  updated_at: string
+}
+
+export type ReceivedInvoiceRow = {
+  id: string
+  organization_id: string
+  provider: string
+  flow_id: string
+  format: 'factur-x' | 'cii' | 'ubl'
+  type_code: string
+  number: string
+  issue_date: string
+  due_date: string | null
+  seller_name: string
+  seller_siren: string | null
+  seller_vat: string | null
+  currency: string
+  total_ht: number
+  total_vat: number
+  total_ttc: number
+  amount_due: number
+  vat_breakdown: unknown
+  lines: unknown
+  xml: string
+  status: 'a_traiter' | 'approuvee' | 'refusee' | 'litige' | 'payee'
+  status_code: number
+  motive: string | null
+  history: unknown
+  received_at: string
+  updated_at: string
+}
+
+export type EreportingRow = {
+  id: string
+  organization_id: string
+  kind: 'transactions' | 'paiements'
+  period_start: string
+  period_end: string
+  provider: string
+  flow_id: string | null
+  status: 'depose' | 'accepte' | 'rejete'
+  summary: unknown
+  created_by: string | null
+  sent_at: string
+}
+
 export type DocumentVatSummaryRow = {
   organization_id: string
   document_id: string
@@ -380,7 +444,15 @@ export type Database = {
         Row: DocumentVatSummaryRow
         Insert: DocumentVatSummaryRow
         Update: never
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: 'document_vat_summary_document_id_organization_id_fkey'
+            columns: ['document_id', 'organization_id']
+            isOneToOne: false
+            referencedRelation: 'documents'
+            referencedColumns: ['id', 'organization_id']
+          },
+        ]
       }
       audit_log: {
         Row: { id: number; organization_id: string; actor_id: string | null; action: string; entity: string; entity_id: string | null; details: unknown; created_at: string }
@@ -435,6 +507,35 @@ export type Database = {
             referencedColumns: ['id', 'organization_id']
           },
         ]
+      }
+      einvoice_transmissions: {
+        Row: TransmissionRow
+        Insert: Insertion<TransmissionRow, 'organization_id' | 'document_id' | 'provider' | 'format'>
+        Update: Partial<Pick<TransmissionRow, 'status_code' | 'status_label' | 'history' | 'error' | 'flow_id'>>
+        Relationships: [
+          {
+            foreignKeyName: 'einvoice_transmissions_document_id_organization_id_fkey'
+            columns: ['document_id', 'organization_id']
+            isOneToOne: false
+            referencedRelation: 'documents'
+            referencedColumns: ['id', 'organization_id']
+          },
+        ]
+      }
+      received_invoices: {
+        Row: ReceivedInvoiceRow
+        Insert: Insertion<
+          ReceivedInvoiceRow,
+          'organization_id' | 'provider' | 'flow_id' | 'format' | 'number' | 'issue_date' | 'seller_name' | 'total_ht' | 'total_vat' | 'total_ttc' | 'amount_due' | 'xml'
+        >
+        Update: Partial<Pick<ReceivedInvoiceRow, 'status' | 'status_code' | 'motive' | 'history'>>
+        Relationships: []
+      }
+      ereporting_reports: {
+        Row: EreportingRow
+        Insert: Insertion<EreportingRow, 'organization_id' | 'kind' | 'period_start' | 'period_end' | 'provider' | 'summary'>
+        Update: never
+        Relationships: []
       }
       quote_signatures: {
         Row: QuoteSignatureRow

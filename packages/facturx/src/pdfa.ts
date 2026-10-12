@@ -5,7 +5,7 @@
  */
 
 import { createHash } from 'node:crypto'
-import { AFRelationship, PDFArray, PDFDocument, PDFHexString, PDFName, PDFString } from 'pdf-lib'
+import { AFRelationship, decodePDFRawStream, PDFArray, PDFDict, PDFDocument, PDFHexString, PDFName, PDFRawStream, PDFString } from 'pdf-lib'
 import { SRGB_ICC_BASE64 } from './icc'
 import { echapper } from './modele'
 
@@ -111,4 +111,24 @@ export async function enregistrerFacturX(pdf: PDFDocument, xml: string, meta: Me
   ;(contexte.trailerInfo.ID as PDFArray).push(PDFHexString.of(empreinte))
 
   return pdf.save({ useObjectStreams: false, updateFieldAppearances: false })
+}
+
+/** XML joint d'un PDF Factur-X (factur-x.xml, ou à défaut le premier fichier XML joint). */
+export async function extraireXml(octets: Uint8Array): Promise<string | null> {
+  const pdf = await PDFDocument.load(octets, { updateMetadata: false })
+  const noms = pdf.catalog.lookupMaybe(PDFName.of('Names'), PDFDict)
+  const fichiers = noms?.lookupMaybe(PDFName.of('EmbeddedFiles'), PDFDict)
+  const liste = fichiers?.lookupMaybe(PDFName.of('Names'), PDFArray)
+  if (!liste) return null
+  const candidats: Array<{ nom: string; spec: PDFDict }> = []
+  for (let i = 0; i + 1 < liste.size(); i += 2) {
+    const nom = liste.lookup(i)
+    const spec = liste.lookup(i + 1, PDFDict)
+    const texte = nom instanceof PDFString || nom instanceof PDFHexString ? nom.decodeText() : ''
+    candidats.push({ nom: texte, spec })
+  }
+  const choisi = candidats.find((c) => c.nom.toLowerCase() === 'factur-x.xml') ?? candidats.find((c) => c.nom.toLowerCase().endsWith('.xml'))
+  const flux = choisi?.spec.lookupMaybe(PDFName.of('EF'), PDFDict)?.lookup(PDFName.of('F'))
+  if (!(flux instanceof PDFRawStream)) return null
+  return new TextDecoder().decode(decodePDFRawStream(flux).decode())
 }

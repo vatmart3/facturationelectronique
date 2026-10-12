@@ -1,5 +1,6 @@
 import { aujourdHui } from '@/lib/document'
 import { creerClientService } from '@/lib/supabase/service'
+import { actualiserTransmission, releverFactures } from '@/lib/plateforme-serveur'
 import { executerRecurrences, executerRelances } from '@/lib/taches'
 
 /**
@@ -22,7 +23,11 @@ export async function GET(requete: Request) {
     try {
       const recurrences = await executerRecurrences(supabase, organisation, jour)
       const relances = await executerRelances(supabase, organisation, jour)
-      bilan[organisation.slug] = { recurrences, relances }
+      // Plateforme agréée : statuts des flux en cours, factures reçues.
+      const { data: enCours } = await supabase.from('einvoice_transmissions').select('*').eq('organization_id', organisation.id).lt('status_code', 205)
+      for (const t of enCours ?? []) await actualiserTransmission(supabase, organisation, t)
+      const reception = organisation.pa_provider === 'afnor' ? await releverFactures(supabase, organisation) : null
+      bilan[organisation.slug] = { recurrences, relances, transmissions: enCours?.length ?? 0, reception }
     } catch (e) {
       bilan[organisation.slug] = { erreur: e instanceof Error ? e.message : 'inconnue' }
     }
