@@ -16,11 +16,18 @@ export const metadata: Metadata = {
 /** Visiteur : page d'accueil. Utilisateur connecté : son tableau de bord. */
 export default async function Racine() {
   if (lireConfigSupabase()) {
-    const utilisateur = await lireUtilisateur()
-    if (utilisateur) {
-      const organisations = await listerOrganisations()
-      redirect(organisations[0] ? `/${organisations[0].slug}/tableau-de-bord` : '/bienvenue')
+    let destination: string | null = null
+    try {
+      const utilisateur = await lireUtilisateur()
+      if (utilisateur) {
+        const organisations = await listerOrganisations()
+        destination = organisations[0] ? `/${organisations[0].slug}/tableau-de-bord` : '/bienvenue'
+      }
+    } catch (e) {
+      // Supabase injoignable : la page d'accueil reste affichée.
+      console.error('[accueil] session illisible', e instanceof Error ? e.message : e)
     }
+    if (destination) redirect(destination)
   }
   const donnees = {
     '@context': 'https://schema.org',

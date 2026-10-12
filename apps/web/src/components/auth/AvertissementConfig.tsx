@@ -1,11 +1,21 @@
 import { Message } from '@/components/ui/Message'
+import { diagnosticConfig } from '@/lib/supabase/env'
 
 export function AvertissementConfig() {
+  const problemes = diagnosticConfig()
   return (
     <Message ton="info">
-      Supabase n’est pas encore configuré. Renseignez <code className="font-chiffre text-[12px]">NEXT_PUBLIC_SUPABASE_URL</code>{' '}
-      et <code className="font-chiffre text-[12px]">NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY</code> dans{' '}
-      <code className="font-chiffre text-[12px]">apps/web/.env.local</code>, puis relancez l’application.
+      <p>
+        La connexion à Supabase n’est pas configurée. Vérifiez les variables d’environnement (Vercel : <em>Settings &gt; Environment Variables</em>,
+        puis <em>Redeploy</em>).
+      </p>
+      {problemes.length > 0 && (
+        <ul className="mt-1.5 list-disc pl-4">
+          {problemes.map((p) => (
+            <li key={p}>{p}</li>
+          ))}
+        </ul>
+      )}
     </Message>
   )
 }

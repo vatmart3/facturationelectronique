@@ -4,7 +4,7 @@ import { lireConfigSupabase } from './env'
 import type { Database } from './types'
 
 /** Chemins accessibles sans session. Tout le reste exige d'être connecté. */
-const PUBLICS = ['/connexion', '/inscription', '/auth', '/systeme', '/mot-de-passe', '/d', '/api/taches', '/api/plateforme', '/api/stripe', '/invitation', '/legal', '/tarifs', '/facture-auto-entrepreneur', '/facturation-electronique-2027', '/modele-facture-factur-x', '/sitemap.xml', '/robots.txt']
+const PUBLICS = ['/sante', '/connexion', '/inscription', '/auth', '/systeme', '/mot-de-passe', '/d', '/api/taches', '/api/plateforme', '/api/stripe', '/invitation', '/legal', '/tarifs', '/facture-auto-entrepreneur', '/facturation-electronique-2027', '/modele-facture-factur-x', '/sitemap.xml', '/robots.txt']
 
 export function estCheminPublic(pathname: string): boolean {
   return pathname === '/' || PUBLICS.some((p) => pathname === p || pathname.startsWith(`${p}/`))
@@ -37,9 +37,13 @@ export async function mettreAJourSession(request: NextRequest): Promise<NextResp
   })
 
   // Ne rien intercaler ici : getUser() valide et rafraîchit la session.
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  let user = null
+  try {
+    user = (await supabase.auth.getUser()).data.user
+  } catch (e) {
+    // Supabase injoignable ou mal configuré : le site reste consultable, la connexion explique.
+    console.error('[proxy] session illisible', e instanceof Error ? e.message : e)
+  }
 
   if (!user && !publique) {
     const cible = rediriger(request, '/connexion', request.nextUrl.pathname + request.nextUrl.search)
