@@ -9,6 +9,7 @@ export function OngletsReglages({ slug }: { slug: string }) {
     { href: `/${slug}/reglages`, libelle: 'Entreprise' },
     { href: `/${slug}/reglages/facturation`, libelle: 'Facturation' },
     { href: `/${slug}/reglages/membres`, libelle: 'Membres et rôles' },
+    { href: `/${slug}/reglages/abonnement`, libelle: 'Abonnement' },
   ]
   return <Segments libelle="Sections des réglages" segments={onglets.map((o) => ({ ...o, actif: pathname === o.href }))} />
 }

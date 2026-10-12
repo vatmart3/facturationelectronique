@@ -57,6 +57,7 @@ export type OrganizationRow = {
   pa_auto_transmit: boolean
   pa_mandate_at: string | null
   ereporting_frequency: 'decade' | 'mois' | 'bimestre'
+  closed_at: string | null
   created_by: string | null
   created_at: string
   updated_at: string
@@ -537,6 +538,50 @@ export type Database = {
         Update: never
         Relationships: []
       }
+      subscriptions: {
+        Row: {
+          organization_id: string
+          plan: 'solo' | 'pro' | 'studio'
+          status: 'trialing' | 'active' | 'past_due' | 'canceled' | 'incomplete' | 'unpaid'
+          trial_ends_at: string | null
+          current_period_end: string | null
+          cancel_at_period_end: boolean
+          stripe_customer_id: string | null
+          stripe_subscription_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          organization_id: string
+          plan?: 'solo' | 'pro' | 'studio'
+          status?: 'trialing' | 'active' | 'past_due' | 'canceled' | 'incomplete' | 'unpaid'
+          trial_ends_at?: string | null
+          current_period_end?: string | null
+          cancel_at_period_end?: boolean
+          stripe_customer_id?: string | null
+          stripe_subscription_id?: string | null
+        }
+        Update: Partial<Database['public']['Tables']['subscriptions']['Insert']>
+        Relationships: []
+      }
+      invitations: {
+        Row: { id: string; organization_id: string; email: string; role: MemberRole; token: string; invited_by: string | null; expires_at: string; accepted_at: string | null; created_at: string }
+        Insert: { organization_id: string; email: string; role: MemberRole }
+        Update: never
+        Relationships: []
+      }
+      platform_admins: { Row: { user_id: string; created_at: string }; Insert: { user_id: string }; Update: never; Relationships: [] }
+      announcements: {
+        Row: { id: string; title: string; body: string; level: 'info' | 'important'; starts_at: string; ends_at: string | null; created_at: string }
+        Insert: { title: string; body: string; level?: 'info' | 'important'; starts_at?: string; ends_at?: string | null }
+        Update: Partial<{ title: string; body: string; level: 'info' | 'important'; starts_at: string; ends_at: string | null }>
+        Relationships: []
+      }
+      error_logs: {
+        Row: { id: number; organization_id: string | null; kind: 'pdf' | 'facturx' | 'email' | 'plateforme' | 'stripe' | 'autre'; message: string; context: unknown; created_at: string }
+        Insert: { organization_id?: string | null; kind: 'pdf' | 'facturx' | 'email' | 'plateforme' | 'stripe' | 'autre'; message: string; context?: unknown }
+        Update: never
+        Relationships: []
+      }
       quote_signatures: {
         Row: QuoteSignatureRow
         Insert: never
@@ -565,6 +610,9 @@ export type Database = {
       }
       emettre_document: { Args: { p_id: string }; Returns: DocumentRow }
       lien_public: { Args: { p_id: string }; Returns: string }
+      invitation: { Args: { p_token: string }; Returns: unknown }
+      accepter_invitation: { Args: { p_token: string }; Returns: string }
+      supprimer_mon_compte: { Args: { p_confirmation: string }; Returns: { supprimees: number; closes: number } }
       document_public: { Args: { p_token: string }; Returns: unknown }
       signer_devis: {
         Args: { p_token: string; p_decision: string; p_nom: string; p_email: string | null; p_commentaire: string | null; p_agent: string }

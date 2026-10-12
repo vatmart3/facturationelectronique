@@ -4,7 +4,7 @@ import { lireConfigSupabase } from './env'
 import type { Database } from './types'
 
 /** Chemins accessibles sans session. Tout le reste exige d'être connecté. */
-const PUBLICS = ['/connexion', '/inscription', '/auth', '/systeme', '/mot-de-passe', '/d', '/api/taches', '/api/plateforme']
+const PUBLICS = ['/connexion', '/inscription', '/auth', '/systeme', '/mot-de-passe', '/d', '/api/taches', '/api/plateforme', '/api/stripe', '/invitation', '/legal', '/tarifs', '/facture-auto-entrepreneur', '/facturation-electronique-2027', '/modele-facture-factur-x', '/sitemap.xml', '/robots.txt']
 
 export function estCheminPublic(pathname: string): boolean {
   return pathname === '/' || PUBLICS.some((p) => pathname === p || pathname.startsWith(`${p}/`))

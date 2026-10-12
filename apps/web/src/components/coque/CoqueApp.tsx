@@ -11,16 +11,21 @@ import { Kbd } from '@/components/ui/Message'
 import { initiales } from '@/lib/avatar'
 import { cn } from '@/lib/cn'
 import { cheminDansOrganisation, NAVIGATION, NAVIGATION_COMPTE, trouverEntree, type EntreeNav } from '@/lib/navigation'
+import { Annonces, BulleAide } from './Aide'
 import { Palette } from './Palette'
+import { ChoixTheme } from './Theme'
 
 export interface CoqueProps {
   organisation: { slug: string; nom: string; detail: string }
   organisations: Array<{ slug: string; nom: string; role: string }>
   utilisateur: { email: string; nom: string | null }
+  /** Essai, paywall doux : bandeau en haut de chaque page. */
+  bandeau?: { texte: string; lien: string; libelleLien: string; ton: 'info' | 'alerte' } | null
+  annonces?: Array<{ id: string; title: string; body: string; level: 'info' | 'important' }>
   children: ReactNode
 }
 
-export function CoqueApp({ organisation, organisations, utilisateur, children }: CoqueProps) {
+export function CoqueApp({ organisation, organisations, utilisateur, bandeau, annonces = [], children }: CoqueProps) {
   const pathname = usePathname()
   const router = useRouter()
   const [paletteOuverte, setPaletteOuverte] = useState(false)
@@ -104,12 +109,13 @@ export function CoqueApp({ organisation, organisations, utilisateur, children }:
           {NAVIGATION_COMPTE.map((e) => (
             <LienNav key={e.chemin} entree={e} slug={organisation.slug} actif={courante?.entree.chemin === e.chemin} />
           ))}
-          <div className="mt-2 flex items-center gap-2.5 rounded-m px-2.5 py-2">
+          <ChoixTheme className="mx-2.5 mt-2" />
+          <div className="mt-1 flex items-center gap-2.5 rounded-m px-2.5 py-2">
             <Avatar nom={utilisateur.nom ?? utilisateur.email} taille="s" />
-            <div className="flex min-w-0 flex-1 flex-col leading-tight">
+            <Link href="/compte" className="flex min-w-0 flex-1 flex-col leading-tight hover:underline" title="Mon compte, mes données">
               <span className="truncate text-[13px] font-medium">{utilisateur.nom ?? 'Mon compte'}</span>
               <span className="truncate text-[11.5px] text-encre-3">{utilisateur.email}</span>
-            </div>
+            </Link>
             <form action={seDeconnecter}>
               <button
                 type="submit"
@@ -163,7 +169,7 @@ export function CoqueApp({ organisation, organisations, utilisateur, children }:
             <Icone nom="recherche" />
           </button>
           <Link
-            href={`/${organisation.slug}/ventes/factures`}
+            href={`/${organisation.slug}/ventes/factures/nouvelle`}
             className="inline-flex h-[34px] items-center gap-2 whitespace-nowrap rounded-m border border-encre bg-encre px-3.5 text-[13.5px] font-semibold text-surface shadow-douce hover:border-encre-2 hover:bg-encre-2"
           >
             <Icone nom="plus" taille={15} />
@@ -171,11 +177,21 @@ export function CoqueApp({ organisation, organisations, utilisateur, children }:
             <span className="sm:hidden">Facture</span>
           </Link>
         </header>
-        <main id="contenu" className="flex min-w-0 flex-1 flex-col gap-[22px] px-4 pb-10 pt-6 sm:px-7">
+        {bandeau && (
+          <div className={cn('flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2 text-[13px] sm:px-7 print:hidden', bandeau.ton === 'alerte' ? 'border-alerte/30 bg-alerte-doux' : 'border-info/30 bg-info-doux')}>
+            <span>{bandeau.texte}</span>
+            <Link href={bandeau.lien} className="font-semibold text-accent hover:underline">
+              {bandeau.libelleLien}
+            </Link>
+          </div>
+        )}
+        <main id="contenu" className="flex min-w-0 flex-1 flex-col gap-[22px] px-4 pb-20 pt-6 sm:px-7">
+          <Annonces annonces={annonces} />
           {children}
         </main>
       </div>
 
+      <BulleAide slug={organisation.slug} />
       {paletteOuverte && (
         <Palette fermer={() => setPaletteOuverte(false)} slug={organisation.slug} organisations={organisations} />
       )}

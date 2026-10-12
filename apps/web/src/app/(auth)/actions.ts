@@ -55,6 +55,7 @@ export async function sInscrire(_: EtatFormulaire, formData: FormData): Promise<
   const email = texte(formData, 'email').toLowerCase()
   const nom = texte(formData, 'nom').slice(0, 200)
   const motDePasse = String(formData.get('mot_de_passe') ?? '')
+  const suite = formData.get('suite') ? suiteSure(formData.get('suite')) : '/bienvenue'
   if (!nom) return { erreur: 'Indiquez votre nom.', email }
   if (!emailValide(email)) return { erreur: 'Saisissez une adresse email valide.', email, nom }
   if (!motDePasseValide(motDePasse)) return { erreur: traduireErreurAuth('weak_password'), email, nom }
@@ -65,14 +66,14 @@ export async function sInscrire(_: EtatFormulaire, formData: FormData): Promise<
     password: motDePasse,
     options: {
       data: { full_name: nom },
-      emailRedirectTo: `${await origine()}/auth/callback?suite=/bienvenue`,
+      emailRedirectTo: `${await origine()}/auth/callback?suite=${encodeURIComponent(suite)}`,
     },
   })
   if (error) return { erreur: traduireErreurAuth(error.code), email, nom }
   if (!data.session) {
     return { succes: `Compte créé. Confirmez votre adresse grâce au lien envoyé à ${email}.`, email }
   }
-  redirect('/bienvenue')
+  redirect(suite)
 }
 
 export async function connexionGoogle(formData: FormData): Promise<void> {

@@ -2,6 +2,7 @@ import 'server-only'
 import { notFound, redirect } from 'next/navigation'
 import { connection } from 'next/server'
 import { cache } from 'react'
+import { etatAbonnement, type EtatAbonnement } from './offres'
 import { estRole, type Role } from './roles'
 import { lireConfigSupabase } from './supabase/env'
 import { creerClientServeur } from './supabase/serveur'
@@ -23,7 +24,11 @@ export interface OrganisationResumee {
 export interface ContexteOrganisation {
   utilisateur: Utilisateur
   organisation: OrganizationRow
+  /** Rôle effectif : lecture seule pour tous tant que l'abonnement n'est pas actif (paywall doux). */
   role: Role
+  /** Rôle réel du membre (gestion de l'abonnement, des membres). */
+  roleReel: Role
+  abonnement: EtatAbonnement
   organisations: OrganisationResumee[]
 }
 
@@ -74,8 +79,13 @@ export const chargerContexte = cache(async (slug: string): Promise<ContexteOrgan
   if (!resume) notFound()
 
   const supabase = await creerClientServeur()
-  const { data: organisation, error } = await supabase.from('organizations').select('*').eq('id', resume.id).single()
+  const [{ data: organisation, error }, { data: sub }] = await Promise.all([
+    supabase.from('organizations').select('*').eq('id', resume.id).single(),
+    supabase.from('subscriptions').select('plan, status, trial_ends_at, current_period_end, cancel_at_period_end').eq('organization_id', resume.id).maybeSingle(),
+  ])
   if (error || !organisation) notFound()
+  const abonnement = etatAbonnement(sub)
+  const role: Role = abonnement.actif || resume.role === 'viewer' || resume.role === 'accountant' ? resume.role : 'viewer'
 
-  return { utilisateur, organisation, role: resume.role, organisations }
+  return { utilisateur, organisation, role, roleReel: resume.role, abonnement, organisations }
 })

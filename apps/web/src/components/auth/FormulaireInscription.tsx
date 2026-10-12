@@ -6,14 +6,15 @@ import { Bouton } from '@/components/ui/Bouton'
 import { Champ } from '@/components/ui/Champ'
 import { Message } from '@/components/ui/Message'
 
-export function FormulaireInscription({ desactive }: { desactive?: boolean }) {
+export function FormulaireInscription({ desactive, suite = '/bienvenue', email }: { desactive?: boolean; suite?: string; email?: string }) {
   const [etat, action, enCours] = useActionState<EtatFormulaire, FormData>(sInscrire, {})
   return (
     <form action={action} className="flex flex-col gap-3.5" noValidate>
       {etat.erreur && <Message ton="erreur">{etat.erreur}</Message>}
       {etat.succes && <Message ton="succes">{etat.succes}</Message>}
       <Champ libelle="Nom et prénom" name="nom" autoComplete="name" required defaultValue={etat.nom} />
-      <Champ libelle="Email professionnel" name="email" type="email" autoComplete="email" required defaultValue={etat.email} />
+      <input type="hidden" name="suite" value={suite} />
+      <Champ libelle="Email professionnel" name="email" type="email" autoComplete="email" required defaultValue={etat.email ?? email} />
       <Champ
         libelle="Mot de passe"
         name="mot_de_passe"
