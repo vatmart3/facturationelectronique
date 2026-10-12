@@ -98,3 +98,53 @@ describe('référentiels', () => {
     await expect(banc.enTantQue(null).query('select * from vat_rates')).rejects.toThrow(/permission denied/)
   })
 })
+
+describe('enregistrer_brouillon', () => {
+  const lignes = JSON.stringify([
+    { position: 1, designation: 'Création logo', quantity_milli: 3000, unit: 'forfait', unit_price_cents: 45000, vat_category: 'S', vat_rate: 2000, nature: 'service', line_net_cents: 135000 },
+  ])
+  const tva = JSON.stringify([{ position: 1, vat_category: 'S', vat_rate: 2000, base_cents: 135000, vat_cents: 27000 }])
+
+  it('crée puis met à jour un brouillon en une transaction', async () => {
+    const { rows } = await banc
+      .enTantQue(alice)
+      .query<{ id: string }>('select enregistrer_brouillon($1, null, $2, $3, $4) as id', [
+        orgA,
+        JSON.stringify({ type: 'facture', client_id: clientA, total_ht: 135000, total_vat: 27000, total_ttc: 162000, amount_due: 162000 }),
+        lignes,
+        tva,
+      ])
+    const id = rows[0]!.id
+    const doc = await banc.enTantQue(alice).query('select total_ttc, status from documents where id = $1', [id])
+    expect(doc.rows[0]).toEqual({ total_ttc: '162000', status: 'brouillon' })
+    await banc.enTantQue(alice).query('select enregistrer_brouillon($1, $2, $3, $4, $5)', [orgA, id, JSON.stringify({ type: 'facture', client_id: clientA, subject: 'Refonte' }), '[]', '[]'])
+    const apres = await banc.enTantQue(alice).query('select subject, (select count(*) from document_lines where document_id = $1) as n from documents where id = $1', [id])
+    expect(apres.rows[0]).toEqual({ subject: 'Refonte', n: '0' })
+  })
+
+  it('refuse de modifier un document émis', async () => {
+    await expect(
+      banc.enTantQue(alice).query('select enregistrer_brouillon($1, $2, $3, $4, $5)', [orgA, emis, JSON.stringify({ type: 'facture' }), lignes, tva]),
+    ).rejects.toThrow(/déjà émis/)
+  })
+
+  it('n’écrit rien dans une autre organisation', async () => {
+    await expect(
+      banc.enTantQue(bruno).query('select enregistrer_brouillon($1, null, $2, $3, $4)', [orgA, JSON.stringify({ type: 'facture' }), lignes, tva]),
+    ).rejects.toThrow(/row-level security/)
+    await expect(
+      banc.enTantQue(bruno).query('select enregistrer_brouillon($1, $2, $3, $4, $5)', [orgA, brouillon, JSON.stringify({ type: 'facture' }), lignes, tva]),
+    ).rejects.toThrow(/introuvable/)
+  })
+
+  it('annule tout si une ligne est invalide', async () => {
+    const avant = await banc.enTantQue(alice).query('select count(*) as n from documents')
+    await expect(
+      banc
+        .enTantQue(alice)
+        .query('select enregistrer_brouillon($1, null, $2, $3, $4)', [orgA, JSON.stringify({ type: 'facture' }), JSON.stringify([{ position: 1, quantity_milli: 1000, unit_price_cents: 1, vat_category: 'X', vat_rate: 0, nature: 'service' }]), '[]']),
+    ).rejects.toThrow(/check constraint/)
+    const apres = await banc.enTantQue(alice).query('select count(*) as n from documents')
+    expect(apres.rows[0].n).toBe(avant.rows[0].n)
+  })
+})

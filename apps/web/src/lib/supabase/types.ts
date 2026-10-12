@@ -11,6 +11,8 @@ export type ClientKind = 'b2b' | 'b2c' | 'b2g' | 'ue' | 'hors_ue'
 export type ItemNature = 'bien' | 'service' | 'debours'
 export type DiscountKind = 'pourcentage' | 'montant'
 export type PaymentTerms = 'reception' | '15j' | '30j' | '30jfm' | '45jfm' | '60j'
+export type DocumentType = 'facture' | 'devis' | 'acompte' | 'avoir'
+export type DocumentStatus = 'brouillon' | 'emis' | 'envoye' | 'partiellement_paye' | 'paye' | 'annule' | 'accepte' | 'refuse' | 'expire' | 'transforme'
 
 export type OrganizationRow = {
   id: string
@@ -150,6 +152,88 @@ export type ClientPriceRow = {
   updated_at: string
 }
 
+export type DocumentRow = {
+  id: string
+  organization_id: string
+  type: DocumentType
+  status: DocumentStatus
+  client_id: string | null
+  number: string | null
+  sequence_key: string | null
+  sequence_number: number | null
+  issue_date: string
+  service_date: string | null
+  service_period_start: string | null
+  service_period_end: string | null
+  due_date: string | null
+  valid_until: string | null
+  purchase_order: string | null
+  subject: string | null
+  public_notes: string | null
+  internal_notes: string | null
+  currency: string
+  language: 'fr' | 'en'
+  payment_terms: PaymentTerms | null
+  early_payment_discount: string | null
+  discount_kind: DiscountKind | null
+  discount_value: number | null
+  total_lines_ht: number
+  discount_total: number
+  deposits_ht: number
+  total_ht: number
+  total_vat: number
+  total_ttc: number
+  amount_due: number
+  amount_paid: number
+  operation_category: 'biens' | 'services' | 'mixte' | null
+  origin_document_id: string | null
+  deducted_deposits: unknown
+  seller_snapshot: unknown
+  client_snapshot: unknown
+  content_hash: string | null
+  previous_hash: string | null
+  issued_at: string | null
+  issued_by: string | null
+  sent_at: string | null
+  accepted_at: string | null
+  created_by: string | null
+  created_at: string
+  updated_at: string
+}
+
+export type DocumentLineRow = {
+  id: string
+  organization_id: string
+  document_id: string
+  position: number
+  product_id: string | null
+  designation: string
+  description: string | null
+  quantity_milli: number
+  unit: string
+  unit_price_cents: number
+  discount_kind: DiscountKind | null
+  discount_value: number | null
+  vat_category: CategorieTva
+  vat_rate: number
+  exemption_reason: string | null
+  nature: ItemNature
+  line_net_cents: number
+  created_at: string
+  updated_at: string
+}
+
+export type DocumentVatSummaryRow = {
+  organization_id: string
+  document_id: string
+  position: number
+  vat_category: CategorieTva
+  vat_rate: number
+  base_cents: number
+  vat_cents: number
+  exemption_reason: string | null
+}
+
 type Auto = 'id' | 'created_at' | 'updated_at'
 type Insertion<T, Requis extends keyof T> = Pick<T, Requis> & Partial<Omit<T, Auto | Requis>>
 
@@ -204,6 +288,36 @@ export type Database = {
             referencedColumns: ['id', 'organization_id']
           },
         ]
+      }
+      documents: {
+        Row: DocumentRow
+        Insert: Insertion<DocumentRow, 'organization_id' | 'type'>
+        Update: Partial<Omit<DocumentRow, Auto | 'organization_id'>>
+        Relationships: []
+      }
+      document_lines: {
+        Row: DocumentLineRow
+        Insert: Insertion<DocumentLineRow, 'organization_id' | 'document_id' | 'position'>
+        Update: Partial<Omit<DocumentLineRow, Auto | 'organization_id' | 'document_id'>>
+        Relationships: []
+      }
+      document_vat_summary: {
+        Row: DocumentVatSummaryRow
+        Insert: DocumentVatSummaryRow
+        Update: never
+        Relationships: []
+      }
+      vat_rates: {
+        Row: { id: string; territory: string; label: string; rate: number; valid_from: string; valid_to: string | null; created_at: string }
+        Insert: never
+        Update: never
+        Relationships: []
+      }
+      legal_mentions: {
+        Row: { key: string; text: string; applies_when: string; updated_at: string }
+        Insert: never
+        Update: never
+        Relationships: []
       }
     }
     Views: Record<string, never>
