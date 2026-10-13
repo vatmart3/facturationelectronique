@@ -16,6 +16,16 @@ function nettoyer(valeur: string | undefined): string {
 export function normaliserUrlSupabase(valeur: string | undefined): string | null {
   let url = nettoyer(valeur)
   if (!url) return null
+  // Référence du projet retrouvée dans ce qui a été collé : lien du tableau de bord
+  // (supabase.com/dashboard/project/<ref>), référence seule, ou chaîne de connexion Postgres.
+  const ref =
+    url.match(/supabase\.com\/dashboard\/project\/([a-z0-9]{20})/i)?.[1] ??
+    url.match(/^([a-z0-9]{20})$/)?.[1] ??
+    url.match(/^postgres(?:ql)?:\/\/.*(?:db\.([a-z0-9]{20})\.supabase\.co|postgres\.([a-z0-9]{20})[:@])/i)?.slice(1).find(Boolean)
+  if (ref) return `https://${ref.toLowerCase()}.supabase.co`
+  // Adresse d'un service du projet (…supabase.co/storage/v1, /auth/v1…) : seule l'origine compte.
+  const projet = url.match(/^(?:https?:\/\/)?([a-z0-9]{20}\.supabase\.(?:co|in))(?:[/?#]|$)/i)?.[1]
+  if (projet) return `https://${projet.toLowerCase()}`
   if (!/^https?:\/\//i.test(url) && /^[\w.-]+\.supabase\.(co|in|com)/i.test(url)) url = `https://${url}`
   url = url.replace(/\/+$/, '').replace(/\/(rest|auth)\/v1$/i, '').replace(/\/+$/, '')
   try {
