@@ -13,6 +13,7 @@ import { Kbd } from '@/components/ui/Message'
 import { initiales } from '@/lib/avatar'
 import { cn } from '@/lib/cn'
 import { cheminDansOrganisation, NAVIGATION, NAVIGATION_COMPTE, trouverEntree, type EntreeNav } from '@/lib/navigation'
+import { CREATIONS } from '@/lib/palette'
 import { Annonces, BulleAide } from './Aide'
 import { Palette } from './Palette'
 import { ChoixTheme } from './Theme'
@@ -176,16 +177,7 @@ export function CoqueApp({ organisation, organisations, utilisateur, bandeau, an
           >
             <Icone nom="recherche" />
           </button>
-          {facturation && (
-            <Link
-              href={`/${organisation.slug}/ventes/factures/nouvelle`}
-              className={cn(classesBouton('primaire'), 'gap-2')}
-            >
-              <Icone nom="plus" taille={15} />
-              <span className="hidden sm:inline">Nouvelle facture</span>
-              <span className="sm:hidden">Facture</span>
-            </Link>
-          )}
+          {facturation && <MenuCreer slug={organisation.slug} />}
         </header>
         {bandeau && (
           <div className={cn('flex flex-wrap items-center justify-between gap-2 border-b px-4 py-2 text-[13px] sm:px-7 print:hidden', bandeau.ton === 'alerte' ? 'border-alerte/30 bg-alerte-doux' : 'border-info/30 bg-info-doux')}>
@@ -297,6 +289,66 @@ function SelecteurOrganisation({
             <Icone nom="plus" taille={15} />
             Créer une entreprise
           </Link>
+        </div>
+      )}
+    </div>
+  )
+}
+
+/** « Nouvelle facture » en un clic, et les autres créations dans le menu attenant. */
+function MenuCreer({ slug }: { slug: string }) {
+  const [ouvert, setOuvert] = useState(false)
+  const conteneur = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    if (!ouvert) return
+    function surClic(e: MouseEvent) {
+      if (!conteneur.current?.contains(e.target as Node)) setOuvert(false)
+    }
+    function surTouche(e: KeyboardEvent) {
+      if (e.key === 'Escape') setOuvert(false)
+    }
+    document.addEventListener('mousedown', surClic)
+    document.addEventListener('keydown', surTouche)
+    return () => {
+      document.removeEventListener('mousedown', surClic)
+      document.removeEventListener('keydown', surTouche)
+    }
+  }, [ouvert])
+
+  return (
+    <div ref={conteneur} className="relative flex">
+      <Link href={`/${slug}/ventes/factures/nouvelle`} className={cn(classesBouton('primaire'), 'gap-2 rounded-r-none')}>
+        <Icone nom="plus" taille={15} />
+        <span className="hidden sm:inline">Nouvelle facture</span>
+        <span className="sm:hidden">Facture</span>
+      </Link>
+      <button
+        type="button"
+        onClick={() => setOuvert((o) => !o)}
+        aria-haspopup="menu"
+        aria-expanded={ouvert}
+        aria-label="Créer autre chose"
+        title="Créer un devis, un client, un article…"
+        className={cn(classesBouton('primaire'), 'w-9 rounded-l-none border-l-[rgb(255_255_255/0.35)] px-0')}
+      >
+        <Icone nom="chevrons" taille={14} />
+      </button>
+      {ouvert && (
+        <div role="menu" className="absolute right-0 top-[calc(100%+6px)] z-50 flex w-60 flex-col gap-px rounded-l border border-trait bg-surface p-1.5 shadow-haute">
+          <p className="surtitre px-2 pb-1 pt-1 text-encre-3">Créer</p>
+          {CREATIONS.map((c) => (
+            <Link
+              key={c.id}
+              role="menuitem"
+              href={`/${slug}/${c.chemin}`}
+              onClick={() => setOuvert(false)}
+              className="flex items-center gap-2.5 rounded-m px-2 py-1.5 text-[13.5px] font-medium hover:bg-survol"
+            >
+              <IconeObjet icone={c.icone} taille="xs" />
+              {c.libelle}
+            </Link>
+          ))}
         </div>
       )}
     </div>

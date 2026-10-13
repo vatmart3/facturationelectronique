@@ -32,19 +32,29 @@ export interface ContexteOrganisation {
   organisations: OrganisationResumee[]
 }
 
-/** Utilisateur connecté (validé auprès de Supabase Auth), ou null. Mis en cache par requête. */
-export const lireUtilisateur = cache(async (): Promise<Utilisateur | null> => {
+/**
+ * Identité de la session : jeton vérifié par signature (getClaims), sans appel réseau à
+ * Supabase Auth quand le projet utilise des clés de signature asymétriques. Mis en cache par requête.
+ */
+const lireIdentite = cache(async (): Promise<{ id: string; email: string } | null> => {
   if (!lireConfigSupabase()) {
     await connection()
     return null
   }
   const supabase = await creerClientServeur()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
-  if (!user) return null
-  const { data: profil } = await supabase.from('profiles').select('full_name').eq('id', user.id).maybeSingle()
-  return { id: user.id, email: user.email ?? '', nom: profil?.full_name ?? null }
+  const { data } = await supabase.auth.getClaims()
+  const claims = data?.claims
+  if (!claims?.sub) return null
+  return { id: claims.sub, email: typeof claims.email === 'string' ? claims.email : '' }
+})
+
+/** Utilisateur connecté, ou null. Mis en cache par requête. */
+export const lireUtilisateur = cache(async (): Promise<Utilisateur | null> => {
+  const identite = await lireIdentite()
+  if (!identite) return null
+  const supabase = await creerClientServeur()
+  const { data: profil } = await supabase.from('profiles').select('full_name').eq('id', identite.id).maybeSingle()
+  return { ...identite, nom: profil?.full_name ?? null }
 })
 
 export async function exigerUtilisateur(): Promise<Utilisateur> {
@@ -55,7 +65,8 @@ export async function exigerUtilisateur(): Promise<Utilisateur> {
 
 /** Organisations dont l'utilisateur est membre, triées par nom. */
 export const listerOrganisations = cache(async (): Promise<OrganisationResumee[]> => {
-  const utilisateur = await exigerUtilisateur()
+  const utilisateur = await lireIdentite()
+  if (!utilisateur) redirect('/connexion')
   const supabase = await creerClientServeur()
   const { data, error } = await supabase
     .from('memberships')
@@ -73,8 +84,8 @@ export const listerOrganisations = cache(async (): Promise<OrganisationResumee[]
 
 /** Charge l'organisation de l'URL et le rôle de l'utilisateur ; 404 si non membre. */
 export const chargerContexte = cache(async (slug: string): Promise<ContexteOrganisation> => {
-  const utilisateur = await exigerUtilisateur()
-  const organisations = await listerOrganisations()
+  // Profil et appartenances lus en parallèle (même identité, déjà vérifiée).
+  const [utilisateur, organisations] = await Promise.all([exigerUtilisateur(), listerOrganisations()])
   const resume = organisations.find((o) => o.slug === slug)
   if (!resume) notFound()
 

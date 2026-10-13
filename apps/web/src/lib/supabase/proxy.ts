@@ -36,10 +36,12 @@ export async function mettreAJourSession(request: NextRequest): Promise<NextResp
     },
   })
 
-  // Ne rien intercaler ici : getUser() valide et rafraîchit la session.
-  let user = null
+  // Ne rien intercaler ici : getClaims() vérifie le jeton (localement avec des clés asymétriques)
+  // et rafraîchit la session s'il expire.
+  let user: { id: string } | null = null
   try {
-    user = (await supabase.auth.getUser()).data.user
+    const claims = (await supabase.auth.getClaims()).data?.claims
+    user = claims?.sub ? { id: claims.sub } : null
   } catch (e) {
     // Supabase injoignable ou mal configuré : le site reste consultable, la connexion explique.
     console.error('[proxy] session illisible', e instanceof Error ? e.message : e)

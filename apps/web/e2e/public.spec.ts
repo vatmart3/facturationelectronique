@@ -77,7 +77,7 @@ test.describe('pages publiques', () => {
   test('la connexion signale une configuration manquante et propose deux méthodes', async ({ page }) => {
     await page.goto('/connexion')
     await expect(page.getByRole('heading', { name: 'Connexion' })).toBeVisible()
-    await expect(page.getByText('Supabase n’est pas encore configuré')).toBeVisible()
+    await expect(page.getByText('La connexion à Supabase n’est pas configurée')).toBeVisible()
     await page.getByRole('tab', { name: 'Lien par email' }).click()
     await expect(page.getByRole('button', { name: 'Recevoir le lien' })).toBeVisible()
     await sansDefilementHorizontal(page)

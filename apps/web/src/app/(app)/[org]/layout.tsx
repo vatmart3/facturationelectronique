@@ -7,9 +7,11 @@ import { creerClientServeur } from '@/lib/supabase/serveur'
 
 export default async function LayoutOrganisation({ children, params }: { children: ReactNode; params: Promise<{ org: string }> }) {
   const { org } = await params
-  const { organisation, organisations, utilisateur, abonnement, role, roleReel } = await chargerContexte(org)
   const supabase = await creerClientServeur()
-  const { data: annonces } = await supabase.from('announcements').select('id, title, body, level').order('starts_at', { ascending: false }).limit(3)
+  const [{ organisation, organisations, utilisateur, abonnement, role, roleReel }, { data: annonces }] = await Promise.all([
+    chargerContexte(org),
+    supabase.from('announcements').select('id, title, body, level').order('starts_at', { ascending: false }).limit(3),
+  ])
   const lienAbonnement = `/${org}/reglages/abonnement`
   const gestion = roleReel === 'owner' || roleReel === 'admin'
   const bandeau = !abonnement.actif
