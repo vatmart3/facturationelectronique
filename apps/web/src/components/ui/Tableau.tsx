@@ -4,7 +4,7 @@ import { cn } from '@/lib/cn'
 export function Tableau({ children, legende, largeurMin = 720 }: { children: ReactNode; legende: string; largeurMin?: number }) {
   return (
     // Zone défilante focusable et nommée : consultable au clavier sur petit écran.
-    <div role="region" aria-label={legende} tabIndex={0} className="overflow-x-auto rounded-l border border-trait bg-surface">
+    <div role="region" aria-label={legende} tabIndex={0} className="overflow-x-auto rounded-l border border-trait bg-surface shadow-douce">
       <table className="w-full border-collapse" style={{ minWidth: largeurMin }}>
         <caption className="sr-only">{legende}</caption>
         {children}

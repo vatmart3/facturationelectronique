@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { cn } from '@/lib/cn'
 
 export function Panneau({ children, className }: { children: ReactNode; className?: string }) {
-  return <section className={cn('flex min-w-0 flex-col rounded-l border border-trait bg-surface', className)}>{children}</section>
+  return <section className={cn('flex min-w-0 flex-col rounded-l border border-trait bg-surface shadow-douce', className)}>{children}</section>
 }
 
 export function PanneauTete({ titre, description, actions }: { titre: string; description?: string; actions?: ReactNode }) {

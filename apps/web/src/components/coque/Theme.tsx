@@ -44,7 +44,7 @@ export function ChoixTheme({ className }: { className?: string }) {
             setTheme(o.v)
             appliquer(o.v)
           }}
-          className={cn('h-6 flex-1 rounded-[5px] px-2 text-[11.5px] font-medium', theme === o.v ? 'bg-encre text-surface' : 'text-encre-2 hover:bg-survol')}
+          className={cn('h-6 flex-1 rounded-[5px] px-2 text-[11.5px] font-medium', theme === o.v ? 'bg-accent-doux font-semibold text-encre ring-1 ring-trait-fort' : 'text-encre-2 hover:bg-survol')}
         >
           {o.l}
         </button>

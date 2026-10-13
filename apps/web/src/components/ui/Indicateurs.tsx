@@ -1,4 +1,6 @@
 import { cn } from '@/lib/cn'
+import type { IconeNav } from '@/lib/navigation'
+import { IconeObjet } from './IconeObjet'
 
 export interface Indicateur {
   libelle: string
@@ -7,29 +9,31 @@ export interface Indicateur {
   ton?: 'ok' | 'info' | 'alerte' | 'neutre'
 }
 
-const TONS = { ok: 'bg-ok', info: 'bg-info', alerte: 'bg-alerte', neutre: 'bg-encre-3' }
+const TONS: Record<NonNullable<Indicateur['ton']>, { barre: string; valeur: string; icone: IconeNav }> = {
+  ok: { barre: 'bg-ok', valeur: 'text-ok', icone: 'paiements' },
+  info: { barre: 'bg-info', valeur: 'text-info', icone: 'facture' },
+  alerte: { barre: 'bg-alerte', valeur: 'text-alerte', icone: 'relances' },
+  neutre: { barre: 'bg-objet-tableau', valeur: 'text-encre', icone: 'tableau' },
+}
 
+/** Rangée de chiffres clés : chaque carte porte la couleur de ce qu'elle mesure. */
 export function Indicateurs({ indicateurs }: { indicateurs: Indicateur[] }) {
   return (
-    <div className="grid grid-cols-2 overflow-hidden rounded-l border border-trait bg-surface lg:grid-cols-4">
-      {indicateurs.map((i, n) => (
-        <div
-          key={i.libelle}
-          className={cn(
-            'flex min-w-0 flex-col gap-1.5 border-trait px-[18px] py-4',
-            n % 2 === 0 && 'border-r',
-            n < 2 && 'border-b lg:border-b-0',
-            'lg:border-r lg:last:border-r-0',
-          )}
-        >
-          <span className="flex items-center gap-1.5 text-[12.5px] text-encre-2">
-            <span className={cn('size-[7px] rounded-full', TONS[i.ton ?? 'neutre'])} aria-hidden="true" />
-            {i.libelle}
-          </span>
-          <span className="whitespace-nowrap font-titre text-[22px] font-semibold tabular-nums tracking-[-0.02em]">{i.valeur}</span>
-          {i.detail && <span className="text-[12px] text-encre-3">{i.detail}</span>}
-        </div>
-      ))}
+    <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
+      {indicateurs.map((i) => {
+        const t = TONS[i.ton ?? 'neutre']
+        return (
+          <div key={i.libelle} className="relative flex min-w-0 flex-col gap-2 overflow-hidden rounded-l border border-trait bg-surface px-[18px] pb-4 pt-[18px] shadow-douce">
+            <span className={cn('absolute inset-x-0 top-0 h-[3px]', t.barre)} aria-hidden="true" />
+            <span className="flex items-center gap-2 text-[12.5px] font-medium text-encre-2">
+              <IconeObjet icone={t.icone} taille="xs" />
+              {i.libelle}
+            </span>
+            <span className={cn('whitespace-nowrap font-titre text-[24px] font-bold tabular-nums tracking-[-0.02em]', t.valeur)}>{i.valeur}</span>
+            {i.detail && <span className="text-[12px] text-encre-3">{i.detail}</span>}
+          </div>
+        )
+      })}
     </div>
   )
 }

@@ -2,7 +2,9 @@ import Link from 'next/link'
 import { Chronometre, Simulateur } from '@/components/site/Interactif'
 import { CTA, PageSite } from '@/components/site/Site'
 import { classesBouton } from '@/components/ui/Bouton'
-import { Icone, type NomIcone } from '@/components/ui/Icone'
+import { Icone } from '@/components/ui/Icone'
+import { IconeObjet } from '@/components/ui/IconeObjet'
+import type { IconeNav } from '@/lib/navigation'
 import { cn } from '@/lib/cn'
 import { formatMontant } from '@/lib/format'
 import { OFFRES } from '@/lib/offres'
@@ -14,7 +16,7 @@ const LIGNES = [
   ['Impression de cartes', '500', '0,30 €', '150,00 €'],
 ] as const
 
-const FONCTIONS: Array<{ icone: NomIcone; titre: string; texte: string }> = [
+const FONCTIONS: Array<{ icone: IconeNav; titre: string; texte: string }> = [
   { icone: 'reforme', titre: 'Factur-X conforme, contrôlé', texte: 'Chaque facture est un PDF/A-3 avec son XML EN 16931, validé par les règles officielles avant de partir.' },
   { icone: 'recues', titre: 'Plateforme agréée et e-reporting', texte: 'Transmission, suivi du cycle de vie, factures fournisseurs reçues et e-reporting au même endroit.' },
   { icone: 'relances', titre: 'Relances automatiques', texte: 'Rappel avant l’échéance, relances graduées ensuite, facture jointe et lien de paiement. Vous ne courez plus après.' },
@@ -64,30 +66,60 @@ export function Accueil() {
   return (
     <PageSite>
       {/* Accroche */}
-      <section className="mx-auto grid max-w-[1120px] items-center gap-10 px-4 pb-14 pt-12 lg:grid-cols-[minmax(0,1fr)_480px] lg:pt-20">
-        <div className="flex flex-col gap-5">
-          <p className="surtitre">Réforme de la facturation électronique</p>
-          <h1 className="text-[40px] font-bold leading-[1.08] tracking-[-0.025em] sm:text-[52px]">Une facture conforme en 30 secondes.</h1>
-          <p className="max-w-[54ch] text-[18px] text-encre-2">
-            Pastille crée vos devis et factures, les transmet au format exigé en 2027 et relance vos clients. Vous facturez, la conformité suit.
-          </p>
-          <div className="flex flex-wrap items-center gap-3">
-            <Link href="/inscription" className={cn(classesBouton('primaire'), 'h-11 px-5 text-[15px]')}>
-              {CTA}
-            </Link>
-            <span className="text-[13.5px] text-encre-3">14 jours gratuits, sans carte bancaire</span>
+      <section className="zone-nuit fond-marque relative overflow-hidden">
+        <div className="relative mx-auto grid max-w-[1120px] items-center gap-10 px-4 pb-24 pt-12 lg:grid-cols-[minmax(0,1fr)_480px] lg:pb-28 lg:pt-20">
+          <div className="flex flex-col gap-5">
+            <p className="inline-flex w-fit items-center gap-2 rounded-full border border-trait-fort bg-surface px-3 py-1 text-[12.5px] font-semibold text-encre">
+              <span className="size-2 rounded-full bg-ciel" aria-hidden="true" />
+              Réforme de la facturation électronique 2026-2027
+            </p>
+            <h1 className="text-[40px] font-bold leading-[1.06] tracking-[-0.025em] text-encre sm:text-[56px]">
+              Une facture conforme <span className="text-accent">en 30 secondes.</span>
+            </h1>
+            <p className="max-w-[54ch] text-[18px] text-encre-2">
+              Pastille crée vos devis et factures, les transmet au format exigé en 2027 et relance vos clients. Vous facturez, la conformité suit.
+            </p>
+            <div className="flex flex-wrap items-center gap-3">
+              <Link
+                href="/inscription"
+                className="inline-flex h-12 items-center justify-center rounded-m bg-[#fff] px-6 text-[15.5px] font-bold text-[#04234d] shadow-haute transition-colors hover:bg-[#e6f1fc]"
+              >
+                {CTA}
+              </Link>
+              <Link href="/tarifs" className="inline-flex h-12 items-center justify-center rounded-m border border-trait-fort px-5 text-[15px] font-semibold text-encre hover:bg-survol">
+                Voir les tarifs
+              </Link>
+            </div>
+            <ul className="m-0 flex list-none flex-wrap gap-x-5 gap-y-2 p-0 text-[13.5px] text-encre-2">
+              {['14 jours gratuits, sans carte', 'Factur-X EN 16931', 'Données hébergées en UE'].map((x) => (
+                <li key={x} className="flex items-center gap-1.5">
+                  <Icone nom="coche" taille={15} className="text-accent" />
+                  {x}
+                </li>
+              ))}
+            </ul>
+          </div>
+          <div className="zone-normale">
+            <FactureAnimee />
           </div>
         </div>
-        <FactureAnimee />
+        <svg className="absolute inset-x-0 bottom-0 h-12 w-full text-fond lg:h-16" viewBox="0 0 1440 80" preserveAspectRatio="none" aria-hidden="true">
+          <path fill="currentColor" d="M0 50c240 30 480 30 720 10s480-50 720-20v40H0z" />
+        </svg>
       </section>
 
       {/* Urgence réelle */}
-      <section className="border-y border-trait bg-surface">
-        <div className="mx-auto flex max-w-[1120px] flex-wrap items-center justify-between gap-4 px-4 py-6">
-          <p className="text-[17px]">
-            Votre obligation d’émettre des factures électroniques commence dans <strong className="font-titre text-[26px] tabular-nums">{jours}</strong> jours.
-          </p>
-          <Link href="/facturation-electronique-2027" className="text-[14px] font-medium text-accent hover:underline">
+      <section className="mx-auto -mt-6 max-w-[1120px] px-4">
+        <div className="relative flex flex-wrap items-center justify-between gap-4 overflow-hidden rounded-xl border border-trait bg-surface px-5 py-5 shadow-haute sm:px-7">
+          <span className="absolute inset-y-0 left-0 w-1.5 bg-objet-reforme" aria-hidden="true" />
+          <div className="flex items-center gap-4">
+            <IconeObjet icone="reforme" taille="l" />
+            <p className="text-[17px]">
+              Votre obligation d’émettre des factures électroniques commence dans{' '}
+              <strong className="font-titre text-[28px] tabular-nums text-rose">{jours}</strong> jours.
+            </p>
+          </div>
+          <Link href="/facturation-electronique-2027" className={cn(classesBouton('secondaire'), 'h-10')}>
             Ce qui change, en clair
           </Link>
         </div>
@@ -107,13 +139,14 @@ export function Accueil() {
       </section>
 
       {/* Fonctionnalités */}
-      <section id="fonctionnalites" className="bg-surface-2 py-16">
+      <section id="fonctionnalites" className="py-16">
         <div className="mx-auto max-w-[1120px] px-4">
-          <h2 className="text-[30px] font-bold tracking-tight">Tout ce qu’exige la réforme, sans y penser</h2>
+          <p className="surtitre text-accent">Fonctionnalités</p>
+          <h2 className="mt-1 text-[32px] font-bold tracking-tight">Tout ce qu’exige la réforme, sans y penser</h2>
           <div className="mt-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             {FONCTIONS.map((f) => (
-              <div key={f.titre} className="flex flex-col gap-2 rounded-l border border-trait bg-surface p-5">
-                <Icone nom={f.icone} taille={20} className="text-accent" />
+              <div key={f.titre} className="flex flex-col gap-2.5 rounded-xl border border-trait bg-surface p-6 shadow-douce transition duration-200 hover:-translate-y-0.5 hover:shadow-haute">
+                <IconeObjet icone={f.icone} taille="m" />
                 <h3 className="text-[16px] font-semibold">{f.titre}</h3>
                 <p className="text-[14px] text-encre-2">{f.texte}</p>
               </div>
@@ -125,7 +158,7 @@ export function Accueil() {
       {/* Avant / après */}
       <section className="mx-auto max-w-[1120px] px-4 py-16">
         <h2 className="text-[30px] font-bold tracking-tight">Word et Excel, ou Pastille</h2>
-        <div role="region" aria-label="Comparatif" tabIndex={0} className="mt-6 overflow-x-auto rounded-l border border-trait bg-surface">
+        <div role="region" aria-label="Comparatif" tabIndex={0} className="mt-6 overflow-x-auto rounded-xl border border-trait bg-surface shadow-douce">
           <table className="w-full min-w-[560px] border-collapse text-[14px]">
             <thead>
               <tr className="bg-surface-2 text-left text-[12px] uppercase tracking-[0.05em] text-encre-3">
@@ -135,7 +168,7 @@ export function Accueil() {
                 <th scope="col" className="px-4 py-3 font-semibold">
                   Word, Excel
                 </th>
-                <th scope="col" className="px-4 py-3 font-semibold text-accent">
+                <th scope="col" className="bg-accent px-4 py-3 font-semibold text-sur-accent">
                   Pastille
                 </th>
               </tr>
@@ -147,7 +180,12 @@ export function Accueil() {
                     {c}
                   </th>
                   <td className="px-4 py-3 text-encre-3">{avant}</td>
-                  <td className="px-4 py-3 font-medium">{apres}</td>
+                  <td className="bg-accent-doux px-4 py-3 font-semibold">
+                    <span className="flex items-center gap-2">
+                      <Icone nom="coche" taille={15} className="shrink-0 text-ok" />
+                      {apres}
+                    </span>
+                  </td>
                 </tr>
               ))}
             </tbody>
@@ -187,9 +225,13 @@ export function Accueil() {
             </details>
           ))}
         </div>
-        <div className="mt-10 flex flex-col items-center gap-3 text-center">
-          <p className="text-[22px] font-semibold">Prêt avant le 1er septembre 2027.</p>
-          <Link href="/inscription" className={cn(classesBouton('primaire'), 'h-11 px-5 text-[15px]')}>
+        <div className="zone-nuit fond-marque mt-12 flex flex-col items-center gap-4 rounded-xl px-6 py-10 text-center shadow-haute">
+          <p className="text-[26px] font-bold text-encre">Prêt avant le 1er septembre 2027.</p>
+          <p className="max-w-[46ch] text-[15px] text-encre-2">Créez votre compte, ajoutez un client, émettez une facture conforme : tout tient dans les 14 jours d’essai.</p>
+          <Link
+            href="/inscription"
+            className="inline-flex h-12 items-center justify-center rounded-m bg-[#fff] px-6 text-[15.5px] font-bold text-[#04234d] shadow-haute transition-colors hover:bg-[#e6f1fc]"
+          >
             {CTA}
           </Link>
         </div>
@@ -200,7 +242,7 @@ export function Accueil() {
 
 export function Tarifs({ titre = 'Un prix simple, sans surprise' }: { titre?: string }) {
   return (
-    <section id="tarifs" className="bg-surface-2 py-16">
+    <section id="tarifs" className="border-y border-trait bg-surface-2 py-16">
       <div className="mx-auto max-w-[1120px] px-4">
         <h2 className="text-[30px] font-bold tracking-tight">{titre}</h2>
         <p className="mt-2 text-[15px] text-encre-2">Prix HT par mois et par entreprise. 14 jours d’essai gratuit sur l’offre Pro, sans carte bancaire.</p>
@@ -209,7 +251,8 @@ export function Tarifs({ titre = 'Un prix simple, sans surprise' }: { titre?: st
             const mise = o.code === 'pro'
             return (
               <div key={o.code} className={cn('relative flex flex-col gap-4 rounded-l border bg-surface p-6', mise ? 'border-accent shadow-haute md:-my-3 md:py-9' : 'border-trait')}>
-                {mise && <span className="absolute -top-3 left-6 rounded-full bg-accent px-3 py-1 text-[12px] font-semibold text-surface">Le plus choisi</span>}
+                {mise && <span className="lisere-marque absolute inset-x-0 top-0 h-1 rounded-t-l" aria-hidden="true" />}
+                {mise && <span className="absolute -top-3 left-6 rounded-full bg-accent px-3 py-1 text-[12px] font-semibold text-sur-accent shadow-douce">Le plus choisi</span>}
                 <div>
                   <h3 className="text-[18px] font-semibold">{o.nom}</h3>
                   <p className="text-[13.5px] text-encre-3">{o.cible}</p>

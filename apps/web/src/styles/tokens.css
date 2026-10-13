@@ -2,104 +2,192 @@
  * Tokens PASTILLE — source unique des couleurs, formes et ombres.
  * Clair sur :root, sombre via prefers-color-scheme (sauf data-theme="light")
  * ou data-theme="dark". Les composants n'utilisent jamais de couleur littérale.
+ *
+ * Direction : CRM lumineux. Bleu de marque vif pour les actions, bleu nuit pour la
+ * navigation, fond gris bleuté, et une couleur franche par catégorie (factures, devis,
+ * clients…) reprise dans la barre latérale, les en-têtes de page et les cartes.
  */
 :root {
-  --fond: #f4f4f1;
+  --fond: #f3f6fb;
   --surface: #ffffff;
-  --surface-2: #fafaf8;
-  --survol: #f1f1ed;
-  --encre: #16171b;
-  --encre-2: #585a61;
-  --encre-3: #6a6c73;
-  --trait: #e6e5e0;
-  --trait-fort: #d3d2cc;
-  --accent: #1f3a5f;
-  --accent-doux: #e9eef5;
+  --surface-2: #f7f9fc;
+  --survol: #edf3fb;
+  --encre: #16192a;
+  --encre-2: #4c5566;
+  --encre-3: #5d6778;
+  --trait: #dfe5ee;
+  --trait-fort: #c7d1de;
+  --accent: #0b6bcb;
+  --accent-fort: #084f98;
+  --accent-doux: #e6f1fc;
+  --sur-accent: #ffffff;
   --marque: #ff5a36;
 
-  --ok: #23774f;
-  --ok-doux: #e5f1ea;
-  --info: #2f5e9e;
-  --info-doux: #e7eef8;
-  --attente: #86650f;
-  --attente-doux: #f5eed8;
-  --alerte: #b23c12;
-  --alerte-doux: #f8e6de;
-  --avoir: #5e3fa3;
-  --avoir-doux: #eee9f7;
-  --neutre: #5d5f66;
-  --neutre-doux: #eeeeea;
+  /* Navigation et bandeaux : bleu nuit, dégradé vers le bleu de marque. */
+  --nuit: #04234d;
+  --nuit-2: #0a3a78;
+  --ciel: #48a8ff;
+
+  --ok: #1f7a46;
+  --ok-doux: #e3f4ea;
+  --info: #0b6bcb;
+  --info-doux: #e6f1fc;
+  --attente: #8a5a00;
+  --attente-doux: #fff1d6;
+  --alerte: #c23934;
+  --alerte-doux: #fde8e6;
+  --avoir: #7a3fd1;
+  --avoir-doux: #f1eafd;
+  --neutre: #5b6575;
+  --neutre-doux: #eef1f5;
+
+  /* Une couleur par catégorie, sous des icônes blanches (contraste 4,5:1 minimum). */
+  --objet-tableau: #d4386c;
+  --objet-facture: #0b6bcb;
+  --objet-devis: #c05400;
+  --objet-avoir: #7a3fd1;
+  --objet-recurrence: #0a7e78;
+  --objet-clients: #4f5bd5;
+  --objet-relances: #c23934;
+  --objet-catalogue: #2a7d3f;
+  --objet-paiements: #08765f;
+  --objet-recues: #1b5fa8;
+  --objet-ereporting: #8a3ab9;
+  --objet-reforme: #b0175f;
+  --objet-exports: #516173;
+  --objet-reglages: #4a5568;
+  --objet-aide: #0e6f98;
+  /* Texte dans la couleur de la réforme (compte à rebours), lisible dans les deux thèmes. */
+  --rose: #b0175f;
 
   /* La facture reste un document papier, quel que soit le thème. */
   --facture-fond: #ffffff;
   --facture-encre: #16171b;
   --facture-trait: #e6e5e0;
 
-  --ombre: 0 1px 2px rgb(16 17 20 / 0.05), 0 1px 1px rgb(16 17 20 / 0.03);
-  --ombre-haute: 0 12px 32px -12px rgb(16 17 20 / 0.18), 0 2px 6px rgb(16 17 20 / 0.05);
-  --voile: rgb(10 10 12 / 0.35);
+  --ombre: 0 1px 2px rgb(14 33 64 / 0.06), 0 1px 3px rgb(14 33 64 / 0.05);
+  --ombre-haute: 0 18px 40px -14px rgb(14 33 64 / 0.28), 0 3px 8px rgb(14 33 64 / 0.06);
+  --voile: rgb(6 18 38 / 0.45);
 
   color-scheme: light;
 }
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme='light']) {
-    --fond: #0f1012;
-    --surface: #17181b;
-    --surface-2: #131417;
-    --survol: #1e1f23;
-    --encre: #ededea;
-    --encre-2: #a3a5ac;
-    --encre-3: #85878e;
-    --trait: #26272c;
-    --trait-fort: #35363c;
-    --accent: #9db7dd;
-    --accent-doux: #1a2432;
-    --ok: #6cc59a;
-    --ok-doux: #14271e;
-    --info: #8db1e6;
-    --info-doux: #15202e;
-    --attente: #e0be5e;
-    --attente-doux: #29230f;
-    --alerte: #f0875a;
-    --alerte-doux: #2d1a12;
-    --avoir: #b9a2ec;
-    --avoir-doux: #221b32;
-    --neutre: #a3a5ac;
-    --neutre-doux: #222327;
-    --ombre: 0 1px 2px rgb(0 0 0 / 0.4);
-    --ombre-haute: 0 16px 40px -12px rgb(0 0 0 / 0.6);
-    --voile: rgb(0 0 0 / 0.55);
+    --fond: #0b1221;
+    --surface: #121b2d;
+    --surface-2: #0f1727;
+    --survol: #1a2539;
+    --encre: #e9eef6;
+    --encre-2: #a8b3c5;
+    --encre-3: #8e9bb0;
+    --trait: #223049;
+    --trait-fort: #30415f;
+    --accent: #5aaeff;
+    --accent-fort: #8cc6ff;
+    --accent-doux: #10243f;
+    --sur-accent: #071528;
+    --nuit: #071530;
+    --nuit-2: #0c2a55;
+    --ciel: #5aaeff;
+    --rose: #ff7eb6;
+    --ok: #5fcf8e;
+    --ok-doux: #10291c;
+    --info: #6cb6ff;
+    --info-doux: #10243f;
+    --attente: #f2c25b;
+    --attente-doux: #2c2310;
+    --alerte: #ff8a80;
+    --alerte-doux: #331716;
+    --avoir: #c3a2ff;
+    --avoir-doux: #23183a;
+    --neutre: #a8b3c5;
+    --neutre-doux: #1d2638;
+    --ombre: 0 1px 2px rgb(0 0 0 / 0.45);
+    --ombre-haute: 0 18px 42px -12px rgb(0 0 0 / 0.65);
+    --voile: rgb(0 0 0 / 0.6);
     color-scheme: dark;
   }
 }
 
 :root[data-theme='dark'] {
-  --fond: #0f1012;
-  --surface: #17181b;
-  --surface-2: #131417;
-  --survol: #1e1f23;
-  --encre: #ededea;
-  --encre-2: #a3a5ac;
-  --encre-3: #85878e;
-  --trait: #26272c;
-  --trait-fort: #35363c;
-  --accent: #9db7dd;
-  --accent-doux: #1a2432;
-  --ok: #6cc59a;
-  --ok-doux: #14271e;
-  --info: #8db1e6;
-  --info-doux: #15202e;
-  --attente: #e0be5e;
-  --attente-doux: #29230f;
-  --alerte: #f0875a;
-  --alerte-doux: #2d1a12;
-  --avoir: #b9a2ec;
-  --avoir-doux: #221b32;
-  --neutre: #a3a5ac;
-  --neutre-doux: #222327;
-  --ombre: 0 1px 2px rgb(0 0 0 / 0.4);
-  --ombre-haute: 0 16px 40px -12px rgb(0 0 0 / 0.6);
-  --voile: rgb(0 0 0 / 0.55);
+  --fond: #0b1221;
+  --surface: #121b2d;
+  --surface-2: #0f1727;
+  --survol: #1a2539;
+  --encre: #e9eef6;
+  --encre-2: #a8b3c5;
+  --encre-3: #8e9bb0;
+  --trait: #223049;
+  --trait-fort: #30415f;
+  --accent: #5aaeff;
+  --accent-fort: #8cc6ff;
+  --accent-doux: #10243f;
+  --sur-accent: #071528;
+  --nuit: #071530;
+  --nuit-2: #0c2a55;
+  --ciel: #5aaeff;
+  --rose: #ff7eb6;
+  --ok: #5fcf8e;
+  --ok-doux: #10291c;
+  --info: #6cb6ff;
+  --info-doux: #10243f;
+  --attente: #f2c25b;
+  --attente-doux: #2c2310;
+  --alerte: #ff8a80;
+  --alerte-doux: #331716;
+  --avoir: #c3a2ff;
+  --avoir-doux: #23183a;
+  --neutre: #a8b3c5;
+  --neutre-doux: #1d2638;
+  --ombre: 0 1px 2px rgb(0 0 0 / 0.45);
+  --ombre-haute: 0 18px 42px -12px rgb(0 0 0 / 0.65);
+  --voile: rgb(0 0 0 / 0.6);
   color-scheme: dark;
+}
+
+/*
+ * Copies des couleurs du thème courant, calculées sur :root : elles permettent de
+ * rétablir le thème normal à l'intérieur d'une zone sombre (menu ouvert dans la barre latérale).
+ */
+:root {
+  --surface-racine: var(--surface);
+  --surface-2-racine: var(--surface-2);
+  --survol-racine: var(--survol);
+  --encre-racine: var(--encre);
+  --encre-2-racine: var(--encre-2);
+  --encre-3-racine: var(--encre-3);
+  --trait-racine: var(--trait);
+  --trait-fort-racine: var(--trait-fort);
+  --accent-racine: var(--accent);
+  --accent-doux-racine: var(--accent-doux);
+}
+
+/* Zone bleu nuit (barre latérale, bandeaux) : les composants s'y adaptent seuls. */
+.zone-nuit {
+  --surface: rgb(255 255 255 / 0.08);
+  --surface-2: rgb(255 255 255 / 0.05);
+  --survol: rgb(255 255 255 / 0.1);
+  --encre: #ffffff;
+  --encre-2: #d3e0f2;
+  --encre-3: #a9bdd8;
+  --trait: rgb(255 255 255 / 0.14);
+  --trait-fort: rgb(255 255 255 / 0.26);
+  --accent: #8fcbff;
+  --accent-doux: rgb(143 203 255 / 0.16);
+  color: var(--encre);
+}
+
+.zone-normale {
+  --surface: var(--surface-racine);
+  --surface-2: var(--surface-2-racine);
+  --survol: var(--survol-racine);
+  --encre: var(--encre-racine);
+  --encre-2: var(--encre-2-racine);
+  --encre-3: var(--encre-3-racine);
+  --trait: var(--trait-racine);
+  --trait-fort: var(--trait-fort-racine);
+  --accent: var(--accent-racine);
+  --accent-doux: var(--accent-doux-racine);
+  color: var(--encre);
 }

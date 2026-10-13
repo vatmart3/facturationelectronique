@@ -7,6 +7,8 @@ import { seDeconnecter } from '@/app/(auth)/actions'
 import { Logo } from '@/components/marque/Logo'
 import { Avatar } from '@/components/ui/Avatar'
 import { Icone } from '@/components/ui/Icone'
+import { IconeObjet } from '@/components/ui/IconeObjet'
+import { classesBouton } from '@/components/ui/Bouton'
 import { Kbd } from '@/components/ui/Message'
 import { initiales } from '@/lib/avatar'
 import { cn } from '@/lib/cn'
@@ -77,7 +79,7 @@ export function CoqueApp({ organisation, organisations, utilisateur, bandeau, an
       <aside
         id="barre-laterale"
         className={cn(
-          'fixed inset-y-0 left-0 z-40 flex w-[248px] flex-col gap-3.5 overflow-y-auto border-r border-trait bg-surface-2 px-2.5 py-3.5',
+          'zone-nuit fond-nuit fixed inset-y-0 left-0 z-40 flex w-[252px] flex-col gap-3.5 overflow-y-auto px-2.5 py-3.5',
           'transition-transform duration-200 lg:sticky lg:top-0 lg:h-dvh lg:translate-x-0',
           menuOuvert ? 'translate-x-0' : '-translate-x-full',
         )}
@@ -99,7 +101,7 @@ export function CoqueApp({ organisation, organisations, utilisateur, bandeau, an
         <nav aria-label="Navigation principale" className="flex flex-col gap-3">
           {NAVIGATION.map((groupe) => (
             <div key={groupe.titre} className="flex flex-col gap-px">
-              <p className="surtitre px-2.5 pb-1 pt-1.5">{groupe.titre}</p>
+              <p className="surtitre px-2.5 pb-1.5 pt-1.5 text-encre-3">{groupe.titre}</p>
               {groupe.entrees.map((e) => (
                 <LienNav key={e.chemin} entree={e} slug={organisation.slug} actif={courante?.entree.chemin === e.chemin} />
               ))}
@@ -129,12 +131,13 @@ export function CoqueApp({ organisation, organisations, utilisateur, bandeau, an
               </button>
             </form>
           </div>
-          <Logo className="px-2.5 pt-1 text-[14px] text-encre-2" />
+          <Logo className="px-2.5 pt-1 text-[14px] text-encre" />
         </div>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b border-trait bg-surface px-4 sm:px-6">
+        <header className="sticky top-0 z-20 flex h-14 shrink-0 items-center gap-3 border-b border-trait bg-surface px-4 shadow-douce sm:px-6">
+          <span className="lisere-marque absolute inset-x-0 top-0 h-[3px]" aria-hidden="true" />
           <button
             type="button"
             className="grid size-8 place-items-center rounded-m text-encre-2 hover:bg-survol lg:hidden"
@@ -149,7 +152,10 @@ export function CoqueApp({ organisation, organisations, utilisateur, bandeau, an
             <ol className="flex items-center gap-2 overflow-hidden whitespace-nowrap text-[13.5px] text-encre-3">
               {courante ? (
                 <>
-                  <li className="hidden sm:block">{courante.groupe}</li>
+                  <li className="hidden items-center gap-2 sm:flex">
+                    <IconeObjet icone={courante.entree.icone} taille="xs" />
+                    {courante.groupe}
+                  </li>
                   <li className="hidden text-trait-fort sm:block" aria-hidden="true">
                     /
                   </li>
@@ -173,7 +179,7 @@ export function CoqueApp({ organisation, organisations, utilisateur, bandeau, an
           {facturation && (
             <Link
               href={`/${organisation.slug}/ventes/factures/nouvelle`}
-              className="inline-flex h-[34px] items-center gap-2 whitespace-nowrap rounded-m border border-encre bg-encre px-3.5 text-[13.5px] font-semibold text-surface shadow-douce hover:border-encre-2 hover:bg-encre-2"
+              className={cn(classesBouton('primaire'), 'gap-2')}
             >
               <Icone nom="plus" taille={15} />
               <span className="hidden sm:inline">Nouvelle facture</span>
@@ -209,13 +215,13 @@ function LienNav({ entree, slug, actif }: { entree: EntreeNav; slug: string; act
       href={`/${slug}/${entree.chemin}`}
       aria-current={actif ? 'page' : undefined}
       className={cn(
-        'flex h-8 items-center gap-2.5 whitespace-nowrap rounded-m px-2.5 text-[13.5px]',
+        'relative flex h-9 items-center gap-2.5 whitespace-nowrap rounded-m px-2 text-[13.5px] transition-colors',
         actif
-          ? 'bg-surface font-semibold text-encre shadow-douce outline outline-1 outline-trait'
+          ? 'bg-[rgb(255_255_255/0.16)] font-semibold text-encre before:absolute before:inset-y-1.5 before:-left-2.5 before:w-[3px] before:rounded-r-full before:bg-ciel'
           : 'font-medium text-encre-2 hover:bg-survol hover:text-encre',
       )}
     >
-      <Icone nom={entree.icone} className={actif ? 'text-accent' : 'text-encre-3'} />
+      <IconeObjet icone={entree.icone} taille="xs" className={actif ? '' : 'opacity-90'} />
       <span className="truncate">{entree.libelle}</span>
     </Link>
   )
@@ -256,7 +262,7 @@ function SelecteurOrganisation({
         aria-expanded={ouvert}
         className="flex w-full items-center gap-2.5 rounded-m border border-trait bg-surface p-2 text-left hover:border-trait-fort"
       >
-        <span className="grid size-[30px] shrink-0 place-items-center rounded-[7px] bg-encre font-titre text-[12px] font-bold text-surface">
+        <span className="grid size-[32px] shrink-0 place-items-center rounded-[8px] bg-linear-to-br from-ciel to-accent font-titre text-[12px] font-bold text-[#fff] shadow-douce">
           {initiales(organisation.nom)}
         </span>
         <span className="flex min-w-0 flex-1 flex-col leading-tight">
@@ -266,7 +272,7 @@ function SelecteurOrganisation({
         <Icone nom="chevrons" taille={14} className="text-encre-3" />
       </button>
       {ouvert && (
-        <div role="menu" className="absolute inset-x-0 top-[calc(100%+6px)] z-50 flex flex-col gap-px rounded-l border border-trait bg-surface p-1.5 shadow-haute">
+        <div role="menu" className="zone-normale absolute inset-x-0 top-[calc(100%+6px)] z-50 flex flex-col gap-px rounded-l border border-trait bg-surface p-1.5 shadow-haute">
           <p className="surtitre px-2 pb-1 pt-1">Entreprises</p>
           {organisations.map((o) => (
             <Link
