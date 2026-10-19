@@ -54,6 +54,18 @@ export default async function DocumentPublic({ params }: { params: Promise<{ tok
             </div>
           </div>
           <aside className="flex flex-col gap-4 self-start">
+            {doc.lienPaiement && reste > 0 && (
+              <section className="flex flex-col gap-2 rounded-l border border-trait bg-surface p-4">
+                <h2 className="text-[15px] font-semibold">Régler cette facture</h2>
+                <p className="text-[13.5px] text-encre-2">
+                  Reste à payer : <strong className="text-encre">{formatMontant(reste, d.currency)}</strong>
+                </p>
+                <a href={doc.lienPaiement} target="_blank" rel="noopener noreferrer" className={classesBouton('primaire')}>
+                  Payer en ligne
+                </a>
+                <p className="text-[12px] text-encre-3">Paiement sécurisé sur la page de votre fournisseur. Rappelez le numéro {doc.numero} si une référence est demandée.</p>
+              </section>
+            )}
             {devisOuvert && <FormulaireSignature token={token} montant={formatMontant(doc.totaux.netAPayer, doc.devise)} />}
             {signature && (
               <section className="rounded-l border border-trait bg-surface p-4 text-[13.5px]">
@@ -70,7 +82,7 @@ export default async function DocumentPublic({ params }: { params: Promise<{ tok
                   <dt className="text-encre-3">Montant</dt>
                   <dd className="num m-0 font-semibold">{formatMontant(reste, doc.devise)}</dd>
                   <dt className="text-encre-3">IBAN</dt>
-                  <dd className="num m-0 break-all">{formatIban(doc.vendeur.iban)}</dd>
+                  <dd className="num m-0 min-w-0 whitespace-normal break-words">{formatIban(doc.vendeur.iban)}</dd>
                   {doc.vendeur.bic && (
                     <>
                       <dt className="text-encre-3">BIC</dt>

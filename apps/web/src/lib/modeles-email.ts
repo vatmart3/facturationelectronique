@@ -20,6 +20,8 @@ interface Contexte {
   devise: string
   echeance: string | null
   lien: string | null
+  /** Lien de paiement en ligne de l'entreprise, ajouté aux factures et aux relances. */
+  lienPaiement?: string | null
   signature: string | null
 }
 
@@ -52,6 +54,7 @@ export function emailEnvoi(c: Contexte, message: string | null): Email {
         : c.type === 'avoir'
           ? `Veuillez trouver ci-joint l’avoir n° ${c.numero} d’un montant de ${montant}.`
           : `Veuillez trouver ci-joint ${NOMS[c.type]} n° ${c.numero} d’un montant de ${montant}${c.echeance ? `, à régler au plus tard le ${dateCourte(c.echeance)}` : ''}.`),
+    ...((c.type === 'facture' || c.type === 'acompte') && c.lienPaiement ? [`Vous pouvez la régler en ligne : ${c.lienPaiement}`] : []),
     'Nous restons à votre disposition pour toute question.',
   ]
   const lien = c.lien ? { texte: c.type === 'devis' ? 'Consulter et accepter le devis' : `Consulter ${NOMS[c.type]}`, url: c.lien } : null
@@ -74,7 +77,7 @@ export function emailRelance(c: Contexte, retard: number): Email {
             `Second rappel : facture ${c.numero} échue depuis ${retard} jours`,
             `Malgré notre précédent rappel, la facture n° ${c.numero} d’un montant de ${montant}, échue le ${echeance}, n’est toujours pas réglée. Nous vous remercions de procéder au règlement dans les meilleurs délais. Pour rappel, une indemnité forfaitaire de 40 € pour frais de recouvrement et des pénalités de retard sont exigibles.`,
           ]
-  const p = ['Bonjour,', corps, 'Bien cordialement,']
+  const p = ['Bonjour,', corps, ...(c.lienPaiement ? [`Règlement en ligne : ${c.lienPaiement}`] : []), 'Bien cordialement,']
   const lien = c.lien ? { texte: 'Consulter et régler la facture', url: c.lien } : null
   return {
     sujet: `${sujet} · ${c.entreprise}`,

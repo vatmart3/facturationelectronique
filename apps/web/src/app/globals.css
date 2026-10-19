@@ -24,24 +24,6 @@
   --color-accent-fort: var(--accent-fort);
   --color-sur-accent: var(--sur-accent);
   --color-nuit: var(--nuit);
-  --color-nuit-2: var(--nuit-2);
-  --color-ciel: var(--ciel);
-  --color-rose: var(--rose);
-  --color-objet-tableau: var(--objet-tableau);
-  --color-objet-facture: var(--objet-facture);
-  --color-objet-devis: var(--objet-devis);
-  --color-objet-avoir: var(--objet-avoir);
-  --color-objet-recurrence: var(--objet-recurrence);
-  --color-objet-clients: var(--objet-clients);
-  --color-objet-relances: var(--objet-relances);
-  --color-objet-catalogue: var(--objet-catalogue);
-  --color-objet-paiements: var(--objet-paiements);
-  --color-objet-recues: var(--objet-recues);
-  --color-objet-ereporting: var(--objet-ereporting);
-  --color-objet-reforme: var(--objet-reforme);
-  --color-objet-exports: var(--objet-exports);
-  --color-objet-reglages: var(--objet-reglages);
-  --color-objet-aide: var(--objet-aide);
   --color-marque: var(--marque);
   --color-ok: var(--ok);
   --color-ok-doux: var(--ok-doux);
@@ -104,7 +86,7 @@
 }
 
 @utility num {
-  font-family: var(--font-chiffre);
+  font-family: var(--font-texte);
   font-variant-numeric: tabular-nums;
   font-size: 13px;
   white-space: nowrap;
@@ -191,21 +173,8 @@
   }
 }
 
-/* Fonds de marque : bleu nuit vers bleu vif (barre latérale, bandeaux, accroche). */
+/* Aplat sombre (panneau de connexion). */
 @utility fond-nuit {
   background-color: var(--nuit);
-  background-image: linear-gradient(180deg, var(--nuit) 0%, color-mix(in srgb, var(--nuit) 70%, var(--nuit-2)) 100%);
 }
 
-@utility fond-marque {
-  background-color: var(--nuit);
-  background-image:
-    radial-gradient(60% 80% at 85% 10%, color-mix(in srgb, var(--ciel) 45%, transparent) 0%, transparent 60%),
-    radial-gradient(40% 60% at 10% 100%, color-mix(in srgb, var(--accent) 40%, transparent) 0%, transparent 70%),
-    linear-gradient(120deg, var(--nuit) 0%, var(--nuit-2) 55%, color-mix(in srgb, var(--nuit-2) 60%, var(--accent)) 100%);
-}
-
-/* Liseré de marque en haut des en-têtes. */
-@utility lisere-marque {
-  background-image: linear-gradient(90deg, var(--nuit-2), var(--accent), var(--ciel), var(--objet-tableau));
-}

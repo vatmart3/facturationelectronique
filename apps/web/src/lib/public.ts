@@ -22,6 +22,7 @@ export async function chargerPublic(token: string): Promise<DocumentPublic | nul
     origine: { number: string; issue_date: string } | null
     mentions: Record<string, string> | null
     signature: DocumentPublic['signature']
+    paiement_en_ligne: string | null
   } | null
   if (!r?.document) return null
   const d = r.document
@@ -37,6 +38,7 @@ export async function chargerPublic(token: string): Promise<DocumentPublic | nul
     origine: r.origine ? { numero: r.origine.number, date: r.origine.issue_date } : null,
     empreinte: d.content_hash,
     paye: d.status === 'paye',
+    lienPaiement: r.paiement_en_ligne ?? null,
   })
   return imprimable ? { document: d, imprimable, signature: r.signature } : null
 }

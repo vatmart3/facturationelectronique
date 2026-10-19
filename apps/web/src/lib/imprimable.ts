@@ -87,6 +87,7 @@ export interface DocumentImprimable {
   police: 'grotesque' | 'serif'
   empreinte: string | null
   paye: boolean
+  lienPaiement: string | null
 }
 
 export const TITRES: Record<TypeDocument, { fr: string; en: string }> = {
@@ -107,6 +108,8 @@ interface Entree {
   origine?: { numero: string; date: string } | null
   empreinte?: string | null
   paye?: boolean
+  /** Lien de paiement en ligne de l'entreprise (affiché seulement sur une facture à régler). */
+  lienPaiement?: string | null
 }
 
 export function construireImprimable(e: Entree): DocumentImprimable | null {
@@ -172,6 +175,7 @@ export function construireImprimable(e: Entree): DocumentImprimable | null {
     police: e.vendeur.invoice_font,
     empreinte: e.empreinte ?? null,
     paye: e.paye ?? false,
+    lienPaiement: (d.type === 'facture' || d.type === 'acompte') && !e.brouillon && !e.paye ? (e.lienPaiement ?? null) : null,
   }
 }
 

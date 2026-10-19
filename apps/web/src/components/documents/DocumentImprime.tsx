@@ -31,6 +31,7 @@ const LIBELLES = {
     sur: 'sur',
     exonere: 'Exonéré',
     paiement: 'Paiement',
+    enLigne: 'Paiement en ligne',
     conditions: 'Conditions',
     brouillon: 'Brouillon · sans valeur',
     paye: 'Payée',
@@ -62,6 +63,7 @@ const LIBELLES = {
     sur: 'on',
     exonere: 'Exempt',
     paiement: 'Payment',
+    enLigne: 'Pay online',
     conditions: 'Terms',
     brouillon: 'Draft · not valid',
     paye: 'Paid',
@@ -235,6 +237,14 @@ export function DocumentImprime({ doc, logoUrl, className }: { doc: DocumentImpr
               virement · IBAN <span className="tabular-nums">{formatIban(v.iban)}</span>
               {v.bic ? ` · BIC ${v.bic}` : ''}
               {doc.numero ? ` · référence ${doc.numero}` : ''}
+            </p>
+          )}
+          {doc.lienPaiement && (
+            <p>
+              <span className="font-semibold text-[#1d1f24]">{t.enLigne} : </span>
+              <a href={doc.lienPaiement} className="break-all text-[#1d1f24] underline">
+                {doc.lienPaiement}
+              </a>
             </p>
           )}
         </div>

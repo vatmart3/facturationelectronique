@@ -14,14 +14,17 @@ export const metadata: Metadata = {
 }
 
 /** Visiteur : page d'accueil. Utilisateur connecté : son tableau de bord. */
-export default async function Racine() {
+export default async function Racine({ searchParams }: { searchParams: Promise<{ raccourci?: string }> }) {
+  const { raccourci } = await searchParams
   if (lireConfigSupabase()) {
     let destination: string | null = null
     try {
       const utilisateur = await lireUtilisateur()
       if (utilisateur) {
         const organisations = await listerOrganisations()
-        destination = organisations[0] ? `/${organisations[0].slug}/tableau-de-bord` : '/bienvenue'
+        // Raccourci de l'application installée : « Nouvelle facture » ouvre directement l'éditeur.
+        const page = raccourci === 'facture' ? 'ventes/factures/nouvelle' : 'tableau-de-bord'
+        destination = organisations[0] ? `/${organisations[0].slug}/${page}` : '/bienvenue'
       }
     } catch (e) {
       // Supabase injoignable : la page d'accueil reste affichée.

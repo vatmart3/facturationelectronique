@@ -3,35 +3,32 @@
  * Clair sur :root, sombre via prefers-color-scheme (sauf data-theme="light")
  * ou data-theme="dark". Les composants n'utilisent jamais de couleur littérale.
  *
- * Direction : CRM lumineux. Bleu de marque vif pour les actions, bleu nuit pour la
- * navigation, fond gris bleuté, et une couleur franche par catégorie (factures, devis,
- * clients…) reprise dans la barre latérale, les en-têtes de page et les cartes.
+ * Direction : sobre et professionnel. Fonds blancs et gris neutres, un seul bleu pour les
+ * actions et l'élément actif ; la couleur est réservée aux statuts (payée, en retard…).
  */
 :root {
-  --fond: #f3f6fb;
+  --fond: #f7f8fa;
   --surface: #ffffff;
-  --surface-2: #f7f9fc;
-  --survol: #edf3fb;
-  --encre: #16192a;
-  --encre-2: #4c5566;
-  --encre-3: #5d6778;
-  --trait: #dfe5ee;
-  --trait-fort: #c7d1de;
-  --accent: #0b6bcb;
-  --accent-fort: #084f98;
-  --accent-doux: #e6f1fc;
+  --surface-2: #fafbfc;
+  --survol: #f2f4f7;
+  --encre: #101828;
+  --encre-2: #475467;
+  --encre-3: #5b6676;
+  --trait: #e4e7ec;
+  --trait-fort: #d0d5dd;
+  --accent: #1d5fc4;
+  --accent-fort: #164a9a;
+  --accent-doux: #edf3fc;
   --sur-accent: #ffffff;
   --marque: #ff5a36;
 
-  /* Navigation et bandeaux : bleu nuit, dégradé vers le bleu de marque. */
-  --nuit: #04234d;
-  --nuit-2: #0a3a78;
-  --ciel: #48a8ff;
+  /* Bandeaux sombres (panneau de connexion). */
+  --nuit: #0f1d33;
 
   --ok: #1f7a46;
   --ok-doux: #e3f4ea;
-  --info: #0b6bcb;
-  --info-doux: #e6f1fc;
+  --info: #1d5fc4;
+  --info-doux: #edf3fc;
   --attente: #8a5a00;
   --attente-doux: #fff1d6;
   --alerte: #c23934;
@@ -41,32 +38,14 @@
   --neutre: #5b6575;
   --neutre-doux: #eef1f5;
 
-  /* Une couleur par catégorie, sous des icônes blanches (contraste 4,5:1 minimum). */
-  --objet-tableau: #d4386c;
-  --objet-facture: #0b6bcb;
-  --objet-devis: #c05400;
-  --objet-avoir: #7a3fd1;
-  --objet-recurrence: #0a7e78;
-  --objet-clients: #4f5bd5;
-  --objet-relances: #c23934;
-  --objet-catalogue: #2a7d3f;
-  --objet-paiements: #08765f;
-  --objet-recues: #1b5fa8;
-  --objet-ereporting: #8a3ab9;
-  --objet-reforme: #b0175f;
-  --objet-exports: #516173;
-  --objet-reglages: #4a5568;
-  --objet-aide: #0e6f98;
-  /* Texte dans la couleur de la réforme (compte à rebours), lisible dans les deux thèmes. */
-  --rose: #b0175f;
 
   /* La facture reste un document papier, quel que soit le thème. */
   --facture-fond: #ffffff;
   --facture-encre: #16171b;
   --facture-trait: #e6e5e0;
 
-  --ombre: 0 1px 2px rgb(14 33 64 / 0.06), 0 1px 3px rgb(14 33 64 / 0.05);
-  --ombre-haute: 0 18px 40px -14px rgb(14 33 64 / 0.28), 0 3px 8px rgb(14 33 64 / 0.06);
+  --ombre: 0 1px 2px rgb(16 24 40 / 0.05);
+  --ombre-haute: 0 12px 32px -12px rgb(16 24 40 / 0.18), 0 2px 6px rgb(16 24 40 / 0.05);
   --voile: rgb(6 18 38 / 0.45);
 
   color-scheme: light;
@@ -88,9 +67,6 @@
     --accent-doux: #10243f;
     --sur-accent: #071528;
     --nuit: #071530;
-    --nuit-2: #0c2a55;
-    --ciel: #5aaeff;
-    --rose: #ff7eb6;
     --ok: #5fcf8e;
     --ok-doux: #10291c;
     --info: #6cb6ff;
@@ -125,9 +101,6 @@
   --accent-doux: #10243f;
   --sur-accent: #071528;
   --nuit: #071530;
-  --nuit-2: #0c2a55;
-  --ciel: #5aaeff;
-  --rose: #ff7eb6;
   --ok: #5fcf8e;
   --ok-doux: #10291c;
   --info: #6cb6ff;
@@ -146,24 +119,7 @@
   color-scheme: dark;
 }
 
-/*
- * Copies des couleurs du thème courant, calculées sur :root : elles permettent de
- * rétablir le thème normal à l'intérieur d'une zone sombre (menu ouvert dans la barre latérale).
- */
-:root {
-  --surface-racine: var(--surface);
-  --surface-2-racine: var(--surface-2);
-  --survol-racine: var(--survol);
-  --encre-racine: var(--encre);
-  --encre-2-racine: var(--encre-2);
-  --encre-3-racine: var(--encre-3);
-  --trait-racine: var(--trait);
-  --trait-fort-racine: var(--trait-fort);
-  --accent-racine: var(--accent);
-  --accent-doux-racine: var(--accent-doux);
-}
-
-/* Zone bleu nuit (barre latérale, bandeaux) : les composants s'y adaptent seuls. */
+/* Zone sombre (panneau de connexion) : les composants s'y adaptent seuls. */
 .zone-nuit {
   --surface: rgb(255 255 255 / 0.08);
   --surface-2: rgb(255 255 255 / 0.05);
@@ -175,19 +131,5 @@
   --trait-fort: rgb(255 255 255 / 0.26);
   --accent: #8fcbff;
   --accent-doux: rgb(143 203 255 / 0.16);
-  color: var(--encre);
-}
-
-.zone-normale {
-  --surface: var(--surface-racine);
-  --surface-2: var(--surface-2-racine);
-  --survol: var(--survol-racine);
-  --encre: var(--encre-racine);
-  --encre-2: var(--encre-2-racine);
-  --encre-3: var(--encre-3-racine);
-  --trait: var(--trait-racine);
-  --trait-fort: var(--trait-fort-racine);
-  --accent: var(--accent-racine);
-  --accent-doux: var(--accent-doux-racine);
   color: var(--encre);
 }

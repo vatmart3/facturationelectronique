@@ -64,6 +64,7 @@ export async function envoyerDocument(
     devise: d.currency,
     echeance: d.due_date,
     lien: await lienPublic(supabase, id),
+    lienPaiement: imprimable.lienPaiement,
     signature: organisation.reminder_signature,
   }
   const email = options.relance ? emailRelance(contexte, options.relance.retard) : emailEnvoi(contexte, options.message ?? null)

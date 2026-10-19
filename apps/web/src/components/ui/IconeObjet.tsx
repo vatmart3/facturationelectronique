@@ -10,16 +10,14 @@ const TAILLES = {
 } as const
 
 /**
- * Pastille colorée d'une catégorie (factures, devis, clients…), à la manière des icônes
- * d'objets d'un CRM : chaque catégorie garde la même couleur partout. Décorative.
+ * Icône de catégorie (factures, devis, clients…) dans un carré bleu pâle. Décorative.
  */
 export function IconeObjet({ icone, taille = 's', className }: { icone: IconeNav; taille?: keyof typeof TAILLES; className?: string }) {
   const t = TAILLES[taille]
   return (
     <span
       aria-hidden="true"
-      className={cn('inline-grid shrink-0 place-items-center text-[#fff] shadow-douce', t.boite, className)}
-      style={{ backgroundColor: `var(--objet-${icone})` }}
+      className={cn('inline-grid shrink-0 place-items-center bg-accent-doux text-accent', t.boite, className)}
     >
       <Icone nom={icone} taille={t.icone} />
     </span>

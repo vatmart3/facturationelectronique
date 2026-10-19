@@ -37,3 +37,14 @@ describe('emails', () => {
     expect(emailRemerciement(c).sujet).toBe('Paiement reçu · facture F-2026-0042')
   })
 })
+
+describe('lien de paiement en ligne dans les emails', () => {
+  it('ajouté à l’envoi d’une facture et aux relances, jamais à un devis', () => {
+    const avecLien = { ...c, lienPaiement: 'https://buy.stripe.com/abc' }
+    expect(emailEnvoi(avecLien, null).texte).toContain('régler en ligne : https://buy.stripe.com/abc')
+    expect(emailRelance(avecLien, 5).texte).toContain('Règlement en ligne : https://buy.stripe.com/abc')
+    expect(emailEnvoi({ ...avecLien, type: 'devis' }, null).texte).not.toContain('buy.stripe.com')
+    expect(emailEnvoi(c, null).texte).not.toContain('en ligne :')
+  })
+})
+

@@ -118,6 +118,7 @@ export interface DonneesFacturation {
   invoice_font: 'grotesque' | 'serif'
   footer_text: string | null
   terms_text: string | null
+  payment_link: string | null
 }
 
 type ConditionsPaiementOrg = 'reception' | '15j' | '30j' | '30jfm' | '45jfm' | '60j'
@@ -139,6 +140,8 @@ export function validerFacturation(lire: Lecteur): { donnees: DonneesFacturation
   if (!MODELES_FACTURE.some((m) => m.valeur === modele)) erreurs.invoice_template = 'Modèle inconnu.'
   const penalites = lire('late_penalty_terms')
   if (!penalites) erreurs.late_penalty_terms = 'Le taux des pénalités de retard est une mention obligatoire.'
+  const lienPaiement = lire('payment_link')
+  if (lienPaiement && !lienPaiementValide(lienPaiement)) erreurs.payment_link = 'Adresse invalide : elle doit commencer par https:// (lien fourni par Stripe, SumUp, PayPal…).'
   return {
     erreurs,
     donnees: {
@@ -153,6 +156,18 @@ export function validerFacturation(lire: Lecteur): { donnees: DonneesFacturation
       invoice_font: lire('invoice_font') === 'serif' ? 'serif' : 'grotesque',
       footer_text: lire('footer_text').slice(0, 600) || null,
       terms_text: lire('terms_text').slice(0, 20000) || null,
+      payment_link: lienPaiement || null,
     },
+  }
+}
+
+/** Lien de paiement en ligne : adresse https complète, sans espace, 500 caractères au plus. */
+export function lienPaiementValide(lien: string): boolean {
+  if (lien.length > 500 || /\s/.test(lien)) return false
+  try {
+    const u = new URL(lien)
+    return u.protocol === 'https:' && u.hostname.includes('.')
+  } catch {
+    return false
   }
 }

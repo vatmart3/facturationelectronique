@@ -112,6 +112,7 @@ export async function imprimableDepuis(supabase: ClientSupabase, organisation: O
     origine: origine.data?.number ? { numero: origine.data.number, date: origine.data.issue_date } : null,
     empreinte: d.content_hash,
     paye: d.status === 'paye',
+    lienPaiement: d.status === 'annule' ? null : organisation.payment_link,
   })
 }
 

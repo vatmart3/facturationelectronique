@@ -115,8 +115,8 @@ class Rendu {
 }
 
 const LIBELLES = {
-  fr: { date: 'Date', echeance: 'Échéance', validite: 'Valable jusqu’au', periode: 'Période', prestation: 'Prestation', commande: 'Bon de commande', client: 'FACTURÉ À', destinataire: 'DESTINATAIRE', designation: 'DÉSIGNATION', qte: 'QTÉ', pu: 'PU HT', tva: 'TVA', total: 'TOTAL HT', totalLignes: 'Total HT des lignes', remise: 'Remise', acomptes: 'Acompte déduit', totalHt: 'Total HT', totalTtc: 'Total TTC', net: 'Net à payer', sur: 'sur', exonere: 'Exonéré', conditions: 'Conditions', paiement: 'Paiement', brouillon: 'BROUILLON', paye: 'PAYÉE', empreinte: 'Empreinte SHA-256', page: 'Page' },
-  en: { date: 'Date', echeance: 'Due date', validite: 'Valid until', periode: 'Period', prestation: 'Service date', commande: 'Purchase order', client: 'BILL TO', destinataire: 'TO', designation: 'DESCRIPTION', qte: 'QTY', pu: 'UNIT PRICE', tva: 'VAT', total: 'AMOUNT', totalLignes: 'Lines total', remise: 'Discount', acomptes: 'Deposit deducted', totalHt: 'Total excl. VAT', totalTtc: 'Total incl. VAT', net: 'Amount due', sur: 'on', exonere: 'Exempt', conditions: 'Terms', paiement: 'Payment', brouillon: 'DRAFT', paye: 'PAID', empreinte: 'SHA-256 fingerprint', page: 'Page' },
+  fr: { date: 'Date', echeance: 'Échéance', validite: 'Valable jusqu’au', periode: 'Période', prestation: 'Prestation', commande: 'Bon de commande', client: 'FACTURÉ À', destinataire: 'DESTINATAIRE', designation: 'DÉSIGNATION', qte: 'QTÉ', pu: 'PU HT', tva: 'TVA', total: 'TOTAL HT', totalLignes: 'Total HT des lignes', remise: 'Remise', acomptes: 'Acompte déduit', totalHt: 'Total HT', totalTtc: 'Total TTC', net: 'Net à payer', sur: 'sur', exonere: 'Exonéré', conditions: 'Conditions', paiement: 'Paiement', enLigne: 'Paiement en ligne', brouillon: 'BROUILLON', paye: 'PAYÉE', empreinte: 'Empreinte SHA-256', page: 'Page' },
+  en: { date: 'Date', echeance: 'Due date', validite: 'Valid until', periode: 'Period', prestation: 'Service date', commande: 'Purchase order', client: 'BILL TO', destinataire: 'TO', designation: 'DESCRIPTION', qte: 'QTY', pu: 'UNIT PRICE', tva: 'VAT', total: 'AMOUNT', totalLignes: 'Lines total', remise: 'Discount', acomptes: 'Deposit deducted', totalHt: 'Total excl. VAT', totalTtc: 'Total incl. VAT', net: 'Amount due', sur: 'on', exonere: 'Exempt', conditions: 'Terms', paiement: 'Payment', enLigne: 'Pay online', brouillon: 'DRAFT', paye: 'PAID', empreinte: 'SHA-256 fingerprint', page: 'Page' },
 }
 
 /** Charge utile du QR code de virement SEPA (EPC069-12). */
@@ -279,6 +279,9 @@ async function dessiner(doc: DocumentImprimable, rendu: Rendu, logo: PDFImage | 
   if (doc.type !== 'devis' && doc.type !== 'avoir' && v.iban) {
     const texte = `${t.paiement} : virement · IBAN ${formatIban(v.iban)}${v.bic ? ` · BIC ${v.bic}` : ''}${doc.numero ? ` · référence ${doc.numero}` : ''}`
     for (const l of rendu.envelopper(texte, 8, largeurGauche)) gauche.push([l, { taille: 8, couleur: GRIS }])
+  }
+  if (doc.lienPaiement) {
+    for (const l of rendu.envelopper(`${t.enLigne} : ${doc.lienPaiement}`, 8, largeurGauche)) gauche.push([l, { taille: 8, couleur: ENCRE }])
   }
   const besoin = Math.max(hauteurTotaux, gauche.length * 11, qr ? 80 : 0) + 10
   if (y - besoin < M + 70) {

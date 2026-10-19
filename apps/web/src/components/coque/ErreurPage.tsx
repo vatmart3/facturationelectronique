@@ -2,6 +2,7 @@
 
 import Link from 'next/link'
 import { useEffect } from 'react'
+import { signalerErreur } from '@/app/actions/erreurs'
 import { Bouton, classesBouton } from '@/components/ui/Bouton'
 import { Icone } from '@/components/ui/Icone'
 
@@ -9,6 +10,7 @@ import { Icone } from '@/components/ui/Icone'
 export function ErreurPage({ erreur, reessayer, retour = '/' }: { erreur: Error & { digest?: string }; reessayer: () => void; retour?: string }) {
   useEffect(() => {
     console.error(erreur)
+    void signalerErreur({ message: erreur.message, digest: erreur.digest, chemin: window.location.pathname })
   }, [erreur])
   return (
     <div className="mx-auto flex w-full max-w-[520px] flex-col items-center gap-4 rounded-xl border border-trait bg-surface px-6 py-10 text-center shadow-douce">

@@ -65,7 +65,7 @@ export function Chronometre({ cible = 27 }: { cible?: number }) {
     }
   }, [cible])
   return (
-    <span ref={zone} className="num inline-block min-w-[3ch] text-right" aria-label={`${cible} secondes`}>
+    <span ref={zone} className="inline-block min-w-[2ch] text-right tabular-nums" aria-label={`${cible} secondes`}>
       {valeur}
     </span>
   )

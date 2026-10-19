@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { validerFacturation, validerIdentite } from './organisation'
+import { lienPaiementValide, validerFacturation, validerIdentite } from './organisation'
 
 function lecteur(valeurs: Record<string, string>) {
   return (cle: string) => (valeurs[cle] ?? '').trim()
@@ -98,5 +98,18 @@ describe('validerFacturation', () => {
     expect(Object.keys(erreurs).sort()).toEqual(
       ['accent_color', 'default_payment_terms', 'invoice_number_format', 'invoice_template', 'late_penalty_terms', 'quote_number_format'].sort(),
     )
+  })
+})
+
+describe('lien de paiement en ligne', () => {
+  it('accepte une adresse https complète', () => {
+    expect(lienPaiementValide('https://buy.stripe.com/abc123')).toBe(true)
+    expect(lienPaiementValide('https://paypal.me/atelierlumen')).toBe(true)
+  })
+  it('refuse le http, les espaces et le texte libre', () => {
+    expect(lienPaiementValide('http://buy.stripe.com/abc')).toBe(false)
+    expect(lienPaiementValide('https://buy.stripe.com/a b')).toBe(false)
+    expect(lienPaiementValide('payez par virement')).toBe(false)
+    expect(lienPaiementValide(`https://exemple.fr/${'x'.repeat(500)}`)).toBe(false)
   })
 })

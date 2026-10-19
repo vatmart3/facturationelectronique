@@ -131,6 +131,18 @@ export function FormulaireFacturation({ organisation, modifiable }: { organisati
                   classeCadre="sm:col-span-2"
                   aide="L’indemnité forfaitaire de 40 € pour frais de recouvrement est ajoutée automatiquement aux factures entre professionnels."
                 />
+                <Champ
+                  libelle="Lien de paiement en ligne"
+                  name="payment_link"
+                  type="url"
+                  inputMode="url"
+                  placeholder="https://buy.stripe.com/…"
+                  defaultValue={o.payment_link ?? ''}
+                  erreur={e.payment_link}
+                  classeCadre="sm:col-span-2"
+                  facultatif
+                  aide="Lien Stripe, SumUp, PayPal ou de votre banque. Il s’affiche sur les factures à régler, sur leur page en ligne et dans les relances."
+                />
               </div>
             </PanneauCorps>
           </Panneau>

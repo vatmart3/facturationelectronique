@@ -136,7 +136,7 @@ export default async function TableauDeBord({ params }: { params: Promise<{ org:
                     {c.libelle} : {formatMontant(c.ht)}
                   </span>
                   <span
-                    className={cn('w-full rounded-t-[4px]', c.mois === jour.slice(0, 7) ? 'bg-linear-to-t from-accent to-ciel' : 'bg-ciel/35')}
+                    className={cn('w-full rounded-t-[4px]', c.mois === jour.slice(0, 7) ? 'bg-accent' : 'bg-trait-fort')}
                     style={{ height: `${Math.max(2, (Math.max(0, c.ht) / maxCa) * 100)}%` }}
                     aria-hidden="true"
                   />

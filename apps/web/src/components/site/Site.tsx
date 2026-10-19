@@ -7,8 +7,7 @@ export const CTA = 'Créer ma première facture'
 
 export function EnTeteSite() {
   return (
-    <header className="sticky top-0 z-30 border-b border-trait bg-surface/95 shadow-douce backdrop-blur">
-      <span className="lisere-marque absolute inset-x-0 top-0 h-[3px]" aria-hidden="true" />
+    <header className="sticky top-0 z-30 border-b border-trait bg-surface/95 backdrop-blur">
       <div className="mx-auto flex h-16 max-w-[1120px] items-center gap-6 px-4">
         <Link href="/" aria-label="Pastille, accueil">
           <Logo />
@@ -44,7 +43,7 @@ export function EnTeteSite() {
 
 export function PiedSite() {
   return (
-    <footer className="zone-nuit fond-nuit">
+    <footer className="border-t border-trait bg-surface-2">
       <div className="mx-auto grid max-w-[1120px] gap-8 px-4 py-10 text-[13.5px] sm:grid-cols-4">
         <div className="flex flex-col gap-2">
           <Logo />
@@ -112,9 +111,9 @@ export function PageSite({ children }: { children: ReactNode }) {
 export function Article({ titre, chapo, children, maj }: { titre: string; chapo?: string; children: ReactNode; maj?: string }) {
   return (
     <article>
-      <header className="zone-nuit fond-marque">
-        <div className="mx-auto max-w-[760px] px-4 pb-12 pt-14">
-          <h1 className="text-[34px] font-bold leading-tight tracking-tight text-encre sm:text-[40px]">{titre}</h1>
+      <header className="border-b border-trait bg-surface">
+        <div className="mx-auto max-w-[760px] px-4 pb-10 pt-12">
+          <h1 className="text-[34px] font-bold leading-tight tracking-tight sm:text-[38px]">{titre}</h1>
           {chapo && <p className="mt-3 text-[17px] text-encre-2">{chapo}</p>}
           {maj && <p className="mt-2 text-[13px] text-encre-3">Mise à jour : {maj}</p>}
         </div>
@@ -128,8 +127,7 @@ export function Article({ titre, chapo, children, maj }: { titre: string; chapo?
 
 export function AppelAction({ titre = 'Prêt pour la réforme en 5 minutes', texte = 'Essai gratuit de 14 jours, sans carte bancaire.' }: { titre?: string; texte?: string }) {
   return (
-    <section className="relative mx-auto my-10 flex max-w-[760px] flex-col items-start gap-3 overflow-hidden rounded-xl border border-trait bg-surface p-6 shadow-haute sm:flex-row sm:items-center sm:justify-between">
-      <span className="lisere-marque absolute inset-x-0 top-0 h-1" aria-hidden="true" />
+    <section className="mx-auto my-10 flex max-w-[760px] flex-col items-start gap-3 rounded-l border border-trait bg-surface p-6 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <p className="text-[18px] font-semibold">{titre}</p>
         <p className="text-[14px] text-encre-2">{texte}</p>

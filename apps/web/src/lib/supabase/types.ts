@@ -58,6 +58,7 @@ export type OrganizationRow = {
   pa_mandate_at: string | null
   ereporting_frequency: 'decade' | 'mois' | 'bimestre'
   closed_at: string | null
+  payment_link: string | null
   created_by: string | null
   created_at: string
   updated_at: string

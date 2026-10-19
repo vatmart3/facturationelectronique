@@ -5,7 +5,7 @@ import { Logo } from '@/components/marque/Logo'
 export default function LayoutAuth({ children }: { children: ReactNode }) {
   return (
     <div className="grid min-h-dvh lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-      <aside className="zone-nuit fond-marque relative hidden flex-col justify-between overflow-hidden p-10 lg:flex">
+      <aside className="zone-nuit fond-nuit hidden flex-col justify-between p-10 lg:flex">
         <Logo />
         <div className="flex max-w-md flex-col gap-5">
           <p className="surtitre text-accent">Facturation électronique · réforme 2026-2027</p>
@@ -14,15 +14,15 @@ export default function LayoutAuth({ children }: { children: ReactNode }) {
           </p>
           <ul className="flex flex-col gap-2.5 text-[14px] text-encre-2">
             <li className="flex gap-2.5">
-              <span className="mt-1.5 size-2.5 shrink-0 rounded-full bg-ciel shadow-[0_0_0_4px_rgb(72_168_255/0.2)]" aria-hidden="true" />
+              <span className="mt-2 size-1.5 shrink-0 rounded-full bg-accent" aria-hidden="true" />
               Factur-X, UBL et CII, transmis via une plateforme agréée.
             </li>
             <li className="flex gap-2.5">
-              <span className="mt-1.5 size-2.5 shrink-0 rounded-full bg-ciel shadow-[0_0_0_4px_rgb(72_168_255/0.2)]" aria-hidden="true" />
+              <span className="mt-2 size-1.5 shrink-0 rounded-full bg-accent" aria-hidden="true" />
               Numérotation continue, factures émises inaltérables, archivage 10 ans.
             </li>
             <li className="flex gap-2.5">
-              <span className="mt-1.5 size-2.5 shrink-0 rounded-full bg-ciel shadow-[0_0_0_4px_rgb(72_168_255/0.2)]" aria-hidden="true" />
+              <span className="mt-2 size-1.5 shrink-0 rounded-full bg-accent" aria-hidden="true" />
               Données hébergées dans l’Union européenne.
             </li>
           </ul>
