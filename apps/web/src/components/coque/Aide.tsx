@@ -20,7 +20,7 @@ export function BulleAide({ slug }: { slug: string }) {
     }
   }, [ouvert])
   return (
-    <div ref={zone} className="fixed bottom-4 left-4 z-30 lg:left-[264px] print:hidden">
+    <div ref={zone} className="fixed bottom-4 left-4 z-30 print:hidden">
       {ouvert && (
         <div role="dialog" aria-label="Aide" className="mb-2 flex w-[290px] flex-col gap-3 rounded-l border border-trait bg-surface p-4 text-[13px] shadow-haute">
           <p className="text-[14px] font-semibold">Besoin d’un coup de main ?</p>

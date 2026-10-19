@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Anneau } from '@/components/ui/Anneau'
 import { EnTeteVue } from '@/components/ui/EnTeteVue'
 import { Icone } from '@/components/ui/Icone'
 import { Indicateurs } from '@/components/ui/Indicateurs'
@@ -17,6 +18,8 @@ import { EMISSION_PME_TPE, joursAvant } from '@/lib/reforme'
 import { chargerContexte } from '@/lib/session'
 
 export const metadata: Metadata = { title: 'Tableau de bord' }
+
+const euroCourt = new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', notation: 'compact', maximumFractionDigits: 1 })
 
 export default async function TableauDeBord({ params }: { params: Promise<{ org: string }> }) {
   const { org } = await params
@@ -56,6 +59,22 @@ export default async function TableauDeBord({ params }: { params: Promise<{ org:
     .filter((d) => d.type !== 'devis' && d.type !== 'avoir' && ['emis', 'envoye', 'partiellement_paye'].includes(d.status) && d.due_date && d.due_date < jour)
     .sort((a, b) => (a.due_date! < b.due_date! ? -1 : 1))
     .slice(0, 5)
+  const annee = ajouterJours(jour, -365)
+  const factures = documents.filter((d) => (d.type === 'facture' || d.type === 'acompte') && d.status !== 'annule' && (d.status === 'brouillon' || d.issue_date >= annee || ['emis', 'envoye', 'partiellement_paye'].includes(d.status)))
+  const ouverte = (d: (typeof factures)[number]) => ['emis', 'envoye', 'partiellement_paye'].includes(d.status)
+  const echue = (d: (typeof factures)[number]) => ouverte(d) && Boolean(d.due_date && d.due_date < jour)
+  const part = (libelle: string, couleur: string, liste: typeof factures, montant: (d: (typeof factures)[number]) => number) => ({
+    libelle,
+    couleur,
+    valeur: liste.length,
+    montant: liste.reduce((s, d) => s + montant(d), 0),
+  })
+  const repartition = [
+    part('Payées', 'var(--ok)', factures.filter((d) => d.status === 'paye'), (d) => d.total_ttc),
+    part('À encaisser', 'var(--accent)', factures.filter((d) => ouverte(d) && !echue(d)), (d) => d.amount_due - d.amount_paid),
+    part('En retard', 'var(--alerte)', factures.filter(echue), (d) => d.amount_due - d.amount_paid),
+    part('Brouillons', 'var(--trait-fort)', factures.filter((d) => d.status === 'brouillon'), (d) => d.total_ttc),
+  ]
   const emise = documents.some((d) => d.type !== 'devis' && d.status !== 'brouillon')
 
   const etapes = [
@@ -125,27 +144,62 @@ export default async function TableauDeBord({ params }: { params: Promise<{ org:
           },
         ]}
       />
-      <div className="grid gap-[18px] lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <Panneau>
           <PanneauTete titre="Chiffre d’affaires HT" description="12 derniers mois, avoirs déduits" />
           <PanneauCorps>
-            <ol className="m-0 flex h-44 list-none items-end gap-1.5 p-0" aria-label="Chiffre d’affaires mensuel">
-              {t.caMensuel.map((c) => (
-                <li key={c.mois} className="flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1" title={`${c.libelle} : ${formatMontant(c.ht)}`}>
-                  <span className="sr-only">
-                    {c.libelle} : {formatMontant(c.ht)}
+            <div className="relative pl-12">
+              <div className="pointer-events-none absolute inset-x-0 top-0 bottom-5 flex flex-col justify-between" aria-hidden="true">
+                {[0, 1, 2, 3].map((i) => (
+                  <span key={i} className="relative border-t border-dashed border-trait">
+                    <span className="absolute left-0 top-0 w-10 -translate-y-1/2 bg-surface text-right text-[10.5px] tabular-nums text-encre-3">
+                      {euroCourt.format((maxCa * (3 - i)) / 300)}
+                    </span>
                   </span>
-                  <span
-                    className={cn('w-full rounded-t-[4px]', c.mois === jour.slice(0, 7) ? 'bg-accent' : 'bg-trait-fort')}
-                    style={{ height: `${Math.max(2, (Math.max(0, c.ht) / maxCa) * 100)}%` }}
-                    aria-hidden="true"
-                  />
-                  <span className="text-[10.5px] text-encre-3" aria-hidden="true">
-                    {c.libelle}
-                  </span>
-                </li>
-              ))}
-            </ol>
+                ))}
+              </div>
+              <ol className="relative m-0 flex h-48 list-none items-end gap-1.5 p-0" aria-label="Chiffre d’affaires mensuel">
+                {t.caMensuel.map((c) => (
+                  <li key={c.mois} className="group flex h-full min-w-0 flex-1 flex-col items-center justify-end gap-1" title={`${c.libelle} : ${formatMontant(c.ht)}`}>
+                    <span className="sr-only">
+                      {c.libelle} : {formatMontant(c.ht)}
+                    </span>
+                    <span
+                      className={cn('w-full max-w-9 rounded-t-[3px] transition-colors', c.mois === jour.slice(0, 7) ? 'bg-accent' : 'bg-accent/45 group-hover:bg-accent/70')}
+                      style={{ height: `calc(${Math.max(1, (Math.max(0, c.ht) / maxCa) * 100)}% - 20px)` }}
+                      aria-hidden="true"
+                    />
+                    <span className="h-4 text-[10.5px] leading-4 text-encre-3" aria-hidden="true">
+                      {c.libelle}
+                    </span>
+                  </li>
+                ))}
+              </ol>
+            </div>
+          </PanneauCorps>
+        </Panneau>
+        <Panneau>
+          <PanneauTete titre="Répartition des factures" description="Factures et acomptes des 12 derniers mois" actions={<Link href={`/${org}/ventes/factures`} className="text-[13px] text-accent hover:underline">Factures</Link>} />
+          <PanneauCorps>
+            <Anneau
+              total={repartition.reduce((s, p) => s + p.valeur, 0)}
+              unite="factures"
+              parts={repartition.map((p) => ({ ...p, detail: p.montant > 0 ? formatMontant(p.montant) : undefined }))}
+            />
+          </PanneauCorps>
+        </Panneau>
+      </div>
+      <div className="grid gap-4 lg:grid-cols-3">
+        <Panneau>
+          <PanneauTete titre="Prévision d’encaissement" description="Reste dû des factures ouvertes" />
+          <PanneauCorps>
+            <ListeCles
+              lignes={[
+                ['Échu ou sous 30 jours', <span key="30" className="num">{formatMontant(t.prevision.j30)}</span>],
+                ['De 31 à 60 jours', <span key="60" className="num">{formatMontant(t.prevision.j60)}</span>],
+                ['De 61 à 90 jours', <span key="90" className="num">{formatMontant(t.prevision.j90)}</span>],
+              ]}
+            />
           </PanneauCorps>
         </Panneau>
         <Panneau>
@@ -171,20 +225,6 @@ export default async function TableauDeBord({ params }: { params: Promise<{ org:
                 {t.devisEnAttente.nombre} devis en attente de réponse · {formatMontant(t.devisEnAttente.montant)}
               </Link>
             )}
-          </PanneauCorps>
-        </Panneau>
-      </div>
-      <div className="grid gap-[18px] lg:grid-cols-2">
-        <Panneau>
-          <PanneauTete titre="Prévision d’encaissement" description="Reste dû des factures ouvertes, selon leur échéance" />
-          <PanneauCorps>
-            <ListeCles
-              lignes={[
-                ['Échu ou sous 30 jours', <span key="30" className="num">{formatMontant(t.prevision.j30)}</span>],
-                ['De 31 à 60 jours', <span key="60" className="num">{formatMontant(t.prevision.j60)}</span>],
-                ['De 61 à 90 jours', <span key="90" className="num">{formatMontant(t.prevision.j90)}</span>],
-              ]}
-            />
           </PanneauCorps>
         </Panneau>
         <Panneau>
@@ -218,7 +258,7 @@ export default async function TableauDeBord({ params }: { params: Promise<{ org:
           </ul>
         </Panneau>
       )}
-      <div className="grid gap-[18px] lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
+      <div className="grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
         <Panneau>
           <PanneauTete
             titre="Mise en route"

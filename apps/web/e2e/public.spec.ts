@@ -104,16 +104,19 @@ test.describe('pages publiques', () => {
 })
 
 test.describe('coque applicative', () => {
-  test('affiche les catégories et la palette de commande', async ({ page, isMobile }) => {
+  test('affiche les onglets (ou le menu) et la palette de commande', async ({ page, isMobile }) => {
     await page.goto('/systeme/coque')
     await expect(page.getByRole('heading', { level: 1, name: 'Clients' })).toBeVisible()
 
+    const nav = page.getByRole('navigation', { name: 'Navigation principale' })
     if (isMobile) {
       await page.getByRole('button', { name: 'Ouvrir le menu' }).click()
-    }
-    const nav = page.getByRole('navigation', { name: 'Navigation principale' })
-    for (const groupe of ['Pilotage', 'Ventes', 'Relation client', 'Facturation électronique', 'Comptabilité']) {
-      await expect(nav.getByText(groupe, { exact: true })).toBeVisible()
+      for (const groupe of ['Pilotage', 'Ventes', 'Relation client', 'Facturation électronique', 'Comptabilité']) {
+        await expect(nav.getByText(groupe, { exact: true })).toBeVisible()
+      }
+    } else {
+      await nav.getByRole('button', { name: 'E-facturation' }).click()
+      await expect(page.getByRole('menuitem', { name: /Réforme 2027/ })).toHaveAttribute('href', '/demo/e-facturation/reforme')
     }
     await expect(nav.getByRole('link', { name: 'Factures', exact: true })).toHaveAttribute('href', '/demo/ventes/factures')
 

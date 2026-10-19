@@ -8,6 +8,7 @@ export type NomIcone =
   | 'chevrons'
   | 'chevron-gauche'
   | 'chevron-bas'
+  | 'lanceur'
   | 'deconnexion'
   | 'menu'
   | 'fermer'
@@ -37,6 +38,7 @@ const TRACES: Record<NomIcone, string> = {
   plus: 'M8 3v10M3 8h10',
   chevrons: 'M5 6l3-3 3 3M5 10l3 3 3-3',
   'chevron-bas': 'M4.5 6.5 8 10l3.5-3.5',
+  lanceur: 'M3 3h2v2H3zM7 3h2v2H7zM11 3h2v2h-2zM3 7h2v2H3zM7 7h2v2H7zM11 7h2v2h-2zM3 11h2v2H3zM7 11h2v2H7zM11 11h2v2h-2z',
   'chevron-gauche': 'M10 3.5 5.5 8l4.5 4.5',
   deconnexion: 'M9.5 3H4v10h5.5M7.5 8H14M11.5 5.5 14 8l-2.5 2.5',
   menu: 'M2.5 4.5h11M2.5 8h11M2.5 11.5h11',

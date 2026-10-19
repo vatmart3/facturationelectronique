@@ -75,10 +75,10 @@ export function Accueil() {
               Pastille crée vos devis et factures, les transmet au format exigé en 2027 et relance vos clients. Vous facturez, la conformité suit.
             </p>
             <div className="flex flex-wrap items-center gap-3">
-              <Link href="/inscription" className={cn(classesBouton('primaire'), 'h-11 px-5 text-[15px]')}>
+              <Link href="/inscription" className={classesBouton('primaire', 'l')}>
                 {CTA}
               </Link>
-              <Link href="/tarifs" className={cn(classesBouton('secondaire'), 'h-11 px-5 text-[15px]')}>
+              <Link href="/tarifs" className={classesBouton('secondaire', 'l')}>
                 Voir les tarifs
               </Link>
             </div>
@@ -211,7 +211,7 @@ export function Accueil() {
         <div className="mt-12 flex flex-col items-center gap-3 rounded-l border border-trait bg-surface px-6 py-10 text-center">
           <p className="text-[24px] font-bold">Prêt avant le 1er septembre 2027.</p>
           <p className="max-w-[46ch] text-[15px] text-encre-2">Créez votre compte, ajoutez un client, émettez une facture conforme : tout tient dans les 14 jours d’essai.</p>
-          <Link href="/inscription" className={cn(classesBouton('primaire'), 'mt-1 h-11 px-5 text-[15px]')}>
+          <Link href="/inscription" className={cn(classesBouton('primaire', 'l'), 'mt-1')}>
             {CTA}
           </Link>
         </div>
@@ -248,7 +248,7 @@ export function Tarifs({ titre = 'Un prix simple, sans surprise' }: { titre?: st
                     </li>
                   ))}
                 </ul>
-                <Link href="/inscription" className={cn(classesBouton(mise ? 'primaire' : 'secondaire'), 'h-10')}>
+                <Link href="/inscription" className={classesBouton(mise ? 'primaire' : 'secondaire')}>
                   {mise ? CTA : 'Essayer gratuitement'}
                 </Link>
               </div>

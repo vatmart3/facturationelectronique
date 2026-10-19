@@ -4,18 +4,20 @@ import { cn } from '@/lib/cn'
 import { Icone, type NomIcone } from './Icone'
 
 export type VarianteBouton = 'primaire' | 'secondaire' | 'fantome' | 'danger'
-export type TailleBouton = 's' | 'm'
+export type TailleBouton = 's' | 'compact' | 'm' | 'l'
 
 const VARIANTES: Record<VarianteBouton, string> = {
-  primaire: 'bg-accent text-sur-accent border-accent hover:bg-accent-fort hover:border-accent-fort shadow-douce',
-  secondaire: 'bg-surface text-encre border-trait-fort hover:bg-survol shadow-douce',
+  primaire: 'bg-accent text-sur-accent border-accent hover:bg-accent-fort hover:border-accent-fort',
+  secondaire: 'bg-surface text-accent border-trait-fort hover:bg-survol hover:text-accent-fort',
   fantome: 'bg-transparent text-encre-2 border-transparent hover:bg-survol hover:text-encre',
-  danger: 'bg-surface text-alerte border-trait-fort hover:bg-alerte-doux shadow-douce',
+  danger: 'bg-surface text-alerte border-trait-fort hover:bg-alerte-doux',
 }
 
 const TAILLES: Record<TailleBouton, string> = {
   s: 'h-7 px-2.5 text-[12.5px] gap-1.5',
+  compact: 'h-8 px-3 text-[13.5px] gap-1.5',
   m: 'h-[34px] px-3.5 text-[13.5px] gap-2',
+  l: 'h-11 px-5 text-[15px] gap-2',
 }
 
 export function classesBouton(variante: VarianteBouton = 'secondaire', taille: TailleBouton = 'm') {

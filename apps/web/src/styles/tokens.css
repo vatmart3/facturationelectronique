@@ -3,32 +3,53 @@
  * Clair sur :root, sombre via prefers-color-scheme (sauf data-theme="light")
  * ou data-theme="dark". Les composants n'utilisent jamais de couleur littérale.
  *
- * Direction : sobre et professionnel. Fonds blancs et gris neutres, un seul bleu pour les
- * actions et l'élément actif ; la couleur est réservée aux statuts (payée, en retard…).
+ * Direction : CRM façon Salesforce Lightning. Fond gris clair avec bandeau bleu en haut des
+ * pages, cartes blanches à bord fin, bleu de marque pour les actions, une icône colorée par
+ * objet (factures, devis, clients…) ; les autres couleurs sont réservées aux statuts.
  */
 :root {
-  --fond: #f7f8fa;
+  --fond: #f3f3f3;
   --surface: #ffffff;
-  --surface-2: #fafbfc;
-  --survol: #f2f4f7;
-  --encre: #101828;
-  --encre-2: #475467;
-  --encre-3: #5b6676;
-  --trait: #e4e7ec;
-  --trait-fort: #d0d5dd;
-  --accent: #1d5fc4;
-  --accent-fort: #164a9a;
-  --accent-doux: #edf3fc;
+  --surface-2: #fafaf9;
+  --survol: #f3f6fa;
+  --encre: #181818;
+  --encre-2: #444444;
+  --encre-3: #5c5c5c;
+  --trait: #dddbda;
+  --trait-fort: #c9c7c5;
+  --accent: #0b6bcb;
+  --accent-fort: #014486;
+  --accent-doux: #eef4ff;
   --sur-accent: #ffffff;
   --marque: #ff5a36;
 
+  /* Bandeau bleu clair derrière le haut des pages (fond Lightning). */
+  --bandeau: #cfe2f7;
+
+  /* Icônes d'objets (factures, devis, clients…) : teintes Lightning, glyphe blanc. */
+  --objet-tableau: #ef6e64;
+  --objet-facture: #5a95dd;
+  --objet-devis: #6dad3a;
+  --objet-avoir: #9a7ee6;
+  --objet-recurrence: #2bb3a8;
+  --objet-clients: #7f8de1;
+  --objet-relances: #f38a5f;
+  --objet-catalogue: #b781d3;
+  --objet-paiements: #3fb46a;
+  --objet-recues: #3c97dd;
+  --objet-ereporting: #27b5c4;
+  --objet-reforme: #f4a536;
+  --objet-exports: #54698d;
+  --objet-reglages: #706e6b;
+  --objet-aide: #3c97dd;
+
   /* Bandeaux sombres (panneau de connexion). */
-  --nuit: #0f1d33;
+  --nuit: #032d60;
 
   --ok: #1f7a46;
   --ok-doux: #e3f4ea;
-  --info: #1d5fc4;
-  --info-doux: #edf3fc;
+  --info: #0b6bcb;
+  --info-doux: #eef4ff;
   --attente: #8a5a00;
   --attente-doux: #fff1d6;
   --alerte: #c23934;
@@ -44,7 +65,7 @@
   --facture-encre: #16171b;
   --facture-trait: #e6e5e0;
 
-  --ombre: 0 1px 2px rgb(16 24 40 / 0.05);
+  --ombre: 0 2px 2px rgb(0 0 0 / 0.06);
   --ombre-haute: 0 12px 32px -12px rgb(16 24 40 / 0.18), 0 2px 6px rgb(16 24 40 / 0.05);
   --voile: rgb(6 18 38 / 0.45);
 
@@ -67,6 +88,7 @@
     --accent-doux: #10243f;
     --sur-accent: #071528;
     --nuit: #071530;
+    --bandeau: #12243f;
     --ok: #5fcf8e;
     --ok-doux: #10291c;
     --info: #6cb6ff;
@@ -101,6 +123,7 @@
   --accent-doux: #10243f;
   --sur-accent: #071528;
   --nuit: #071530;
+  --bandeau: #12243f;
   --ok: #5fcf8e;
   --ok-doux: #10291c;
   --info: #6cb6ff;

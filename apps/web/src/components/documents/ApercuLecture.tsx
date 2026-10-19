@@ -7,13 +7,16 @@ import { StatutPa } from '@/components/plateforme/StatutPa'
 import { STATUTS, type Evenement } from '@/lib/pa/cycle'
 import { classesBouton } from '@/components/ui/Bouton'
 import { Icone } from '@/components/ui/Icone'
+import { IconeObjet } from '@/components/ui/IconeObjet'
 import { ListeCles } from '@/components/ui/Panneau'
+import { Parcours } from '@/components/ui/Parcours'
 import { Statut } from '@/components/ui/Statut'
 import { aujourdHui, LIBELLES_TYPE, statutAffiche } from '@/lib/document'
 import { versEn16931 } from '@/lib/en16931'
 import { formatDate, formatMontant } from '@/lib/format'
 import { centimesEnSaisie } from '@/lib/montant'
 import { origineSite } from '@/lib/site'
+import { etapesParcours } from '@/lib/parcours'
 import { libelleMoyen } from '@/lib/suivi'
 import { destinataireClient } from '@/lib/taches'
 import type { DocumentImprimable } from '@/lib/imprimable'
@@ -61,22 +64,26 @@ export async function ApercuLecture({ org, document: d, imprimable, role }: { or
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex flex-wrap items-end justify-between gap-3">
-        <div className="min-w-0">
-          <Link href={`/${org}/ventes/${CHEMINS[d.type]}`} className="inline-flex items-center gap-1 text-[12.5px] text-encre-3 hover:text-encre">
-            <Icone nom="chevron-gauche" taille={13} />
-            {d.type === 'devis' ? 'Devis' : d.type === 'avoir' ? 'Avoirs' : 'Factures'}
-          </Link>
-          <div className="mt-1 flex flex-wrap items-center gap-3">
-            <h1 className="text-[24px] font-bold leading-tight">
-              {LIBELLES_TYPE[d.type].titre} <span className="num text-[21px]">{d.number}</span>
-            </h1>
-            <Statut statut={statut.cle} libelle={statut.libelle} />
+      <div className="flex flex-col gap-3.5 rounded-l border border-trait bg-surface px-4 py-3.5 shadow-douce">
+        <div className="flex min-w-0 items-center gap-3">
+          <IconeObjet icone={d.type === 'acompte' ? 'facture' : d.type} taille="l" />
+          <div className="min-w-0">
+            <Link href={`/${org}/ventes/${CHEMINS[d.type]}`} className="inline-flex items-center gap-1 text-[12.5px] text-encre-3 hover:text-encre">
+              <Icone nom="chevron-gauche" taille={13} />
+              {d.type === 'devis' ? 'Devis' : d.type === 'avoir' ? 'Avoirs' : 'Factures'}
+            </Link>
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
+              <h1 className="text-[20px] font-bold leading-tight sm:text-[22px]">
+                {LIBELLES_TYPE[d.type].titre} <span className="num text-[19px] sm:text-[20px]">{d.number}</span>
+              </h1>
+              <Statut statut={statut.cle} libelle={statut.libelle} />
+            </div>
+            <p className="mt-0.5 text-[13px] text-encre-2">
+              {imprimable.client?.name ?? '—'} · {formatDate(d.issue_date)} · {formatMontant(Number(d.total_ttc), d.currency)} TTC
+            </p>
           </div>
-          <p className="mt-1 text-[13.5px] text-encre-2">
-            {imprimable.client?.name ?? '—'} · {formatDate(d.issue_date)} · {formatMontant(Number(d.total_ttc), d.currency)} TTC
-          </p>
         </div>
+        <Parcours etapes={etapesParcours(d, jour)} />
       </div>
 
       <div className="grid gap-5 xl:grid-cols-[minmax(0,1fr)_320px]">

@@ -233,11 +233,11 @@ test('paiements, envoi, récurrence et exports', async ({ page }) => {
   await page.getByLabel('Montant', { exact: true }).fill('100')
   await page.getByRole('button', { name: 'Enregistrer le paiement' }).click()
   await expect(page.getByText('Paiement enregistré.')).toBeVisible()
-  await expect(page.getByText('Paiement partiel')).toBeVisible()
+  await expect(page.getByRole('list', { name: 'Avancement' }).getByText('Paiement partiel')).toBeVisible()
   await expect(page.getByLabel('Montant', { exact: true })).toHaveValue('260,00')
   await page.getByRole('button', { name: 'Enregistrer le paiement' }).click()
   await expect(page.getByText(/^Soldée le/)).toBeVisible()
-  await expect(page.getByText('Payée').first()).toBeVisible()
+  await expect(page.getByRole('list', { name: 'Avancement' }).getByRole('listitem').last()).toHaveText(/Payée.*terminée/)
 
   // Envoi par email (simulé sans messagerie configurée) et lien de partage.
   await page.getByLabel('Destinataire').fill('compta@dupont.fr')
