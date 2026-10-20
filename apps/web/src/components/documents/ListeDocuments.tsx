@@ -95,9 +95,9 @@ export async function ListeDocuments({ org, vue, statut, q, affichage }: { org: 
         description={`${documents.length} document${documents.length > 1 ? 's' : ''}`}
         actions={
           <>
-            {vue === 'factures' && (
-              <BoutonLien href={affichage === 'tableau' ? `/${org}/ventes/factures` : `/${org}/ventes/factures?affichage=tableau`}>
-                {affichage === 'tableau' ? 'Vue liste' : 'Vue tableau'}
+            {vue !== 'avoirs' && (
+              <BoutonLien href={affichage === 'tableau' ? `/${org}/ventes/${vue}` : `/${org}/ventes/${vue}?affichage=tableau`}>
+                {affichage === 'tableau' ? 'Vue liste' : vue === 'devis' ? 'Vue pipeline' : 'Vue tableau'}
               </BoutonLien>
             )}
             {editable && nouveau && (
@@ -108,7 +108,35 @@ export async function ListeDocuments({ org, vue, statut, q, affichage }: { org: 
           </>
         }
       />
-      {vue === 'factures' && affichage === 'tableau' ? (
+      {vue === 'devis' && affichage === 'tableau' ? (
+        <Kanban
+          slug={org}
+          mode="devis"
+          editable={editable}
+          cartes={documents
+            .filter((d) => !(['transforme', 'refuse', 'expire'].includes(d.status) && d.issue_date < ajouterJours(jour, -180)))
+            .map((d) => ({
+              id: d.id,
+              status: d.status,
+              colonne:
+                d.status === 'brouillon'
+                  ? 'brouillon'
+                  : d.status === 'transforme'
+                    ? 'facture'
+                    : d.status === 'accepte'
+                      ? 'accepte'
+                      : d.status === 'envoye' && d.affiche.libelle !== 'Expiré'
+                        ? 'envoye'
+                        : 'clos',
+              numero: d.number,
+              client: d.clients?.name ?? '—',
+              montant: Number(d.total_ttc),
+              reste: 0,
+              echeance: d.status === 'envoye' || d.status === 'brouillon' ? d.valid_until : null,
+              devise: d.currency,
+            }))}
+        />
+      ) : vue === 'factures' && affichage === 'tableau' ? (
         <Kanban
           slug={org}
           editable={editable}
@@ -169,6 +197,21 @@ export async function ListeDocuments({ org, vue, statut, q, affichage }: { org: 
           <p>Modifiez la recherche ou choisissez un autre filtre.</p>
         </EtatVide>
       ) : (
+        <>
+        {visibles.every((d) => d.currency === 'EUR') && (
+        <p className="-mt-1 text-[12.5px] text-encre-3">
+          {visibles.length} {visibles.length > 1 ? 'éléments' : 'élément'} · total{' '}
+          <span className="num font-semibold text-encre-2">{formatMontant(visibles.reduce((t, d) => t + Number(d.total_ttc), 0))}</span> TTC
+          {vue === 'factures' && (
+            <>
+              {' '}· reste dû{' '}
+              <span className="num font-semibold text-encre-2">
+                {formatMontant(visibles.filter((d) => d.status !== 'brouillon' && d.status !== 'annule').reduce((t, d) => t + Math.max(0, Number(d.amount_due) - Number(d.amount_paid)), 0))}
+              </span>
+            </>
+          )}
+        </p>
+        )}
         <Tableau legende={`Liste des ${config.titre.toLowerCase()}`}>
           <thead>
             <tr>
@@ -209,6 +252,7 @@ export async function ListeDocuments({ org, vue, statut, q, affichage }: { org: 
             ))}
           </tbody>
         </Tableau>
+        </>
       )}
       </>
       )}

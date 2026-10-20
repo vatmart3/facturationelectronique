@@ -1,5 +1,6 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { BoutonLien } from '@/components/ui/Bouton'
 import { EnTeteVue } from '@/components/ui/EnTeteVue'
 import { EtatVide } from '@/components/ui/EtatVide'
 import { Indicateurs } from '@/components/ui/Indicateurs'
@@ -41,7 +42,15 @@ export default async function Paiements({ params, searchParams }: { params: Prom
 
   return (
     <>
-      <EnTeteVue titre="Paiements" description="Encaissements enregistrés sur les factures. Un paiement s’enregistre depuis la facture concernée." />
+      <EnTeteVue
+        titre="Paiements"
+        description="Encaissements enregistrés sur les factures, depuis la facture ou par import du relevé bancaire."
+        actions={
+          <BoutonLien href={`/${org}/tresorerie/rapprochement`} icone="banque">
+            Importer un relevé
+          </BoutonLien>
+        }
+      />
       <Indicateurs
         indicateurs={[
           { libelle: `Encaissé · ${libelle(mois)}`, valeur: formatMontant(total), detail: `${(paiements ?? []).length} paiement(s)`, ton: 'ok' },

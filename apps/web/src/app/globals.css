@@ -26,6 +26,7 @@
   --color-nuit: var(--nuit);
   --color-bandeau: var(--bandeau);
   --color-objet-tableau: var(--objet-tableau);
+  --color-objet-banque: var(--objet-banque);
   --color-objet-facture: var(--objet-facture);
   --color-objet-devis: var(--objet-devis);
   --color-objet-avoir: var(--objet-avoir);

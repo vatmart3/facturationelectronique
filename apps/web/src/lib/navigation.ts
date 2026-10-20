@@ -13,6 +13,7 @@ export type IconeNav =
   | 'relances'
   | 'catalogue'
   | 'paiements'
+  | 'banque'
   | 'recues'
   | 'ereporting'
   | 'reforme'
@@ -120,6 +121,13 @@ export const NAVIGATION: GroupeNav[] = [
         icone: 'paiements',
         phase: 8,
         description: 'Encaissements, paiements partiels et rapprochement avec les factures.',
+      },
+      {
+        chemin: 'tresorerie/rapprochement',
+        libelle: 'Rapprochement bancaire',
+        icone: 'banque',
+        phase: 8,
+        description: 'Import du relevé CSV de la banque : chaque virement reçu associé à sa facture.',
       },
     ],
   },

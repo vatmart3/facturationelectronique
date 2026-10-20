@@ -42,7 +42,7 @@ const ONGLETS: Onglet[] = [
   { type: 'lien', chemin: 'tresorerie/paiements' },
   { type: 'lien', chemin: 'relances' },
   { type: 'menu', libelle: 'E-facturation', chemins: ['e-facturation/recues', 'e-facturation/e-reporting', 'e-facturation/reforme'] },
-  { type: 'menu', libelle: 'Plus', chemins: ['ventes/avoirs', 'ventes/recurrences', 'comptabilite/exports', 'reglages', 'aide'] },
+  { type: 'menu', libelle: 'Plus', chemins: ['ventes/avoirs', 'ventes/recurrences', 'tresorerie/rapprochement', 'comptabilite/exports', 'reglages', 'aide'] },
 ]
 
 const ENTREES = new Map(toutesLesEntrees().map(({ entree }) => [entree.chemin, entree]))

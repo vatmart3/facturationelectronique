@@ -4,6 +4,8 @@ import { notFound } from 'next/navigation'
 import { archiverClient, supprimerContact, supprimerPrixClient } from '@/app/actions/clients'
 import { FormulaireContact, FormulairePrix } from '@/components/clients/ActionsFiche'
 import { Avatar } from '@/components/ui/Avatar'
+import { Chronologie } from '@/components/ui/Chronologie'
+import { IconeObjet } from '@/components/ui/IconeObjet'
 import { Bouton, BoutonLien } from '@/components/ui/Bouton'
 import { Categorie, Etiquette } from '@/components/ui/Categorie'
 import { EtatVide } from '@/components/ui/EtatVide'
@@ -18,6 +20,7 @@ import { libelleConditions, libelleTypeClient } from '@/lib/clients'
 import { ajouterJours, aujourdHui, LIBELLES_TYPE, statutAffiche } from '@/lib/document'
 import { canalTransmission, resoudreTva } from '@/lib/fiscalite'
 import { formatDate, formatMontant, grouperChiffres } from '@/lib/format'
+import { construireHistorique, delaiMoyenPaiement } from '@/lib/historique'
 import { peutFacturer } from '@/lib/roles'
 import { chargerContexte } from '@/lib/session'
 import { creerClientServeur } from '@/lib/supabase/serveur'
@@ -55,6 +58,15 @@ export default async function FicheClient({ params, searchParams }: { params: Pa
   ])
   const jour = aujourdHui()
   const documents = (docs ?? []).map((d) => ({ ...d, affiche: statutAffiche(d, jour) }))
+  const ids = documents.map((d) => d.id)
+  const [{ data: paiements }, { data: envois }] = ids.length
+    ? await Promise.all([
+        supabase.from('payments').select('id, document_id, amount_cents, paid_on, method').eq('organization_id', organisation.id).in('document_id', ids),
+        supabase.from('reminders').select('id, document_id, kind, step, recipient, sent_at, status').eq('organization_id', organisation.id).in('document_id', ids),
+      ])
+    : [{ data: [] }, { data: [] }]
+  const historique = construireHistorique(documents, paiements ?? [], envois ?? [])
+  const delai = delaiMoyenPaiement(documents, paiements ?? [])
   const emis = documents.filter((d) => d.type !== 'devis' && d.status !== 'brouillon')
   const ilYAUnAn = ajouterJours(jour, -365)
   const ca = emis.filter((d) => d.issue_date >= ilYAUnAn && d.status !== 'annule').reduce((s, d) => s + Number(d.total_ht), 0)
@@ -81,22 +93,22 @@ export default async function FicheClient({ params, searchParams }: { params: Pa
 
   return (
     <>
-      <Link href={`/${org}/clients`} className="inline-flex w-max items-center gap-1.5 text-[13px] text-encre-2 hover:text-encre">
-        <Icone nom="chevron-gauche" taille={14} />
-        Tous les clients
-      </Link>
-
       {client.archived_at && <Message ton="info">Client archivé le {formatDate(client.archived_at)}. Il n’apparaît plus dans les listes de saisie.</Message>}
 
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex min-w-0 items-center gap-4">
-          <Avatar nom={client.name} taille="l" />
+      <div className="flex flex-wrap items-center justify-between gap-4 rounded-l border border-trait bg-surface px-4 py-3.5 shadow-douce">
+        <div className="flex min-w-0 items-center gap-3">
+          <IconeObjet icone="clients" taille="l" />
           <div className="min-w-0">
-            <h1 className="text-[24px] font-bold">{client.name}</h1>
-            <div className="mt-1.5 flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-[13px] text-encre-2">
+            <Link href={`/${org}/clients`} className="inline-flex items-center gap-1 text-[12.5px] text-encre-3 hover:text-encre">
+              <Icone nom="chevron-gauche" taille={13} />
+              Clients
+            </Link>
+            <h1 className="text-[20px] font-bold leading-tight sm:text-[22px]">{client.name}</h1>
+            <div className="mt-1 flex flex-wrap items-center gap-x-3.5 gap-y-1.5 text-[13px] text-encre-2">
               <Categorie categorie={client.kind} />
               {client.legal_form && <span>{client.legal_form}</span>}
               {client.billing_city && <span>{client.billing_city}</span>}
+              {client.siren && <span className="num">SIREN {grouperChiffres(client.siren)}</span>}
             </div>
           </div>
         </div>
@@ -124,7 +136,12 @@ export default async function FicheClient({ params, searchParams }: { params: Pa
             detail: ouvertes.length ? `${ouvertes.length} facture${ouvertes.length > 1 ? 's' : ''} ouverte${ouvertes.length > 1 ? 's' : ''}${enRetard ? `, ${enRetard} en retard` : ''}` : 'Rien en attente',
             ton: enRetard ? 'alerte' : 'info',
           },
-          { libelle: 'Délai moyen de paiement', valeur: '—', detail: 'Calculé dès le premier paiement', ton: 'ok' },
+          {
+            libelle: 'Délai moyen de paiement',
+            valeur: delai === null ? '—' : `${delai} jour${delai > 1 ? 's' : ''}`,
+            detail: delai === null ? 'Calculé dès la première facture soldée' : 'Entre l’émission et le paiement',
+            ton: 'ok',
+          },
           { libelle: 'Client depuis', valeur: formatDate(client.created_at) },
         ]}
       />
@@ -136,10 +153,24 @@ export default async function FicheClient({ params, searchParams }: { params: Pa
           { href: `${base}?onglet=contacts`, libelle: 'Contacts', compte: contacts?.length ?? 0, actif: onglet === 'contacts' },
           { href: `${base}?onglet=tarifs`, libelle: 'Tarifs spécifiques', compte: prix?.length ?? 0, actif: onglet === 'tarifs' },
           { href: `${base}?onglet=documents`, libelle: 'Documents', compte: documents.length, actif: onglet === 'documents' },
+          { href: `${base}?onglet=activite`, libelle: 'Activité', compte: historique.length, actif: onglet === 'activite' },
         ]}
       />
 
-      {onglet === 'contacts' ? (
+      {onglet === 'activite' ? (
+        historique.length === 0 ? (
+          <EtatVide titre="Aucune activité">
+            <p>Les factures émises, paiements reçus, envois et relances de ce client s’afficheront ici.</p>
+          </EtatVide>
+        ) : (
+          <Panneau>
+            <PanneauTete titre="Activité" description="Du plus récent au plus ancien" />
+            <PanneauCorps>
+              <Chronologie slug={org} evenements={historique} />
+            </PanneauCorps>
+          </Panneau>
+        )
+      ) : onglet === 'contacts' ? (
         <div className="grid gap-[18px] lg:grid-cols-[minmax(0,1.4fr)_minmax(0,1fr)]">
           <Panneau>
             <PanneauTete titre="Contacts" />
@@ -289,7 +320,8 @@ export default async function FicheClient({ params, searchParams }: { params: Pa
           </Tableau>
         )
       ) : (
-        <div className="grid gap-[18px] lg:grid-cols-2">
+        <div className="grid gap-4 lg:grid-cols-[minmax(0,1.6fr)_minmax(0,1fr)]">
+        <div className="flex min-w-0 flex-col gap-4">
           <Panneau>
             <PanneauTete titre="Identité" />
             <PanneauCorps>
@@ -333,13 +365,33 @@ export default async function FicheClient({ params, searchParams }: { params: Pa
             </PanneauCorps>
           </Panneau>
           {client.notes && (
-            <Panneau className="lg:col-span-2">
+            <Panneau>
               <PanneauTete titre="Notes internes" />
               <PanneauCorps>
                 <p className="whitespace-pre-wrap text-[14px]">{client.notes}</p>
               </PanneauCorps>
             </Panneau>
           )}
+        </div>
+          <Panneau className="self-start">
+            <PanneauTete
+              titre="Activité récente"
+              actions={
+                historique.length > 6 && (
+                  <Link href={`${base}?onglet=activite`} className="text-[13px] text-accent hover:underline">
+                    Tout voir
+                  </Link>
+                )
+              }
+            />
+            <PanneauCorps>
+              {historique.length === 0 ? (
+                <p className="text-[13.5px] text-encre-3">Rien pour l’instant : les factures, paiements et relances apparaîtront ici.</p>
+              ) : (
+                <Chronologie slug={org} evenements={historique.slice(0, 6)} />
+              )}
+            </PanneauCorps>
+          </Panneau>
         </div>
       )}
     </>

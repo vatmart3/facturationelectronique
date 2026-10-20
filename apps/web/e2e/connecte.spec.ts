@@ -235,7 +235,20 @@ test('paiements, envoi, récurrence et exports', async ({ page }) => {
   await expect(page.getByText('Paiement enregistré.')).toBeVisible()
   await expect(page.getByRole('list', { name: 'Avancement' }).getByText('Paiement partiel')).toBeVisible()
   await expect(page.getByLabel('Montant', { exact: true })).toHaveValue('260,00')
-  await page.getByRole('button', { name: 'Enregistrer le paiement' }).click()
+
+  // Solde par rapprochement bancaire : le relevé cite le numéro de la facture ; le débit est ignoré.
+  const facture = page.url()
+  const numero = /F-\d{4}-\d{4}/.exec(await page.getByRole('heading', { level: 1 }).innerText())![0]
+  const jour = new Date().toLocaleDateString('fr-FR')
+  const releve = { name: 'releve.csv', mimeType: 'text/csv', buffer: Buffer.from(`Date;Libellé;Montant\n${jour};VIR ATELIER DUPONT ${numero};260,00\n${jour};CB FOURNITURES;-42,50\n`) }
+  await page.goto(`/${slug}/tresorerie/rapprochement`)
+  await page.locator('input[type=file]').setInputFiles(releve)
+  await expect(page.getByText(`Numéro ${numero} dans le libellé, montant exact`)).toBeVisible()
+  await page.getByRole('button', { name: 'Enregistrer les paiements' }).click()
+  await expect(page.getByText('1 paiement enregistré.')).toBeVisible()
+  await page.locator('input[type=file]').setInputFiles(releve)
+  await expect(page.getByText('Déjà enregistré lors d’un import précédent')).toBeVisible()
+  await page.goto(facture)
   await expect(page.getByText(/^Soldée le/)).toBeVisible()
   await expect(page.getByRole('list', { name: 'Avancement' }).getByRole('listitem').last()).toHaveText(/Payée.*terminée/)
 
